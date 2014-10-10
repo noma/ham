@@ -1,0 +1,18 @@
+import os ;
+
+# some global compile flags (enable/disable compilers as needed)
+using gcc   : : : <compileflags>"-std=c++0x -Wall" ;
+# using clang : : : <compileflags>"-std=c++11 -Wall" ;
+using intel : : : <compileflags>"-std=c++11 -Wall" ;
+
+# using mpi ; # for non-Intel MPI, this should suffice
+ using mpi : "mpiicpc -mt_mpi" ; # use multi threaded Intel MPI
+
+# Only needed for the MIC MPI library path used for the variants below
+local MPI_PATH = [ os.environ I_MPI_ROOT ] ;
+local MPI_PATH_MIC = $(MPI_PATH)/mic ;
+
+# NOTE: '-' instead of '_' in debug_mic does not work
+variant debug_mic : debug : <asmflags>"-mmic" <cflags>"-mmic" <cxxflags>"-mmic" <linkflags>"-mmic -L$(MPI_PATH_MIC)/lib" ;
+variant release_mic : release : <asmflags>"-mmic" <cflags>"-mmic" <cxxflags>"-mmic" <linkflags>"-mmic -L$(MPI_PATH_MIC)/lib" ;
+

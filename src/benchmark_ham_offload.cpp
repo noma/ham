@@ -215,12 +215,12 @@ int main(int argc, char * argv[])
 
 		}
 
-		cout << "HAM Pragma Offload allocate time: " << endl
+		cout << "HAM-Offload allocate time: " << endl
 			 << header_string_data << endl
 			 << "allocate:\t" << allocate_time.string() << "\t" << data_size_byte << endl;
 		allocate_time.to_file(filename + "allocate_time");
 
-		cout << "HAM Pragma Offload free time: " << endl
+		cout << "HAM-Offload free time: " << endl
 			 << header_string_data << endl
 			 << "free:\t" << free_time.string() << "\t" << data_size_byte << endl;
 		free_time.to_file(filename + "free_time");
@@ -245,7 +245,7 @@ int main(int argc, char * argv[])
 		// free memory
 		offload_free(remote_data);
 
-		cout << "HAM Pragma Offload copy-in time: " << endl
+		cout << "HAM-Offload copy-in time: " << endl
 			 << header_string_data << endl
 			 << "copy-in:\t" << copy_in_time.string() << "\t" << data_size_byte << endl;
 		copy_in_time.to_file(filename + "copy_in_time");
@@ -270,7 +270,7 @@ int main(int argc, char * argv[])
 		// free memory
 		offload_free(remote_data);
 
-		cout << "HAM Pragma Offload copy-out time: " << endl
+		cout << "HAM-Offload copy-out time: " << endl
 			 << header_string_data << endl
 			 << "copy-out:\t" << copy_out_time.string() << "\t" << data_size_byte << endl;
 		copy_out_time.to_file(filename + "copy_out_time");
@@ -311,7 +311,7 @@ int main(int argc, char * argv[])
 			}
 		}
 
-		cout << "HAM Pragma Offload function call runtime: " << endl
+		cout << "HAM-Offload function call runtime: " << endl
 			 << header_string << endl
 			 << "call:\t" << call_time.string() << endl;
 		call_time.to_file(filename + "call_time");
@@ -359,7 +359,7 @@ int main(int argc, char * argv[])
 
 		float c = res; res = c; // actually read res (avoids compiler warning)
 		
-		cout << "HAM Pragma Offload function call mul runtime: " << endl
+		cout << "HAM-Offload function call mul runtime: " << endl
 			 << header_string << endl
 			 << "call-mul:\t" << call_mul_time.string() << endl;
 		call_mul_time.to_file(filename + "call_mul_time");

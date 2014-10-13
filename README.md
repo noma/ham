@@ -125,7 +125,7 @@ Option | Description
 
 Example (host to Xeon Phi offload):  
 ```
-# Use different terminals or start jobs in background
+# Use different terminals or start jobs in background (by appending &)
 # host process 
 $ <application_binary> --ham-process-count 2 --ham-address 0 
 # MIC process
@@ -153,7 +153,7 @@ $ <application_binary> --ham-process-count 2 --ham-address 0 --ham-host-node 1
 
 The [inner_product](src/inner_product.cpp) example can be started like this. The `env LD_LIBRARY_PATH=$MIC_LD_LIBRARY_PATH` may or may not be necessary depending on your configuration.
 ```
-$ bin/intel-linux/release/inlining-on/threading-multi/inner_product_scif  --ham-process-count 2 --ham-address 0
-$ ssh mic0 env LD_LIBRARY_PATH=$MIC_LD_LIBRARY_PATH `pwd`/bin/intel-linux/debug_mic/inlining-on/threading-multi/benchmark_ham_offload_scif --ham-process-count 2 --ham-address 1
+$ bin/intel-linux/release/inlining-on/threading-multi/inner_product_scif --ham-process-count 2 --ham-address 0 &
+$ ssh mic0 env LD_LIBRARY_PATH=$MIC_LD_LIBRARY_PATH `pwd`/bin/intel-linux/release_mic/inlining-on/threading-multi/inner_product_scif --ham-process-count 2 --ham-address 1
 ```
 

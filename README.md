@@ -64,7 +64,7 @@ Building HAM-Offload
 2. Build everything:
 
 	```
-	$ b2 toolset=intel variant=debug,release,debug_mic,release_mic benchmark_ham_offload_mpi
+	$ b2 toolset=intel -j8
 	```
 	If nothing went wrong, the libraries are somewhere in bin, where Boost.Build created sub-folders representing the used toolsets, variants and build options, e.g.  
 	`bin/intel-linux/debug_mic/inlining-on/threading-multi/`.  

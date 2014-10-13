@@ -37,7 +37,7 @@ INSTALL_PATH=$HOME/Software
 NO_MIC=false # set to true, to disable building Boost for Xeon Phi
 BASHRC_FILE=$HOME/.bashrc # set to /dev/null to disable, or to any other file to manually merge the needed changes into your .bashrc 
 
-BOOST_BUILD_OPTIONS="-j4" # concurrent build with up to 4 commands
+BOOST_BUILD_OPTIONS="-j8" # concurrent build with up to 8 commands
 BOOST_NAME=boost
 BOOST_VERSION=1_56_0
 BOOST_MIC_SUFFIX=mic

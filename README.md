@@ -157,3 +157,45 @@ $ bin/intel-linux/release/inlining-on/threading-multi/inner_product_scif --ham-p
 $ ssh mic0 env LD_LIBRARY_PATH=$MIC_LD_LIBRARY_PATH `pwd`/bin/intel-linux/release_mic/inlining-on/threading-multi/inner_product_scif --ham-process-count 2 --ham-address 1
 ```
 
+
+Benchmarking
+============
+
+There are benchmarks for HAM-Offload and Intel LEO. The ones for LEO are not built by default, but need to be built via:
+```
+$ b2 toolset=intel variant=release -j8 benchmark_intel_leo 
+```
+Scripts for automated benchmarking and generating figures exist and will be available soon.
+
+```
+# for measuring the kernel offloading overhead via MPI:
+$ mpirun -n 1 -host localhost bin/intel-linux/release/inlining-on/threading-multi/benchmark_ham_offload_mpi -c -r 1000000 : -n 1 -host mic0 bin/intel-linux/release_mic/inlining-on/threading-multi/benchmark_ham_offload_mpi
+```
+```
+# for measuring the kernel offloading overhead via SCIF:
+$ bin/intel-linux/release/inlining-on/threading-multi/benchmark_ham_offload_scif --ham-process-count 2 --ham-address 0 -c -r 1000000 &
+$ ssh mic0 env LD_LIBRARY_PATH=$MIC_LD_LIBRARY_PATH `pwd`/bin/intel-linux/release_mic/inlining-on/threading-multi/benchmark_ham_offload_scif --ham-process-count 2 --ham-address 1
+``` 
+```
+# for the help screen
+$ bin/intel-linux/release/inlining-on/threading-multi/benchmark_ham_offload_scif --ham-process-count 2 --ham-address 0 -h &
+$ ssh mic0 env LD_LIBRARY_PATH=$MIC_LD_LIBRARY_PATH `pwd`/bin/intel-linux/release_mic/inlining-on/threading-multi/benchmark_ham_offload_scif --ham-process-count 2 --ham-address 1
+
+Supported options:
+  -h [ --help ]                Shows this message
+  -f [ --filename ] arg        filename(-prefix) for results
+  -r [ --runs ] arg (=1000)    number of identical inner runs for which the 
+                               average time will be computed
+  --warmup-runs arg (=1)       number of number of additional warmup runs 
+                               before times are measured
+  -s [ --size ] arg (=1048576) size of transferred data in byte (multiple of 4)
+  -a [ --allocate ]            benchmark memory allocation/deallocation on 
+                               target
+  -i [ --copy-in ]             benchmark data copy to target
+  -o [ --copy-out ]            benchmark data copy from target
+  -c [ --call ]                benchmark function call on target
+  -m [ --call-mul ]            benchmark function call (multiplication) on 
+                               target
+  -y [ --async ]               perform benchmark function calls asynchronously
+```
+

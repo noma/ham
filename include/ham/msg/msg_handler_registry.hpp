@@ -9,7 +9,7 @@
  * compile-time configurable message handler registry implementations.
  * (E.g. a trivial one that directly uses addresses without any conversion,
  * a very complex one that uses some heavy weight, maybe even versioned,
- * identifiers for maximal compatibility, and of course, anything inbetween).
+ * identifiers for maximal compatibility, and of course, anything in between).
  */
 
 #ifndef ham_msg_msg_handler_registry_hpp

@@ -162,3 +162,11 @@ Benchmarking
 ============
 
 See the wiki page [Benchmarking](https://github.com/noma/ham/wiki/Benchmarking).
+
+Acknowledgements
+================
+
+This work is supported by the [ZIB (Zuse Institute Berlin)](http://www.zib.de/en/home.html) and the [IPCC (Intel Parallel Computing Center)](https://software.intel.com/en-us/articles/konrad-zuse-zentrum-fur-informationstechnik-berlin-zib) activities there.
+
+The architecture of the system was influenced by my earlier work with and on the [TACO framework](http://www.tu-cottbus.de/fakultaet1/de/betriebssysteme/forschung/projekte/taco.html).
+

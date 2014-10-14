@@ -56,7 +56,7 @@ public:
 
 	// TODO(): measure overhead with different compilers
 	//duration elapsed() const
-	rep elapsed() // faster (yes without the const)
+	rep elapsed() const
 	{
 		struct timespec stop_time;
 		clock_gettime(CLOCK_REALTIME, &stop_time);
@@ -76,9 +76,7 @@ public:
 	statistics(size_t n) : statistics() { times.reserve(n); }
 	
 	// add a timer
-	// TODO(): measure overhead with different compilers
-	//void add(timer const& t) { add(t.elapsed()); }
-	void add(timer& t) { add(t.elapsed()); }
+	void add(timer const& t) { add(t.elapsed()); }
 
 	// add a duration
 	// TODO(): measure overhead with different compilers

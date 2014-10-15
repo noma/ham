@@ -138,5 +138,17 @@ exe inner_product_mpi
 	: <library>/mpi//mpi <define>HAM_COMM_MPI
 	;
 
+#
+exe test_data_transfer_scif
+	: [ obj test_data_transfer_obj : test_data_transfer.cpp : <library>scif <define>HAM_COMM_SCIF ] ham_offload_scif boost_program_options
+	: <library>scif <define>HAM_COMM_SCIF
+	;
+
+exe test_data_transfer_mpi
+	: [ obj test_data_transfer_obj : test_data_transfer.cpp : <library>/mpi//mpi <define>HAM_COMM_MPI ] ham_offload_mpi boost_program_options
+	: <library>/mpi//mpi <define>HAM_COMM_MPI
+	;
+
+
 # Explicit targets (not built by default)
 explicit benchmark_intel_leo ;

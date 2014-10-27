@@ -163,3 +163,4 @@ exe test_argument_transfer_mpi
 
 # Explicit targets (not built by default)
 explicit benchmark_intel_leo ;
+explicit test_data_transfer_scif ;

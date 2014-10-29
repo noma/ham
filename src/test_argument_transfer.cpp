@@ -4,6 +4,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "ham/offload.hpp"
+#include <algorithm>
+#include <array>
 #include <iostream>
 
 using namespace ham;
@@ -25,24 +27,12 @@ bool test_type_invokation(offload::node_t target, T arg)
 	return passed;
 }
 
-// recursive conjunction over the test results
-template<typename T>
-bool and_reducer(T arg)
-{
-	return arg && true;
-}
-template<typename T, typename... Ts>
-bool and_reducer(T v, Ts... vs)
-{
-	return v && and_reducer(vs...);
-}
-
-
 // performs the test for a list of types and values
 template<typename... Ts>
 bool test_type_transfer(offload::node_t target, Ts... args)
 {
-	return and_reducer(test_type_invokation(target, args)...);
+	std::array<bool, sizeof...(Ts)> results = { {test_type_invokation(target, args)...} };
+	return std::all_of(std::begin(results), std::end(results), [](bool v) { return v; });
 }
 
 /**
@@ -83,7 +73,9 @@ int main(int argc, char* argv[])
 		static_cast<double>(13.37),
 		static_cast<long double>(13.37l),
 		// null pointer
-		nullptr
+		//static_cast<nullptr_t>(nullptr),
+		static_cast<std::nullptr_t>(nullptr),
+		std::tuple<void*>(nullptr)
 	);
 	
 	std::cout << "Overall result: " << (passed ? "pass" : "fail") << std::endl;

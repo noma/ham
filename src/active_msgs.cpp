@@ -60,9 +60,10 @@ void test_active_msg(Msg& func)
 	// Calling the buffer as an active_msg_base functor with the receive buffer
 	// as argument triggers a handler look-up, followed by the execution of 
 	// that handler (which is defined by the execution policy of the actual 
-	// message type). The handler can performs a safe upcast of the buffer to 
-	// the actual type of the message and directly execute it as functor, or
-	// enqeue it somewhere for further processing.
+	// message type). The handler can perform a safe upcast of the buffer to 
+	// the actual type of the message and directly execute it as functor, 
+	// enqeue it somewhere for further processing, or whatever a policy
+	// specifies.
 	functor(buffer); 
 	
 	delete [] buffer;

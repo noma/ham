@@ -73,7 +73,7 @@ class statistics
 {
 public:
 	statistics() : mean(0.0), var(0.0), k(0) {}
-	statistics(size_t n) : statistics() { times.reserve(n); }
+	statistics(size_t n, size_t warmup = 0) : statistics() { this->warmup = warmup, times.reserve(n); }
 	
 	// add a timer
 	void add(timer const& t) { add(t.elapsed()); }
@@ -83,6 +83,12 @@ public:
 	//void add(duration val)
 	void add(rep r)
 	{
+		// ignore warmup values
+		if (warmup > 0) // NOTE: decrement
+		{
+			warmup--;
+			return;
+		}
 		duration val(r);
 		times.push_back(val);
 		++k;
@@ -222,6 +228,7 @@ private:
 	duration mean; // average
 	duration var; // variance
 	size_t k; // event counter
+	size_t warmup; // number of values to drop before taking data
 	std::vector<duration> times; // all measured values
 	duration min_time; // global maximum
 	duration max_time; //  global minimum

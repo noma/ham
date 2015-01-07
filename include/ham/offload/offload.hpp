@@ -6,13 +6,14 @@
 #ifndef ham_offload_offload_hpp
 #define ham_offload_offload_hpp
 
+#include "ham/net/communicator.hpp" // must be first for Intel MPI
+
 #include <atomic>
 #include <cassert>
 #include <functional>
 
 #include "ham/functor/buffer.hpp"
 #include "ham/misc/types.hpp"
-#include "ham/net/communicator.hpp"
 #include "ham/offload/offload_msg.hpp"
 #include "ham/offload/runtime.hpp"
 #include "ham/util/at_end_of_scope_do.hpp"

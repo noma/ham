@@ -209,7 +209,7 @@ int main(int argc, char * argv[])
 		std::cout << "# MIC_ALIGNMENT            " << MIC_ALIGNMENT << std::endl;
 
 
-	if(data_size % sizeof(float) != 0)
+	if (data_size % sizeof(float) != 0)
 		std::cout << "WARNING specified size must be a multiple of 4" << std::endl;
 	// data allocate data of given size for benchmark
 	size_t data_size_byte = data_size;

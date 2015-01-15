@@ -29,35 +29,35 @@ void throw_exception( std::exception const & e )
 }
 #endif
 
-offload::buffer_ptr<float> offload_allocate(size_t data_size)
+offload::buffer_ptr<char> offload_allocate(size_t data_size)
 {
 	// equals: #pragma offload target(mic) nocopy(data:length(data_size) alloc_if(1) free_if(0))
-	return offload::allocate<float>(mic_node, data_size);
+	return offload::allocate<char>(mic_node, data_size);
 }
 
-void offload_free(offload::buffer_ptr<float> remote)
+void offload_free(offload::buffer_ptr<char> remote)
 {
 	// equals: #pragma offload target(mic) nocopy(data:length(data_size) alloc_if(0) free_if(1))
 	offload::free(remote);
 }
 
-void offload_copy_in(offload::buffer_ptr<float> remote, float* local, size_t data_size)
+void offload_copy_in(offload::buffer_ptr<char> remote, char* local, size_t data_size)
 {
 	// equals :#pragma offload target(mic) in(data:length(data_size) alloc_if(0) free_if(0))
 	offload::put_sync(local, remote, data_size); // sync
 }
 
-void offload_copy_out(offload::buffer_ptr<float> remote, float* local, size_t data_size)
+void offload_copy_out(offload::buffer_ptr<char> remote, char* local, size_t data_size)
 {
 	// equals: #pragma offload target(mic) in(data:length(data_size) alloc_if(0) free_if(0))
 	offload::get_sync(remote, local, data_size); //sync
 }
 
 #ifndef HAM_COMM_ONE_SIDED
-void offload_copy_direct(offload::buffer_ptr<float> source, offload::buffer_ptr<float> dest, size_t data_size)
+// no LEO/OpenMP equivalent
+void offload_copy_direct(offload::buffer_ptr<char> source, offload::buffer_ptr<char> dest, size_t data_size)
 {
-	// no equivalent
-	offload::copy_sync(source, dest, data_size); // TODO: async if ready
+	offload::copy_sync(source, dest, data_size); // TODO: use async
 }
 #endif
 
@@ -80,18 +80,18 @@ void offload_call()
 #define HOST_ALIGNMENT 64
 #endif
 
-float* local_allocate(size_t size)
+char* local_allocate(size_t size)
 {
-	//return new float[data_size];
-	float* ptr = NULL;
+	//return new char[data_size];
+	char* ptr = NULL;
 	int err = 0;
-	if ((err = posix_memalign((void**)&ptr, HOST_ALIGNMENT, size * sizeof(float))))
+	if ((err = posix_memalign((void**)&ptr, HOST_ALIGNMENT, size * sizeof(char))))
 		std::cout << "error, posix_memalign() returned: " << err << std::endl;
 	return ptr;
 	// NOTE: no ctors will be called!
 }
 
-void local_free(float* ptr)
+void local_free(char* ptr)
 {
 	//delete [] ptr;
 	free((void*)ptr);
@@ -178,29 +178,19 @@ int main(int argc, char * argv[])
 		std::cout << "# HAM_MESSAGE_SIZE             " << HAM_MESSAGE_SIZE << std::endl;
 		std::cout << "# HOST_ALIGNMENT               " << HOST_ALIGNMENT << std::endl;
 
-
-	if (data_size % sizeof(float) != 0)
-		std::cout << "WARNING specified size must be a multiple of 4" << std::endl;
-	// data allocate data of given size for benchmark
-	size_t data_size_byte = data_size;
-	data_size = data_size / sizeof(float); // convert data size specified in bytes to floats
-	float* data = local_allocate(data_size);
+	// allocate host data of given size
+	char* data = local_allocate(data_size);
 
 	std::string header_string = "name\t" + statistics::header_string();
 	std::string header_string_data = "name\t" + statistics::header_string() + "\tdata_size";
 
 	if (vm.count("allocate"))
 	{
-		statistics allocate_time(runs);
-		statistics free_time(runs);
-		offload::buffer_ptr<float> remote_data;
-		for (size_t i = 0; i < warmup_runs; ++i)
-		{
-			remote_data = offload_allocate(data_size);
-			offload_free(remote_data);
-		}
+		statistics allocate_time(runs, warmup_runs);
+		statistics free_time(runs, warmup_runs);
+		offload::buffer_ptr<char> remote_data;
 
-		for (size_t i = 0; i < runs; ++i)
+		for (size_t i = 0; i < (runs + warmup_runs); ++i)
 		{
 			{
 				timer clock;
@@ -217,26 +207,22 @@ int main(int argc, char * argv[])
 
 		cout << "HAM-Offload allocate time: " << endl
 			 << header_string_data << endl
-			 << "allocate:\t" << allocate_time.string() << "\t" << data_size_byte << endl;
+			 << "allocate:\t" << allocate_time.string() << "\t" << data_size << endl;
 		allocate_time.to_file(filename + "allocate_time");
 
 		cout << "HAM-Offload free time: " << endl
 			 << header_string_data << endl
-			 << "free:\t" << free_time.string() << "\t" << data_size_byte << endl;
+			 << "free:\t" << free_time.string() << "\t" << data_size << endl;
 		free_time.to_file(filename + "free_time");
 	}
 
 	if (vm.count("copy-in"))
 	{
 		// first allocate memory
-		offload::buffer_ptr<float> remote_data = offload_allocate(data_size);
-		statistics copy_in_time(runs);
-		for (size_t i = 0; i < warmup_runs; ++i)
-		{
-			offload_copy_in(remote_data, data, data_size);
-		}
+		offload::buffer_ptr<char> remote_data = offload_allocate(data_size);
+		statistics copy_in_time(runs, warmup_runs);
 
-		for (size_t i = 0; i < runs; ++i)
+		for (size_t i = 0; i < (runs + warmup_runs); ++i)
 		{
 			timer clock;
 			offload_copy_in(remote_data, data, data_size);
@@ -247,21 +233,17 @@ int main(int argc, char * argv[])
 
 		cout << "HAM-Offload copy-in time: " << endl
 			 << header_string_data << endl
-			 << "copy-in:\t" << copy_in_time.string() << "\t" << data_size_byte << endl;
+			 << "copy-in:\t" << copy_in_time.string() << "\t" << data_size << endl;
 		copy_in_time.to_file(filename + "copy_in_time");
 	}
 
 	if (vm.count("copy-out"))
 	{
 		// first allocate memory
-		offload::buffer_ptr<float> remote_data = offload_allocate(data_size);
-		statistics copy_out_time(runs);
-		for (size_t i = 0; i < warmup_runs; ++i)
-		{
-			offload_copy_out(remote_data, data, data_size);
-		}
+		offload::buffer_ptr<char> remote_data = offload_allocate(data_size);
+		statistics copy_out_time(runs, warmup_runs);
 
-		for (size_t i = 0; i < runs; ++i)
+		for (size_t i = 0; i < (runs + warmup_runs); ++i)
 		{
 			timer clock;
 			offload_copy_out(remote_data, data, data_size);
@@ -272,28 +254,16 @@ int main(int argc, char * argv[])
 
 		cout << "HAM-Offload copy-out time: " << endl
 			 << header_string_data << endl
-			 << "copy-out:\t" << copy_out_time.string() << "\t" << data_size_byte << endl;
+			 << "copy-out:\t" << copy_out_time.string() << "\t" << data_size << endl;
 		copy_out_time.to_file(filename + "copy_out_time");
 	}
 
 	if (vm.count("call"))
 	{
-		statistics call_time(runs);
+		statistics call_time(runs, warmup_runs);
 		auto func = f2f(&fun);
-		for (size_t i = 0; i < warmup_runs; ++i)
-		{
-			if(vm.count("async"))
-			{
-				auto f = offload::async(mic_node, func);
-				f.get();
-			}
-			else // sync
-			{
-				offload::sync(mic_node, func);
-			}
-		}
 
-		for (size_t i = 0; i < runs; ++i)
+		for (size_t i = 0; i < (runs + warmup_runs); ++i)
 		{
 			if(vm.count("async"))
 			{
@@ -319,7 +289,7 @@ int main(int argc, char * argv[])
 
 	if (vm.count("call-mul"))
 	{
-		statistics call_mul_time(runs);
+		statistics call_mul_time(runs, warmup_runs);
 
 		float a = 2.0f;
 		float b = 4.0f;
@@ -327,20 +297,7 @@ int main(int argc, char * argv[])
 
 		auto func = f2f(&fun_mul, a, b);
 
-		for (size_t i = 0; i < warmup_runs; ++i)
-		{
-			if(vm.count("async"))
-			{
-				auto f = offload::async(mic_node, func);
-				res = f.get();
-			}
-			else // sync
-			{
-				res = offload::sync(mic_node, func);
-			}
-
-		}
-		for (size_t i = 0; i < runs; ++i)
+		for (size_t i = 0; i < (runs + warmup_runs); ++i)
 		{
 			if(vm.count("async"))
 			{

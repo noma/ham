@@ -52,19 +52,19 @@ void throw_exception( std::exception const & e )
 }
 #endif
 
-void offload_allocate(float* data, size_t data_size)
+void offload_allocate(char* data, size_t data_size)
 {
 	#pragma offload target(mic:0) nocopy(data:length(data_size) align(MIC_ALIGNMENT) alloc_if(1) free_if(0))
 	{}
 }
 
-void offload_free(float* data, size_t data_size)
+void offload_free(char* data, size_t data_size)
 {
 	#pragma offload target(mic:0) nocopy(data:length(data_size) alloc_if(0) free_if(1))
 	{}
 }
 
-void offload_copy_in(float* data, size_t data_size)
+void offload_copy_in(char* data, size_t data_size)
 {
 
 #ifdef LEO_SYNC_TRANSFER
@@ -82,7 +82,7 @@ void offload_copy_in(float* data, size_t data_size)
 #endif
 }
 
-void offload_copy_out(float* data, size_t data_size)
+void offload_copy_out(char* data, size_t data_size)
 {
 #ifdef LEO_SYNC_TRANSFER
 	#pragma offload_transfer target(mic:0) out(data:length(data_size) alloc_if(0) free_if(0))
@@ -118,19 +118,19 @@ void offload_call()
 	//res = fun_mul(a, b);
 }
 
-float* local_allocate(size_t size)
+char* local_allocate(size_t size)
 {
-	//return new float[data_size];
-	float* ptr = NULL;
+	//return new char[data_size];
+	char* ptr = NULL;
 	int err = 0;
-	if ((err = posix_memalign((void**)&ptr, HOST_ALIGNMENT, size * sizeof(float))))
+	if ((err = posix_memalign((void**)&ptr, HOST_ALIGNMENT, size * sizeof(char))))
 		std::cout << "error, posix_memalign() returned: " << err << std::endl;
 	//std::cout << "posix_memalign result: " << ptr << ", aligned to: " << HOST_ALIGNMENT << ", ptr % alignment = " << ((size_t)ptr % HOST_ALIGNMENT) << std::endl;
 	return ptr;
 	// NOTE: no ctors will be called!
 }
 
-void local_free(float* ptr)
+void local_free(char* ptr)
 {
 	//delete [] ptr;
 	free((void*)ptr);
@@ -208,30 +208,18 @@ int main(int argc, char * argv[])
 		std::cout << "# HOST_ALIGNMENT           " << HOST_ALIGNMENT << std::endl;
 		std::cout << "# MIC_ALIGNMENT            " << MIC_ALIGNMENT << std::endl;
 
-
-	if (data_size % sizeof(float) != 0)
-		std::cout << "WARNING specified size must be a multiple of 4" << std::endl;
-	// data allocate data of given size for benchmark
-	size_t data_size_byte = data_size;
-	data_size = data_size / sizeof(float); // convert data size specified in bytes to floats
-	float* data = local_allocate(data_size);
+	// allocate host data of given size
+	char* data = local_allocate(data_size);
 
 	std::string header_string = "name\t" + statistics::header_string();
 	std::string header_string_data = "name\t" + statistics::header_string() + "\tdata_size";
 
 	if (vm.count("allocate"))
 	{
-		statistics allocate_time(runs);
-		statistics free_time(runs);
+		statistics allocate_time(runs, warmup_runs);
+		statistics free_time(runs, warmup_runs);
 
-		for (size_t i = 0; i < warmup_runs; ++i)
-		{
-			offload_allocate(data, data_size);
-			offload_free(data, data_size);
-		}
-
-
-		for (size_t i = 0; i < runs; ++i)
+		for (size_t i = 0; i < (runs + warmup_runs); ++i)
 		{
 			{
 				timer clock;
@@ -248,12 +236,12 @@ int main(int argc, char * argv[])
 
 		cout << "Intel Pragma Offload allocate time: " << endl
 			 << header_string_data << endl
-			 << "allocate:\t" << allocate_time.string() << "\t" << data_size_byte << endl;
+			 << "allocate:\t" << allocate_time.string() << "\t" << data_size << endl;
 		allocate_time.to_file(filename + "allocate_time");
 
 		cout << "Intel Pragma Offload free time: " << endl
 			 << header_string_data << endl
-			 << "free:\t" << free_time.string() << "\t" << data_size_byte << endl;
+			 << "free:\t" << free_time.string() << "\t" << data_size << endl;
 		free_time.to_file(filename + "free_time");
 	}
 
@@ -261,13 +249,9 @@ int main(int argc, char * argv[])
 	{
 		// first allocate memory
 		offload_allocate(data, data_size);
-		statistics copy_in_time(runs);
-		for (size_t i = 0; i < warmup_runs; ++i)
-		{
-			offload_copy_in(data, data_size);
-		}
+		statistics copy_in_time(runs, warmup_runs);
 
-		for (size_t i = 0; i < runs; ++i)
+		for (size_t i = 0; i < (runs + warmup_runs); ++i)
 		{
 			timer clock;
 			offload_copy_in(data, data_size);
@@ -278,7 +262,7 @@ int main(int argc, char * argv[])
 
 		cout << "Intel Pragma Offload copy-in time: " << endl
 			 << header_string_data << endl
-			 << "copy-in:\t" << copy_in_time.string() << "\t" << data_size_byte << endl;
+			 << "copy-in:\t" << copy_in_time.string() << "\t" << data_size << endl;
 		copy_in_time.to_file(filename + "copy_in_time");
 	}
 
@@ -286,13 +270,9 @@ int main(int argc, char * argv[])
 	{
 		// first allocate memory
 		offload_allocate(data, data_size);
-		statistics copy_out_time(runs);
-		for (size_t i = 0; i < warmup_runs; ++i)
-		{
-			offload_copy_out(data, data_size);
-		}
+		statistics copy_out_time(runs, warmup_runs);
 
-		for (size_t i = 0; i < runs; ++i)
+		for (size_t i = 0; i < (runs + warmup_runs); ++i)
 		{
 			timer clock;
 			offload_copy_out(data, data_size);
@@ -303,7 +283,7 @@ int main(int argc, char * argv[])
 
 		cout << "Intel Pragma Offload copy-out time: " << endl
 			 << header_string_data << endl
-			 << "copy-out:\t" << copy_out_time.string() << "\t" << data_size_byte << endl;
+			 << "copy-out:\t" << copy_out_time.string() << "\t" << data_size << endl;
 		copy_out_time.to_file(filename + "copy_out_time");
 	}
 
@@ -311,13 +291,9 @@ int main(int argc, char * argv[])
 
 	if (vm.count("call"))
 	{
-		statistics call_time(runs);
-		for (size_t i = 0; i < warmup_runs; ++i)
-		{
-			offload_call();
-		}
+		statistics call_time(runs, warmup_runs);
 
-		for (size_t i = 0; i < runs; ++i)
+		for (size_t i = 0; i < (runs + warmup_runs); ++i)
 		{
 			timer clock;
 			offload_call();
@@ -332,21 +308,13 @@ int main(int argc, char * argv[])
 
 	if (vm.count("call-mul"))
 	{
-		statistics call_mul_time(runs);
+		statistics call_mul_time(runs, warmup_runs);
 
 		float a = 2.0f;
 		float b = 4.0f;
 		float res = 0.0f;
 
-		for (size_t i = 0; i < warmup_runs; ++i)
-		{
-			{
-			#pragma offload target(mic:0) in(a,b) out(res)
-			res = fun_mul(a, b);
-			}
-		}
-
-		for (size_t i = 0; i < runs; ++i)
+		for (size_t i = 0; i < (runs + warmup_runs); ++i)
 		{
 			timer clock;
 			{

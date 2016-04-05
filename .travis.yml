@@ -19,7 +19,7 @@ addons:
       name: "noma/ham"
       description: "HAM"
     notification_email: ma.noack.pr@gmail.com
-    build_command_prepend: "cp ~/build/noma/ham/tools/user-config.jam ~; export BOOST_ROOT=/usr; export MIC_BOOST_ROOT=/usr; ls -l /usr/bin/g++*"
+    build_command_prepend: "cp ~/build/noma/ham/tools/user-config.jam_travis ~/user-config.jam; export BOOST_ROOT=/usr; export MIC_BOOST_ROOT=/usr"
     build_command: "bjam toolset=gcc variant=debug,release ham_offload_mpi ham_offload_mpi_explicit inner_product_mpi test_data_transfer_mpi test_argument_transfer_mpi benchmark_ham_offload_mpi"
     branch_pattern: coverity_scan
 

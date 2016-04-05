@@ -17,5 +17,5 @@ addons:
       description: "HAM"
     notification_email: ma.noack.pr@gmail.com
     build_command_prepend: "/bin/true"
-    build_command:   "b2"
+    build_command:   "bjam"
     branch_pattern: coverity_scan

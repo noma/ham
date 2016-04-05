@@ -8,7 +8,7 @@
 import os ;
 
 # some global compile flags (enable/disable compilers as needed)
-using gcc   : : : <compileflags>"-std=c++0x -Wall" ;
+using gcc  : : g++-4.9 : <compileflags>"-std=c++0x -Wall" ;
 # using clang : : : <compileflags>"-std=c++11 -Wall" ;
 # using intel : : : <compileflags>"-std=c++11 -Wall" ;
 

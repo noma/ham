@@ -6,9 +6,11 @@ env:
 
 addons:
   apt:
+    sources:
+      - boost-latest
     packages:
       - libboost1.55-all-dev
-      - gcc
+      - gcc-4.9
   
   coverity_scan:
     project:

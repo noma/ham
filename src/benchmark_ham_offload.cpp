@@ -365,7 +365,7 @@ int main(int argc, char * argv[])
 		call_mul_time.to_file(filename + "call_mul_time");
 	}
 
-	delete [] data;
+	local_free(data);
 
 	return EXIT_SUCCESS;
 }

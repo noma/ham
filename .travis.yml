@@ -16,6 +16,6 @@ addons:
       name: "noma/ham"
       description: "HAM"
     notification_email: ma.noack.pr@gmail.com
-    build_command_prepend: "/bin/true"
+    build_command_prepend: "cp ~/build/noma/ham/tools/user-config.jam ~"
     build_command:   "bjam"
     branch_pattern: coverity_scan

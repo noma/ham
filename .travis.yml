@@ -9,8 +9,7 @@ addons:
     sources:
       - boost-latest
     packages:
-      - libboost1.60-tools-dev
-      - libboost1.60-all-dev
+      - libboost1.55-all-dev
   
   coverity_scan:
     project:
@@ -18,5 +17,5 @@ addons:
       description: "HAM"
     notification_email: ma.noack.pr@gmail.com
     build_command_prepend: "/bin/true"
-    build_command:   "find / -name bjam"
+    build_command:   "b2"
     branch_pattern: coverity_scan

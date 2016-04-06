@@ -1,9 +1,3 @@
-env:
-  global:
-   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
-   #   via the "travis encrypt" command using the project repo's public key
-   - secure: "Ds3BibL68oPGUKyPqirviMpeo+dzdsXjq2mhqGu0OiJMR3WfwiUWswzrc4T/yE7edA6nrv6vby5qY2dEZvrjKVBS2AXBZ/7RNjOEbf/7u+a/NXAJ9uVXq7OKk7fxkcCQrz8D5w5AJ8zAMxmO2pTD9J7ppeYe/6AU2VvJDIEhGlNMDlcIF/9laes5czlkX2872FZhMeyyv624aKCqKCLZfb5fQ+wgDlJCjYrfX5w+f37cLLpN+T1XvFL+QeLm+I7HoYRMDImXEQjZWGx2e4uA32jToLEpUdO6mcdahAMH/cMt5JF2v8QGxxbFLcnfTkHsuT5uuEJIlCgdIAbX/k8rc8vnXlWgulfSiixElUULULCd7b67rzVvoKnGF3VyevhZPw3yqH4K27L0Ud4zmTKYtKM777m6dgacA4vKDI6QJoeUBXoWTnWJiFOj7QcNqZQ8dkkX/zL6n5Go3VDmzsxCLj20yJbOuOQ6BykA2coCzWTlVuAcRP6V+AcOhXBJiZH6CxQ4+1AZ1Dpk0y2L52KPJatZxcOusgkixdWwXuNyWa0O5YBrvR5rtI+4hNLwIshvIVByS8LT5EZ4QwyuRkeb9tAHS3U+5gAq4FaSKTANJjTA3JFqCjY+CwO4ZS7xCL0EVd8YDxVIrwxxdWhytFZICZGu/3h5Q4TVJMORwnAqwpI="
-
 addons:
   apt:
     sources:
@@ -14,14 +8,9 @@ addons:
       - gcc-4.9
       - g++-4.9
   
-  coverity_scan:
-    project:
-      name: "noma/ham"
-      description: "HAM"
-    notification_email: ma.noack.pr@gmail.com
-    build_command_prepend: "cp ~/build/noma/ham/tools/user-config.jam_travis ~/user-config.jam; export BOOST_ROOT=/usr; export MIC_BOOST_ROOT=/usr"
-    build_command: "bjam toolset=gcc variant=debug,release ham_offload_mpi ham_offload_mpi_explicit inner_product_mpi test_data_transfer_mpi test_argument_transfer_mpi benchmark_ham_offload_mpi"
-    branch_pattern: coverity_scan
-
 script:
-  - true
+  - cp ~/build/noma/ham/tools/user-config.jam_travis 
+  - ~/user-config.jam; export BOOST_ROOT=/usr
+  - export MIC_BOOST_ROOT=/usr
+  - bjam toolset=gcc variant=debug,release ham_offload_mpi ham_offload_mpi_explicit inner_product_mpi test_data_transfer_mpi test_argument_transfer_mpi benchmark_ham_offload_mpi
+

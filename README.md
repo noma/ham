@@ -1,6 +1,9 @@
 HAM - Heterogeneous Active Messages
 ===================================
 
+[![Build Status](https://travis-ci.org/noma/ham.svg?branch=master)](https://travis-ci.org/noma/ham)
+[![Coverity Scan Build Status](https://scan.coverity.com/projects/8451/badge.svg)](https://scan.coverity.com/projects/noma-ham)
+
 HAM (Heterogeneous Active Messages) is a research project on efficient active messaging between heterogeneous binary files and architectures. Its original motivation is to efficiently offload computations to accelerators like the **Intel Xeon Phi**, or nodes of a distributed system in general. Efficiently means with a minimal amount of overhead. An additional goal was to implement this functionality in pure C++ without introducing yet another language or compiler extension.
 
 The current outcome of this project are two libraries:

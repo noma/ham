@@ -13,9 +13,9 @@ The current outcome of this project are two libraries:
 
 The code originates from different research prototypes and branches whose features were integrated into a coherent code-base that resides in this repository. The source under active development and should be ready to be used in real-world applications. So don't hesitate to give it a try - and don't forget to provide us with feedback, like bug reports, issues, feature requests, or performance results.
 
-Some results, including a case study with a real world application, are presented at SC'14:  
+There's a paper available, including a case study with a real world application, presented at SC'14:  
 "A Unified Programming Model for Intra- and Inter-Node Offloading on Xeon Phi Clusters"
-http://sc14.supercomputing.org/schedule/event_detail?evid=pap469
+http://dl.acm.org/citation.cfm?id=2683616
 
 
 Why should I use HAM or HAM-Offload?

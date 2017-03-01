@@ -161,6 +161,17 @@ exe test_argument_transfer_mpi
 	;
 
 
+exe test_polymorphism_scif
+	: [ obj test_polymorphism_obj : test_polymorphism.cpp : <library>scif <define>HAM_COMM_SCIF ] ham_offload_scif boost_program_options
+	: <library>scif <define>HAM_COMM_SCIF
+	;
+
+exe test_polymorphism_mpi
+	: [ obj test_polymorphism_obj : test_polymorphism.cpp : <library>/mpi//mpi <define>HAM_COMM_MPI ] ham_offload_mpi boost_program_options
+	: <library>/mpi//mpi <define>HAM_COMM_MPI
+	;
+
+
 # Explicit targets (not built by default)
 explicit benchmark_intel_leo ;
 explicit test_data_transfer_scif ;

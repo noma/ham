@@ -1,6 +1,10 @@
 HAM - Heterogeneous Active Messages
 ===================================
 
+[![Build Status](https://travis-ci.org/noma/ham.svg?branch=master)](https://travis-ci.org/noma/ham)
+[![Coverity Scan Build Status](https://scan.coverity.com/projects/8451/badge.svg)](https://scan.coverity.com/projects/noma-ham)
+[![Licence](https://img.shields.io/badge/license-BSL-blue.svg?style=flat)](LICENSE_1_0.txt)
+
 HAM (Heterogeneous Active Messages) is a research project on efficient active messaging between heterogeneous binary files and architectures. Its original motivation is to efficiently offload computations to accelerators like the **Intel Xeon Phi**, or nodes of a distributed system in general. Efficiently means with a minimal amount of overhead. An additional goal was to implement this functionality in pure C++ without introducing yet another language or compiler extension.
 
 The current outcome of this project are two libraries:
@@ -9,9 +13,9 @@ The current outcome of this project are two libraries:
 
 The code originates from different research prototypes and branches whose features were integrated into a coherent code-base that resides in this repository. The source under active development and should be ready to be used in real-world applications. So don't hesitate to give it a try - and don't forget to provide us with feedback, like bug reports, issues, feature requests, or performance results.
 
-Some results, including a case study with a real world application, are presented at SC'14:  
+There's a paper available, including a case study with a real world application, presented at SC'14:  
 "A Unified Programming Model for Intra- and Inter-Node Offloading on Xeon Phi Clusters"
-http://sc14.supercomputing.org/schedule/event_detail?evid=pap469
+http://dl.acm.org/citation.cfm?id=2683616
 
 
 Why should I use HAM or HAM-Offload?

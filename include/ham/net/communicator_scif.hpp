@@ -82,7 +82,7 @@ private:
 class communicator {
 public:
 	enum {
-		MAX_SCIF_NODES = 9, // needed for initialisation, there shouldn't be more than 9 scif nodes in a single system (host + phis)
+		MAX_SCIF_NODES = 17, // needed for initialisation, there shouldn't be more than 9 scif nodes in a single system (host + phis)
 		BASE_PORT = 1024, // ports below 1024 are reserved
 		NO_BUFFER_INDEX = constants::MSG_BUFFERS, // invalid buffer index (max valid + 1)
 		FLAG_FALSE = constants::MSG_BUFFERS + 1 // special value, outside normal index range
@@ -163,8 +163,12 @@ public:
 		const char* options_env = std::getenv("HAM_OPTIONS");
 		if (options_env)
 		{
+			char split_character = ' ';
+			if (std::getenv("HAM_OPTIONS_NO_SPACES")) // value does not matter
+				split_character = '_';
+
 			// parse from environment
-			boost::program_options::store(boost::program_options::command_line_parser(detail::options::split(std::string(options_env), ' ')).options(desc).allow_unregistered().run(), vm);
+			boost::program_options::store(boost::program_options::command_line_parser(detail::options::split(std::string(options_env), split_character)).options(desc).allow_unregistered().run(), vm);
 		}
 		else
 		{

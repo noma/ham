@@ -32,8 +32,11 @@ public:
 		const char* options_env = std::getenv("HAM_OPTIONS");
 		if(options_env)
 		{
+			char split_character = ' ';
+			if (std::getenv("HAM_OPTIONS_NO_SPACES")) // value does not matter
+				split_character = '_';
 			// parse from environment
-			boost::program_options::store(boost::program_options::command_line_parser(split(std::string(options_env), ' ')).options(desc).allow_unregistered().run(), vm);
+			boost::program_options::store(boost::program_options::command_line_parser(split(std::string(options_env), split_character)).options(desc).allow_unregistered().run(), vm);
 		}
 		else
 		{

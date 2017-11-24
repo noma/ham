@@ -33,14 +33,14 @@
 # http://www.boost.org/more/getting_started/unix-variants.html#prepare-to-use-a-boost-library-binary
 # https://software.intel.com/en-us/articles/building-the-boost-library-to-run-natively-on-intelr-xeon-phitm-coprocessor
 
-DOWNLOAD_PATH=$HOME/Downloads
-INSTALL_PATH=$HOME/Software
+DOWNLOAD_PATH=$HOME/boost/
+INSTALL_PATH=$HOME/software
 NO_MIC=false # set to true, to disable building Boost for Xeon Phi
 BASHRC_FILE=$HOME/.bashrc # set to /dev/null to disable, or to any other file to manually merge the needed changes into your .bashrc 
 
 BOOST_BUILD_OPTIONS="-j8" # concurrent build with up to 8 commands
 BOOST_NAME=boost
-BOOST_VERSION=1_56_0
+BOOST_VERSION=1_65_1
 BOOST_MIC_SUFFIX=mic
 BOOST_ARCHIVE=${BOOST_NAME}_${BOOST_VERSION} # NOTE: without tar.bz2
 

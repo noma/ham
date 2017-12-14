@@ -116,6 +116,10 @@ exe active_msgs
 	: active_msgs.cpp
 	;
 
+exe active_msgs_over_file
+	: active_msgs_over_file.cpp boost_program_options
+	;
+
 exe ham_offload
 	: ham_offload.cpp ham_offload_scif boost_program_options
 #	: <library>/mpi//mpi <define>HAM_COMM_MPI

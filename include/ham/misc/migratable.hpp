@@ -28,12 +28,12 @@ public:
 	 //: value(std::forward<T>(arg)) // NOTE: compatible types are allowed
 	 : value(std::forward<Compatible>(arg)) // NOTE: compatible types are allowed
 	{ 
-//		std::cout << "migratable-ctor: " << value << std::endl;
+		std::cout << "migratable-ctor: " << value << std::endl;
 	}
 
 	operator const T& () const
 	{
-//		std::cout << "migratable-conversion: " << value << std::endl;
+		std::cout << "migratable-conversion: " << value << std::endl;
 		return value;
 	}
 private:

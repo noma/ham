@@ -1,2 +1,3 @@
 bin/*
 benchmark/results/*
+cmake-build-debug/*

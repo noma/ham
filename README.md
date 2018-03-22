@@ -37,7 +37,60 @@ Currently, there are two communication back-ends, one using SCIF (intra-node) an
 Example
 =======
 
-A simple example that introduces the HAM-Offload API can be found in [src/inner\_product_cpp](src/inner_product.cpp). 
+A simple example that introduces the HAM-Offload API can be found in [src/inner\_product_cpp](src/inner_product.cpp).
+
+Building with CMake
+=========================
+
+|                   | requirement                                                   | version          |
+|-------------------|---------------------------------------------------------------|------------------|
+|**compiler**       | c++ compiler                                                  | c++11 compatible |
+|**build system**   | [cmake](https://cmake.org)                                    | ≥ 3.2            |
+|**required libs**  | Boost Program Options from [boost.org](http://www.boost.org/) | ≥ 1.40           |
+
+Building and Installing Boost
+-----------------------------
+
+See the section `Building and Installing Boost` in `Boost.Build`.
+
+
+Building HAM-Offload
+--------------------
+
+1. Checkout the GitHub repository:
+
+	```
+	$ git clone https://github.com/noma/ham.git
+	```
+
+2. Create a build directory:
+
+	```terminal
+	$ cd ham # change into repository
+	$ mkdir build
+	$ cmake ../src -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=CC -DBUILD_SHARED_LIBS=OFF
+	```
+
+	* `-DCMAKE_BUILD_TYPE=Release` will do a release build (e.g. `-DNDEBUG`, `-O2`)
+	* `-DCMAKE_CXX_COMPILER=CC` specifies the compiler. On a CRAY-System you
+	  should use the `CC` wrapper, because it will have all MPI-related flags
+	  already set. You could also specify `g++`, `clang++` or `icpc`.
+	* `-DBUILD_SHARED_LIBS=OFF` will build ham as a static library (e.g. `libham_offload_mpi.a`).
+
+3. Build everything:
+
+	```
+	$ make -j 8 # do 8 builds in parallel
+	```
+	If nothing went wrong, the libraries are in `build`.
+	For each back-end, there are two libraries. The one with the `_explicit` suffix is intended for library authors, who need to explicitly initialise and finalise HAM-Offload.
+
+	|                           | <scif.h> found                                          | MPI found                                             |
+	|---------------------------|---------------------------------------------------------|-------------------------------------------------------|
+	| BUILD_SHARED_LIBS = True  | libham_offload_scif.so  libham_offload_scif_explicit.so | libham_offload_mpi.so  libham_offload_mpi_explicit.so |
+	| BUILD_SHARED_LIBS = False | libham_offload_scif.a  libham_offload_scif_explicit.a   | libham_offload_mpi.a  libham_offload_mpi_explicit.a   |
+
+4. You can now link or copy the libraries and headers either to your system or project, or just use them where they are (in which case you have to add their path to `LD_LIBRARY_PATH` environment variable).
 
 Building with Boost.Build
 =========================

@@ -1,16 +1,14 @@
 project(ham_library CXX)
 cmake_minimum_required(VERSION 3.2)
 
-set(HAM_ROOT "${CMAKE_SOURCE_DIR}/..")
-include_directories("${HAM_ROOT}/include/")
-
 find_package(Boost 1.40 COMPONENTS program_options REQUIRED)
 find_package(MPI)
 
 # Dependency libraries
 
 add_library (ham_cxx_std_11 INTERFACE)
-target_compile_features(ham_cxx_std_11 INTERFACE cxx_auto_type cxx_range_for cxx_variadic_templates)
+target_compile_features (ham_cxx_std_11 INTERFACE cxx_auto_type cxx_range_for cxx_variadic_templates)
+target_include_directories (ham_cxx_std_11 INTERFACE ${CMAKE_CURRENT_LIST_DIR}/../include/)
 
 add_library (boost_library INTERFACE)
 target_include_directories (boost_library INTERFACE ${Boost_INCLUDE_DIRS})

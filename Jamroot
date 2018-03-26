@@ -69,12 +69,12 @@ obj main_obj_mpi : ham/offload/main.cpp : <library>/mpi//mpi <define>HAM_COMM_MP
 obj main_obj_scif : ham/offload/main.cpp : <library>scif <define>HAM_COMM_SCIF ;
 
 lib ham_offload_mpi
-	: $(OBJ_FILES_COMMON) $(OBJ_FILES_MPI) main_obj_mpi
+	: $(OBJ_FILES_COMMON) $(OBJ_FILES_MPI) main_obj_mpi boost_program_options
 	: <library>/mpi//mpi <define>HAM_COMM_MPI
 	;
 
 lib ham_offload_scif
-	: $(OBJ_FILES_COMMON) $(OBJ_FILES_SCIF) main_obj_scif
+	: $(OBJ_FILES_COMMON) $(OBJ_FILES_SCIF) main_obj_scif boost_program_options
 	: <library>scif <define>HAM_COMM_SCIF
 	;
 
@@ -82,12 +82,12 @@ obj main_explicit_obj_mpi : ham/offload/main_explicit.cpp : <library>/mpi//mpi <
 obj main_explicit_obj_scif : ham/offload/main_explicit.cpp : <library>scif <define>HAM_COMM_SCIF ;
 
 lib ham_offload_mpi_explicit
-	: $(OBJ_FILES_COMMON) $(OBJ_FILES_MPI) main_explicit_obj_mpi
+	: $(OBJ_FILES_COMMON) $(OBJ_FILES_MPI) main_explicit_obj_mpi boost_program_options
 	: <library>/mpi//mpi <define>HAM_COMM_MPI <define>HAM_EXPLICIT
 	;
 
 lib ham_offload_scif_explicit
-	: $(OBJ_FILES_COMMON) $(OBJ_FILES_SCIF) main_explicit_obj_scif
+	: $(OBJ_FILES_COMMON) $(OBJ_FILES_SCIF) main_explicit_obj_scif boost_program_options
 	: <library>scif <define>HAM_COMM_SCIF <define>HAM_EXPLICIT
 	;
 

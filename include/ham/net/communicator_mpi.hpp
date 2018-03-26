@@ -134,7 +134,7 @@ public:
 		MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &p);
 		if (p != MPI_THREAD_MULTIPLE)
 		{
-			std::cerr << "Could not initialise MPI with MPI_THREAD_MULTIPLE." << std::endl;
+			std::cerr << "Could not initialise MPI with MPI_THREAD_MULTIPLE, MPI_Init_thread() returned " << p << std::endl;
 		}
 		HAM_DEBUG( std::cout << "communicator::communicator(): initialising MPI ..." << std::endl; )
 

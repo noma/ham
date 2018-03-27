@@ -121,9 +121,9 @@ exe active_msgs_over_file
 	;
 
 exe ham_offload
-	: ham_offload.cpp ham_offload_scif boost_program_options
-#	: <library>/mpi//mpi <define>HAM_COMM_MPI
-	: <library>scif <define>HAM_COMM_SCIF
+	: ham_offload.cpp ham_offload_mpi boost_program_options
+	: <library>/mpi//mpi <define>HAM_COMM_MPI
+#	: <library>scif <define>HAM_COMM_SCIF
 	;
 
 exe ham_offload_explicit

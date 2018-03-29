@@ -223,7 +223,7 @@ future<void> put(T* local_source, buffer_ptr<T>& remote_dest, size_t n)
 	// TODO(improvement): create a data transfer thread for one-sided
 	comm.send_data(local_source, remote_dest, n); // sync
 	return future<void>(true); // return dummy future
-#else
+#elif defined HAM_COMM_MPI
 	// allocate a request and construct a future
 	future<void> result(comm.allocate_request(remote_dest.node()));
 	// generate an offload message
@@ -234,8 +234,7 @@ future<void> put(T* local_source, buffer_ptr<T>& remote_dest, size_t n)
 	comm.recv_result(result.get_request()); // trigger receiving the msgs result // async
 	
 	return result;
-#endif
-#ifdef SOME_COOL_VAR_FOR_MPI_RMA_DYN // compile-time integration pending
+#elif HAM_COMM_MPI_RMA_DYNAMIC
     future<void> result(comm.allocate_request(remote_dest.node()));
 	HAM_DEBUG( HAM_LOG << "offload::put(): initiating RMA put..." << std::endl; )
 	comm.send_data_async(result.get_request(), local_source, remote_dest, n);
@@ -262,7 +261,7 @@ future<void> get(buffer_ptr<T> remote_source, T* local_dest, size_t n)
 	// TODO(improvement): create a data transfer thread for one-sided
 	comm.recv_data(remote_source, local_dest, n); // sync
 	return future<void>(true); // return dummy future
-#else
+#elif defined HAM_COMM_MPI
 	// allocate a request and construct a future
 	future<void> result(comm.allocate_request(remote_source.node()));
 	// generate an offload message
@@ -273,8 +272,7 @@ future<void> get(buffer_ptr<T> remote_source, T* local_dest, size_t n)
 	comm.recv_result(result.get_request()); // trigger receiving the result
 
 	return result;
-#endif
-#ifdef SOME_COOL_VAR_FOR_MPI_RMA_DYN // compile-time integration pending
+#elif defined HAM_COMM_MPI_RMA_DYNAMIC
 	future<void> result(comm.allocate_request(remote_dest.node()));
 	HAM_DEBUG( HAM_LOG << "offload::put(): initiating RMA get..." << std::endl; )
 	comm.recv_data_async(result.get_request(), remote_source, local_dest, n);
@@ -320,7 +318,7 @@ void copy_sync(buffer_ptr<T> source, buffer_ptr<T> dest, size_t n)
 // fix 1st arg:
 //	comm.send_data(src_node, local_source, remote_dest, n);
 //	static_assert(false, "copy is not implemented yet for the SCIF back-end");
-#else
+#elif defined HAM_COMM_MPI
 	// send corresponding write and read messages to the sender and the receiver
 
 	// issues a send operation on the source node, that sends the memory at source to the destination node
@@ -338,8 +336,7 @@ void copy_sync(buffer_ptr<T> source, buffer_ptr<T> dest, size_t n)
 	// synchronise
 	read_result.get();
 	write_result.get();
-#endif
-#ifdef SOME_COOL_VAR_FOR_MPI_RMA_DYN // compile-integration pending
+#elif defined HAM_COMM_MPI_RMA_DYNAMIC
     // use async copy + sync
     copy(source, dest, n).get();
 #endif
@@ -347,23 +344,23 @@ void copy_sync(buffer_ptr<T> source, buffer_ptr<T> dest, size_t n)
 #endif
 
 
-#ifdef SOME_COOL_VAR_FOR_MPI_RMA_DYN // compile-integration pending
+#ifdef HAM_COMM_MPI_RMA_DYNAMIC // compile-integration pending
 template<typename T>
 future<void> copy(buffer_ptr<T> source, buffer_ptr<T> dest, size_t n)
 {
     net::communicator& comm = runtime::instance().communicator();
 
     // make sure there is no winlock on dest from host
-    // solution: shared lock
+    // solution: shared lock, unlocking from host not necessary
 
     // issues a put on the source node targeting the destination node
     future<void> result(comm.allocate_request(source.node()));
     HAM_DEBUG( HAM_LOG << "offload::copy_sync(): initiating copy between " << source.node() << " and " << dest.node() << std::endl; )
-        auto copy_msg = detail::offload_rma_copy_msg<T>(result.get_request(), dest.node(), dest.get_mpi_address(), source.get(), n);
-        comm.send_msg(result.get_request(), (void*)&copy_msg, sizeof write_msg);
-        comm.recv_result(result.get_request());
+    auto copy_msg = detail::offload_rma_copy_msg<T>(result.get_request(), dest.node(), dest.get_mpi_address(), source.get(), n);
+    comm.send_msg(result.get_request(), (void*)&copy_msg, sizeof write_msg);
+    comm.recv_result(result.get_request());
 
-        return result;
+    return result;
 }
 #endif
 

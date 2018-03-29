@@ -6,6 +6,7 @@
 #ifndef ham_offload_offload_msg_hpp
 #define ham_offload_offload_msg_hpp
 
+#include <mpi.h>
 #include "ham/msg/active_msg.hpp"
 #include "ham/msg/execution_policy.hpp"
 #include "ham/misc/constants.hpp"
@@ -80,6 +81,7 @@ public:
 	}
 };
 
+// should not be used by MPI_RMA_COMMUNICATOR since one-sided put is used
 template<typename T, template<class> class ExecutionPolicy = default_execution_policy>
 class offload_write_msg
 	: public active_msg<offload_write_msg<T, ExecutionPolicy>, ExecutionPolicy>
@@ -106,6 +108,7 @@ private:
 	
 };
 
+// should not be used by MPI_RMA_COMMUNICATOR since one-sided put is used
 template<typename T, template<class> class ExecutionPolicy = default_execution_policy>
 class offload_read_msg
 	: public active_msg<offload_read_msg<T, ExecutionPolicy>, ExecutionPolicy>
@@ -116,7 +119,7 @@ public:
 
 	void operator()() //const
 	{
-		communicator::instance().send_data(local_source, buffer_ptr<T>(nullptr, remote_node), n);  // NOTE: Why nullptr? This is for two-sided communicators, so we do not know the remote address, but match a receive operation that has the address.
+		communicator::instance().send_data(local_source, buffer_ptr<T>(nullptr, remote_node), n); // NOTE: Why nullptr? This is for two-sided communicators, so we do not know the remote address, but match a receive operation that has the address.
 		
 		// send a result message to tell the sender, that the transfer is done
 		if (req.valid()) {
@@ -131,6 +134,35 @@ private:
 	size_t n;
 };
 
+
+// TODO(daniel, high priority): implement offload_copy_msg, copy with one-sided rma needs a msg containing ptrs for source+target
+//#ifdef SOME_COOL_VAR_FOR_MPI_RMA_DYN // compile-integration pending
+    template<typename T, template<class> class ExecutionPolicy = default_execution_policy>
+    class offload_rma_copy_msg
+            : public active_msg<offload_rma_copy_msg<T, ExecutionPolicy>, ExecutionPolicy>
+    {
+    public:
+        offload_rma_copy_msg(communicator::request req, node_t remote_node, MPI_Aint remote_addr,T* local_source, size_t n)
+                : req(req), remote_node(remote_node), remote_addr(remote_addr), local_source(local_source), n(n) { }
+
+        void operator()() //const
+        {
+            communicator::instance().send_data(local_source, buffer_ptr<T>(nullptr, remote_node, remote_addr), n); // NOTE: Why nullptr? This is for two-sided communicators, so we do not know the remote address, but match a receive operation that has the address.
+
+            // send a result message to tell the sender, that the transfer is done
+            if (req.valid()) {
+                req.send_result((void*)&n, sizeof n);
+            }
+        }
+    private:
+        communicator::request req; // TODO(improvement, high priority): use a subset of req here!
+
+        node_t remote_node;
+        MPI_Aint remote_addr;
+        T* local_source;
+        size_t n;
+    };
+//#endif
 } // namespace detail
 } // namespace offload
 } // namespace ham

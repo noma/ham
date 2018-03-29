@@ -235,6 +235,11 @@ future<void> put(T* local_source, buffer_ptr<T>& remote_dest, size_t n)
 	
 	return result;
 #endif
+#ifdef SOME_COOL_VAR_FOR_MPI_RMA_DYN // compile-time integration pending
+    future<void> result(comm.allocate_request(remote_dest.node()));
+	HAM_DEBUG( HAM_LOG << "offload::put(): initiating RMA put..." << std::endl; )
+	comm.send_data_async(result.get_request(), local_source, remote_dest, n);
+#endif
 }
 
 template<typename T>
@@ -267,6 +272,11 @@ future<void> get(buffer_ptr<T> remote_source, T* local_dest, size_t n)
 	comm.recv_result(result.get_request()); // trigger receiving the result
 
 	return result;
+#endif
+#ifdef SOME_COOL_VAR_FOR_MPI_RMA_DYN // compile-time integration pending
+	future<void> result(comm.allocate_request(remote_dest.node()));
+	HAM_DEBUG( HAM_LOG << "offload::put(): initiating RMA get..." << std::endl; )
+	comm.recv_data_async(result.get_request(), remote_source, local_dest, n);
 #endif
 }
 
@@ -327,6 +337,14 @@ void copy_sync(buffer_ptr<T> source, buffer_ptr<T> dest, size_t n)
 	// synchronise
 	read_result.get();
 	write_result.get();
+#endif
+#ifdef SOME_COOL_VAR_FOR_MPI_RMA_DYN // compile-integration pending
+	future<void> result(comm.allocate_request(source.node()));
+	HAM_DEBUG( HAM_LOG << "offload::copy_sync(): initiating copy between " << source.node() << " and " << dest.node() << std::endl; )
+	SEND READ_MSG to source (maybe introduce new copy_msg)
+	MAKE SURE there is no winlock on dest from host
+
+	comm.send_data_async(result.get_request(), local_source, remote_dest, n);
 #endif
 }
 #endif

@@ -267,7 +267,7 @@ public:
 	void send_data(T* local_source, buffer_ptr<T> remote_dest, size_t size)
 	{
 		//MPI_Send((void*)local_source, size * sizeof(T), MPI_BYTE, remote_dest.node(), constants::DATA_TAG, MPI_COMM_WORLD);
-        MPI_Win_lock(MPI_LOCK_EXCLUSIVE, remote_dest.node(), 0, rma_win);
+        MPI_Win_lock(MPI_LOCK_SHARED, remote_dest.node(), 0, rma_win);
         MPI_Put(local_source, size, MPI_BYTE, remote_dest.node(), (void *) remote_dest.get_mpi_address(), size, MPI_BYTE, rma_win);
         MPI_Win_unlock(remote_dest.node(), rma_win);
 	}
@@ -279,7 +279,7 @@ public:
 		//MPI_Isend((void*)local_source, size * sizeof(T), MPI_BYTE, remote_dest.node(), constants::DATA_TAG, MPI_COMM_WORLD, &req.next_mpi_request());
         req.uses_rma = true;
 
-        MPI_Win_lock(MPI_LOCK_EXCLUSIVE, remote_dest.node(), 0, rma_win);
+        MPI_Win_lock(MPI_LOCK_SHARED, remote_dest.node(), 0, rma_win);
         MPI_Rput(local_source, size, MPI_BYTE, remote_dest.node(), (void *) remote_dest.get_mpi_address(), size, MPI_BYTE, rma_win, &re.next_mpi_request());
 	}
 

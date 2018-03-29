@@ -239,6 +239,7 @@ future<void> put(T* local_source, buffer_ptr<T>& remote_dest, size_t n)
     future<void> result(comm.allocate_request(remote_dest.node()));
 	HAM_DEBUG( HAM_LOG << "offload::put(): initiating RMA put..." << std::endl; )
 	comm.send_data_async(result.get_request(), local_source, remote_dest, n);
+    return result;
 #endif
 }
 
@@ -339,13 +340,30 @@ void copy_sync(buffer_ptr<T> source, buffer_ptr<T> dest, size_t n)
 	write_result.get();
 #endif
 #ifdef SOME_COOL_VAR_FOR_MPI_RMA_DYN // compile-integration pending
-	future<void> result(comm.allocate_request(source.node()));
-	HAM_DEBUG( HAM_LOG << "offload::copy_sync(): initiating copy between " << source.node() << " and " << dest.node() << std::endl; )
-	SEND READ_MSG to source (maybe introduce new copy_msg)
-	MAKE SURE there is no winlock on dest from host
-
-	comm.send_data_async(result.get_request(), local_source, remote_dest, n);
+    // use async copy + sync
+    copy(source, dest, n).get();
 #endif
+}
+#endif
+
+
+#ifdef SOME_COOL_VAR_FOR_MPI_RMA_DYN // compile-integration pending
+template<typename T>
+future<void> copy(buffer_ptr<T> source, buffer_ptr<T> dest, size_t n)
+{
+    net::communicator& comm = runtime::instance().communicator();
+
+    // make sure there is no winlock on dest from host
+    // solution: shared lock
+
+    // issues a put on the source node targeting the destination node
+    future<void> result(comm.allocate_request(source.node()));
+    HAM_DEBUG( HAM_LOG << "offload::copy_sync(): initiating copy between " << source.node() << " and " << dest.node() << std::endl; )
+        auto copy_msg = detail::offload_rma_copy_msg<T>(result.get_request(), dest.node(), dest.get_mpi_address(), source.get(), n);
+        comm.send_msg(result.get_request(), (void*)&copy_msg, sizeof write_msg);
+        comm.recv_result(result.get_request());
+
+        return result;
 }
 #endif
 

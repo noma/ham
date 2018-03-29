@@ -49,8 +49,10 @@ namespace net {
 #elif defined HAM_COMM_SCIF
 #define HAM_COMM_ONE_SIDED
 #include "ham/net/communicator_scif.hpp"
+#elif defined HAM_COMM_MPI_RMA_DYNAMIC
+#include "ham/net/communicator_scif.hpp"
 #else
-static_assert(false, "Please define either HAM_COMM_MPI, or HAM_COMM_SCIF.");
+static_assert(false, "Please define either HAM_COMM_MPI, HAM_COMM_MPI_RMA_DYNAMIC or HAM_COMM_SCIF.");
 #endif
 
 #endif // ham_net_communicator_hpp

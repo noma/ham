@@ -142,7 +142,7 @@ private:
             : public active_msg<offload_rma_copy_msg<T, ExecutionPolicy>, ExecutionPolicy>
     {
     public:
-        offload_rma_copy_msg(communicator::request req, node_t remote_node, MPI_Aint remote_addr,T* local_source, size_t n)
+        offload_rma_copy_msg(communicator::request req, node_t remote_node, MPI_Aint remote_addr, T* local_source, size_t n)
                 : req(req), remote_node(remote_node), remote_addr(remote_addr), local_source(local_source), n(n) { }
 
         void operator()() //const
@@ -163,6 +163,7 @@ private:
         size_t n;
     };
 //#endif
+
 } // namespace detail
 } // namespace offload
 } // namespace ham

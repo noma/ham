@@ -1,16 +1,20 @@
-addons:
-  apt:
-    sources:
-      - boost-latest
-      - ubuntu-toolchain-r-test
-    packages:
-      - libboost1.55-all-dev
-      - gcc-4.9
-      - g++-4.9
+matrix:
+  include:
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - boost-latest
+            - ubuntu-toolchain-r-test
+          packages:
+            - gcc-4.9
+            - cmake-data
+            - cmake
+      env:
+        - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
   
-script:
-  - cp ~/build/noma/ham/tools/user-config.jam_travis ~/user-config.jam
-  - export BOOST_ROOT=/usr
-  - export MIC_BOOST_ROOT=/usr
-  - bjam toolset=gcc variant=debug,release ham_offload_mpi ham_offload_mpi_explicit inner_product_mpi test_data_transfer_mpi test_argument_transfer_mpi benchmark_ham_offload_mpi
-
+    script:
+      - mkdir build.gcc-4.9
+      - cd build.gcc-4.9
+      - cmake ..
+      - make

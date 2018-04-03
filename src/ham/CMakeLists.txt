@@ -12,58 +12,51 @@ target_compile_features(ham_interface INTERFACE cxx_auto_type cxx_range_for cxx_
 target_link_libraries(ham_interface INTERFACE boost_library)
 target_include_directories(ham_interface INTERFACE ${CMAKE_CURRENT_LIST_DIR}/../../include)
 
+set(HAM_LIB_SRC
+	net/communicator.cpp
+	net/communicator_mpi.cpp
+	offload/runtime.cpp
+	offload/offload.cpp
+	util/cpu_affinity.cpp)
+
 if (MPI_FOUND)
-	add_library (ham_offload_mpi # SHARED if BUILD_SHARED_LIBS = TRUE
-			offload/main.cpp
-			net/communicator.cpp
-			net/communicator_mpi.cpp
-			offload/runtime.cpp
-			offload/offload.cpp
-			util/cpu_affinity.cpp)
+	add_library(ham_offload_mpi # SHARED if BUILD_SHARED_LIBS = TRUE
+	            ${HAM_LIB_SRC}
+	            offload/main.cpp
+	            net/communicator_mpi.cpp)
 	target_compile_definitions(ham_offload_mpi PUBLIC -DHAM_COMM_MPI=1)
 	target_link_libraries(ham_offload_mpi PUBLIC ham_interface boost_library mpi_library)
 
-	add_library (ham_offload_mpi_explicit # SHARED if BUILD_SHARED_LIBS = TRUE
-			offload/main_explicit.cpp
-			net/communicator.cpp
-			net/communicator_mpi.cpp
-			offload/runtime.cpp
-			offload/offload.cpp
-			util/cpu_affinity.cpp)
+	add_library(ham_offload_mpi_explicit # SHARED if BUILD_SHARED_LIBS = TRUE
+	            ${HAM_LIB_SRC}
+	            offload/main_explicit.cpp
+	            net/communicator_mpi.cpp)
 	target_compile_definitions(ham_offload_mpi_explicit PUBLIC -DHAM_COMM_MPI=1 -DHAM_EXPLICIT=1)
 	target_link_libraries(ham_offload_mpi_explicit PUBLIC ham_interface boost_library mpi_library)
 
 	set_target_properties(ham_offload_mpi ham_offload_mpi_explicit PROPERTIES
 		CXX_STANDARD 11
 		CXX_STANDARD_REQUIRED YES
-		CXX_EXTENSIONS NO
-		)
+		CXX_EXTENSIONS NO)
 endif ()
 
 if (SCIF_FOUND)
-    add_library (ham_offload_scif # SHARED if BUILD_SHARED_LIBS = TRUE
-                 offload/main.cpp
-                 net/communicator.cpp
-                 net/communicator_scif.cpp
-                 offload/runtime.cpp
-                 offload/offload.cpp
-                 util/cpu_affinity.cpp)
-    target_compile_definitions (ham_offload_scif PUBLIC -DHAM_COMM_SCIF=1)
-    target_link_libraries (ham_offload_scif_explicit PUBLIC ham_interface boost_library scif_library)
+	add_library(ham_offload_scif # SHARED if BUILD_SHARED_LIBS = TRUE
+	            ${HAM_LIB_SRC}
+	            offload/main.cpp
+	            net/communicator_scif.cpp)
+	target_compile_definitions(ham_offload_scif PUBLIC -DHAM_COMM_SCIF=1)
+	target_link_libraries(ham_offload_scif_explicit PUBLIC ham_interface boost_library scif_library)
 
-    add_library (ham_offload_scif_explicit # SHARED if BUILD_SHARED_LIBS = TRUE
-                 offload/main_explicit.cpp
-                 net/communicator.cpp
-                 net/communicator_scif.cpp
-                 offload/runtime.cpp
-                 offload/offload.cpp
-                 util/cpu_affinity.cpp)
-    target_compile_definitions (ham_offload_scif_explicit PUBLIC -DHAM_COMM_SCIF=1 -DHAM_EXPLICIT=1)
-    target_link_libraries (ham_offload_scif_explicit PUBLIC ham_interface boost_library scif_library)
+	add_library(ham_offload_scif_explicit # SHARED if BUILD_SHARED_LIBS = TRUE
+	            ${HAM_LIB_SRC}
+	            offload/main_explicit.cpp
+	            net/communicator_scif.cpp)
+	target_compile_definitions(ham_offload_scif_explicit PUBLIC -DHAM_COMM_SCIF=1 -DHAM_EXPLICIT=1)
+	target_link_libraries(ham_offload_scif_explicit PUBLIC ham_interface boost_library scif_library)
 
-    set_target_properties(ham_offload_scif ham_offload_scif_explicit PROPERTIES
-		    CXX_STANDARD 11
-		    CXX_STANDARD_REQUIRED YES
-		    CXX_EXTENSIONS NO
-		    )
+	set_target_properties(ham_offload_scif ham_offload_scif_explicit PROPERTIES
+		CXX_STANDARD 11
+		CXX_STANDARD_REQUIRED YES
+		CXX_EXTENSIONS NO)
 endif ()

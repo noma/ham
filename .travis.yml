@@ -4,7 +4,7 @@ env:
   global:
     - LINUX_DIST=trusty
     - CXX_FLAGS="-Wall -Wextra -Wpedantic" # -Werror
-    - MAKE_FLAGS="-j2"
+    - MAKE_FLAGS="-j2 VERBOSE=1"
 
 matrix:
   include:

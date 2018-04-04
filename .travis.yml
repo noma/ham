@@ -3,7 +3,7 @@ language: cpp
 env:
   global:
     - LINUX_DIST=trusty
-    - CXX_FLAGS="-Wall -Wextra -Wpedantic" # -Werror
+    - CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror"
     - MAKE_FLAGS="-j2" # VERBOSE=1
 
 matrix:
@@ -82,22 +82,22 @@ matrix:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
 
     # GCC 8
-    - os: linux
-      dist: trusty
-      addons:
-        apt:
-          sources:
-            - boost-latest
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-            - cmake-data
-            - cmake
-            - libboost-program-options-dev
-            - mpich
-            - libmpich-dev
-      env:
-        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+#    - os: linux
+#      dist: trusty
+#      addons:
+#        apt:
+#          sources:
+#            - boost-latest
+#            - ubuntu-toolchain-r-test
+#          packages:
+#            - g++-8
+#            - cmake-data
+#            - cmake
+#            - libboost-program-options-dev
+#            - mpich
+#            - libmpich-dev
+#      env:
+#        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
 
 # Clang 3.9
     - os: linux
@@ -157,23 +157,23 @@ matrix:
         - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
 
     # Clang 6.0
-#    - os: linux
-#      dist: trusty
-#      addons:
-#        apt:
-#          sources:
-#            - ubuntu-toolchain-r-test
-#            - llvm-toolchain-trusty-6.0
-#            - boost-latest
-#          packages:
-#            - clang-6.0
-#            - cmake-data
-#            - cmake
-#            - libboost-program-options-dev
-#            - mpich
-#            - libmpich-dev
-#      env:
-#        - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
+    - os: linux
+      dist: trusty
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-6.0
+            - boost-latest
+          packages:
+            - clang-6.0
+            - cmake-data
+            - cmake
+            - libboost-program-options-dev
+            - mpich
+            - libmpich-dev
+      env:
+        - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
 
 before_install:
   - export CMAKE_OPTIONS=${CMAKE_OPTIONS}" "${ENV_CMAKE_OPTIONS}

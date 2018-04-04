@@ -1,6 +1,14 @@
+language: cpp
+
+env:
+  global:
+    - LINUX_DIST=trusty
+    - CXX_FLAGS="-Wall -Wextra -Wpedantic" # -Werror
+
 matrix:
   include:
     - os: linux
+      dist: trusty
       addons:
         apt:
           sources:
@@ -8,16 +16,16 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - gcc-4.9
+            - clang-3.7
             - cmake-data
             - cmake
-      env:
-        - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
-  
-    script:
-      - mkdir build.gcc-4.9
-      - cd build.gcc-4.9
-      - cmake ..
-      - make
 
 before_install:
-    - eval "${MATRIX_EVAL}"
+  - export CMAKE_OPTIONS=${CMAKE_OPTIONS}" "${ENV_CMAKE_OPTIONS}
+  - export CXX_FLAGS=${CXX_FLAGS}" "${ENV_CXX_FLAGS}
+
+script:
+  - mkdir -p build.gcc-4.9
+  - cd build.gcc-4.9
+  - cmake -DCMAKE_CXX_FLAGS=${CXX_FLAGS} ..
+  - make

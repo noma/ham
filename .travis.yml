@@ -179,9 +179,9 @@ before_install:
   - export CMAKE_OPTIONS=${CMAKE_OPTIONS}" "${ENV_CMAKE_OPTIONS}
   - export CXX_FLAGS=${CXX_FLAGS}" "${ENV_CXX_FLAGS}
   - eval "${MATRIX_EVAL}"
-  - sudo add-apt-repository ppa:nschloe/boost-nightly -y
+  - sudo add-apt-repository ppa:kzemek/boost -y
   - sudo apt-get update -q
-  - sudo apt-get install boost1.65 -y
+  - sudo apt-get install boost1.58 -y
   
 script:
   - echo "CXX_FLAGE=${CXX_FLAGS}"

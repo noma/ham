@@ -187,5 +187,5 @@ script:
   - which ${CXX}
   - mkdir -p build
   - cd build
-  - cmake -DCMAKE_CXX_FLAGS=${CXX_FLAGS} ..
+  - cmake -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" ..
   - make ${MAKE_FLAGS}

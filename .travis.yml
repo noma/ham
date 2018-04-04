@@ -17,7 +17,9 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - libboost-program-options-dev
-            - mpi-default-dev
+#            - mpi-default-dev
+            - mpich
+            - libmpich-dev
             - g++-4.9
             - cmake-data
             - cmake

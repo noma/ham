@@ -17,14 +17,13 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - libboost-program-options-dev
-            #- libboost-program-options1.55-dev
-            #- libboost1.55-all-dev
+            - mpi-default-dev
             - g++-4.9
             - cmake-data
             - cmake
       env:
         - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"            
-    - os: linux
+  - os: linux
       dist: trusty
       addons:
         apt:
@@ -48,9 +47,6 @@ before_install:
 script:
   - which ${CC}
   - which ${CXX}
-  - g++-4.9 --version
-  - g++ --version
-  - env
   - mkdir -p build
   - cd build
   - cmake -DCMAKE_CXX_FLAGS=${CXX_FLAGS} ..

@@ -107,7 +107,6 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-3.9
-#            - boost-latest
             - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
           packages:
             - clang-3.9
@@ -127,12 +126,12 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-4.0
-            - boost-latest
+            - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
           packages:
             - clang-4.0
             - cmake-data
             - cmake
-            - libboost-program-options1.58-dev
+            - libboost-program-options1.60-dev
             - mpich
             - libmpich-dev
       env:
@@ -146,12 +145,12 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-5.0
-            - boost-latest
+            - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
           packages:
             - clang-5.0
             - cmake-data
             - cmake
-            - libboost-program-options1.58-dev
+            - libboost-program-options1.60-dev
             - mpich
             - libmpich-dev
       env:
@@ -165,12 +164,12 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-6.0
-            - boost-latest
+            - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
           packages:
             - clang-6.0
             - cmake-data
             - cmake
-            - libboost-program-options1.58-dev
+            - libboost-program-options1.60-dev
             - mpich
             - libmpich-dev
       env:

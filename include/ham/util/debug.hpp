@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Matthias Noack (ma.noack.pr@gmail.com)
+// Copyright (c) 2013-2018 Matthias Noack (ma.noack.pr@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -17,5 +17,8 @@
 #else
 	#define HAM_DEBUG(expr) ;
 #endif
+
+// surpress compiler warnings
+#define HAM_UNUSED_VAR(var) (void)(var)
 
 #endif // ham_util_debug_hpp

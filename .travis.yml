@@ -13,16 +13,16 @@ matrix:
       addons:
         apt:
           sources:
-            - boost-latest
+#            - boost-latest
             - ubuntu-toolchain-r-test
           packages:
-            - libboost-program-options-dev
-#            - mpi-default-dev
-            - mpich
-            - libmpich-dev
             - g++-4.9
             - cmake-data
             - cmake
+            - libboost-program-options-dev
+            - mpich
+            - libmpich-dev
+            # - mpi-default-dev # open-mpi, headers cause some compiler warnings
       env:
         - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"            
     - os: linux
@@ -30,14 +30,16 @@ matrix:
       addons:
         apt:
           sources:
-            - boost-latest
+#            - boost-latest
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.7
           packages:
-            - libboost1.55-all-dev
             - clang-3.7
+            - g++-4.9
             - cmake-data
             - cmake
+            - libboost-program-options-dev
+            - mpich
       env:
         - MATRIX_EVAL="CC=clang-3.7 && CXX=clang++-3.7"
 

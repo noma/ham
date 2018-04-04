@@ -112,7 +112,7 @@ matrix:
             - clang-3.9
             - cmake-data
             - cmake
-            - libboost-program-options1.55-dev
+#            - libboost-program-options1.55-dev
             - mpich
             - libmpich-dev
       env:
@@ -131,7 +131,7 @@ matrix:
             - clang-4.0
             - cmake-data
             - cmake
-            - libboost-program-options1.55-dev
+#            - libboost-program-options1.55-dev
             - mpich
             - libmpich-dev
       env:
@@ -150,7 +150,7 @@ matrix:
             - clang-5.0
             - cmake-data
             - cmake
-            - libboost-program-options1.55-dev
+#            - libboost-program-options1.55-dev
             - mpich
             - libmpich-dev
       env:
@@ -169,7 +169,7 @@ matrix:
             - clang-6.0
             - cmake-data
             - cmake
-            - libboost-program-options1.55-dev
+#            - libboost-program-options1.55-dev
             - mpich
             - libmpich-dev
       env:
@@ -179,9 +179,9 @@ before_install:
   - export CMAKE_OPTIONS=${CMAKE_OPTIONS}" "${ENV_CMAKE_OPTIONS}
   - export CXX_FLAGS=${CXX_FLAGS}" "${ENV_CXX_FLAGS}
   - eval "${MATRIX_EVAL}"
-  - sudo add-apt-repository ppa:ostogvin/tjo-develop -y
+  - sudo add-apt-repository ppa:nschloe/boost-nightly -y
   - sudo apt-get update -q
-  - sudo apt-get install boost1.65.1 -y
+  - sudo apt-get install boost1.65 -y
   
 script:
   - echo "CXX_FLAGE=${CXX_FLAGS}"

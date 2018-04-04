@@ -44,6 +44,10 @@ before_install:
   - eval "${MATRIX_EVAL}"
 
 script:
+  - which ${CC}
+  - which ${CXX}
+  - g++-4.9 --version
+  - g++ --version
   - env
   - mkdir -p build
   - cd build

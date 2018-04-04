@@ -107,12 +107,13 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-3.9
-            - boost-latest
+#            - boost-latest
+            - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
           packages:
             - clang-3.9
             - cmake-data
             - cmake
-            - libboost-program-options1.58-dev
+            - libboost-program-options1.60-dev
             - mpich
             - libmpich-dev
       env:

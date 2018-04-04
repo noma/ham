@@ -24,7 +24,7 @@ rule get-boost-lib-path ( properties * )
 }
 
 lib boost_program_options : : <name>boost_program_options <conditional>@get-boost-lib-path ;
-lib scif : : <name>scif ;
+# lib scif : : <name>scif ;
 
 project HAM
 	: source-location $(SRC)
@@ -36,7 +36,7 @@ project HAM
 #	<toolset>intel:<cflags>"-static-intel"
 	<inlining>on # off, on, full
 	#<optimization>speed # off, speed, space
-	<cxxflags>"-std=c++11"
+	<cxxflags>"-hstd=c++11"
 	<threading>multi
 #	<link>static
 	: default-build debug release debug_mic release_mic
@@ -56,25 +56,25 @@ obj offload_obj_mpi : ham/offload/offload.cpp : <library>/mpi//mpi <define>HAM_C
 
 constant OBJ_FILES_MPI : communicator_obj_mpi runtime_obj_mpi offload_obj_mpi communicator_mpi_obj_mpi ;
 
-obj communicator_obj_mpi_rma_dyn : ham/net/communicator.cpp : <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC ;
-obj communicator_mpi_rma_dyn_obj_mpi_rma_dyn : ham/net/communicator_mpi_rma_dynamic.cpp : <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC ;
-obj runtime_obj_mpi_rma_dyn : ham/offload/runtime.cpp : <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC ;
-obj offload_obj_mpi_rma_dyn : ham/offload/offload.cpp : <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC ;
+obj communicator_obj_mpi_rma_dyn : ham/net/communicator.cpp : <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC <define>HAM_DEBUG_ON ;
+obj communicator_mpi_rma_dyn_obj_mpi_rma_dyn : ham/net/communicator_mpi_rma_dynamic.cpp : <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC <define>HAM_DEBUG_ON ;
+obj runtime_obj_mpi_rma_dyn : ham/offload/runtime.cpp : <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC <define>HAM_DEBUG_ON ;
+obj offload_obj_mpi_rma_dyn : ham/offload/offload.cpp : <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC <define>HAM_DEBUG_ON ;
 
 constant OBJ_FILES_MPI_RMA_DYN : communicator_obj_mpi_rma_dyn communicator_mpi_rma_dyn_obj_mpi_rma_dyn runtime_obj_mpi_rma_dyn offload_obj_mpi_rma_dyn ;
 
-obj communicator_obj_scif : ham/net/communicator.cpp : <library>scif <define>HAM_COMM_SCIF ;
-obj communicator_scif_obj_scif : ham/net/communicator_scif.cpp : <library>scif <define>HAM_COMM_SCIF ;
-obj runtime_obj_scif : ham/offload/runtime.cpp : <library>scif <define>HAM_COMM_SCIF ;
-obj offload_obj_scif : ham/offload/offload.cpp : <library>scif <define>HAM_COMM_SCIF ;
+# obj communicator_obj_scif : ham/net/communicator.cpp : <library>scif <define>HAM_COMM_SCIF ;
+# obj communicator_scif_obj_scif : ham/net/communicator_scif.cpp : <library>scif <define>HAM_COMM_SCIF ;
+# obj runtime_obj_scif : ham/offload/runtime.cpp : <library>scif <define>HAM_COMM_SCIF ;
+# obj offload_obj_scif : ham/offload/offload.cpp : <library>scif <define>HAM_COMM_SCIF ;
 
-constant OBJ_FILES_SCIF : communicator_obj_scif runtime_obj_scif offload_obj_scif communicator_scif_obj_scif ;
+# constant OBJ_FILES_SCIF : communicator_obj_scif runtime_obj_scif offload_obj_scif communicator_scif_obj_scif ;
 
 # Libraries
 
 obj main_obj_mpi : ham/offload/main.cpp : <library>/mpi//mpi <define>HAM_COMM_MPI ;
-obj main_obj_mpi_rma_dyn : ham/offload/main.cpp : <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC ;
-obj main_obj_scif : ham/offload/main.cpp : <library>scif <define>HAM_COMM_SCIF ;
+obj main_obj_mpi_rma_dyn : ham/offload/main.cpp : <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC <define>HAM_DEBUG_ON ;
+# obj main_obj_scif : ham/offload/main.cpp : <library>scif <define>HAM_COMM_SCIF ;
 
 lib ham_offload_mpi
 	: $(OBJ_FILES_COMMON) $(OBJ_FILES_MPI) main_obj_mpi boost_program_options
@@ -83,17 +83,17 @@ lib ham_offload_mpi
 
 lib ham_offload_mpi_rma_dyn
     : $(OBJ_FILES_COMMON) $(OBJ_FILES_MPI_RMA_DYN) main_obj_mpi_rma_dyn boost_program_options
-    : <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC
+    : <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC <define>HAM_DEBUG_ON
     ;
 
-lib ham_offload_scif
-	: $(OBJ_FILES_COMMON) $(OBJ_FILES_SCIF) main_obj_scif boost_program_options
-	: <library>scif <define>HAM_COMM_SCIF
-	;
+# lib ham_offload_scif
+#	: $(OBJ_FILES_COMMON) $(OBJ_FILES_SCIF) main_obj_scif boost_program_options
+#	: <library>scif <define>HAM_COMM_SCIF
+#	;
 
 obj main_explicit_obj_mpi : ham/offload/main_explicit.cpp : <library>/mpi//mpi <define>HAM_COMM_MPI ;
-obj main_explicit_obj_mpi_rma_dyn : ham/offload/main_explicit.cpp : <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC ;
-obj main_explicit_obj_scif : ham/offload/main_explicit.cpp : <library>scif <define>HAM_COMM_SCIF ;
+obj main_explicit_obj_mpi_rma_dyn : ham/offload/main_explicit.cpp : <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC <define>HAM_DEBUG_ON ;
+# obj main_explicit_obj_scif : ham/offload/main_explicit.cpp : <library>scif <define>HAM_COMM_SCIF ;
 
 lib ham_offload_mpi_explicit
 	: $(OBJ_FILES_COMMON) $(OBJ_FILES_MPI) main_explicit_obj_mpi boost_program_options
@@ -102,12 +102,13 @@ lib ham_offload_mpi_explicit
 
 lib ham_offload_mpi_rma_dyn_explicit
     : $(OBJ_FILES_COMMON) $(OBJ_FILES_MPI_RMA_DYN) main_explicit_obj_mpi_rma_dyn boost_program_options
-    : <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC <define>HAM_EXPLICIT
+    : <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC <define>HAM_EXPLICIT <define>HAM_DEBUG_ON
+    ;
 
-lib ham_offload_scif_explicit
-	: $(OBJ_FILES_COMMON) $(OBJ_FILES_SCIF) main_explicit_obj_scif boost_program_options
-	: <library>scif <define>HAM_COMM_SCIF <define>HAM_EXPLICIT
-	;
+# lib ham_offload_scif_explicit
+#	: $(OBJ_FILES_COMMON) $(OBJ_FILES_SCIF) main_explicit_obj_scif boost_program_options
+#	: <library>scif <define>HAM_COMM_SCIF <define>HAM_EXPLICIT
+#	;
 
 # Benchmarks
 
@@ -117,17 +118,17 @@ exe benchmark_ham_offload_mpi
 	: <library>/mpi//mpi <library>ham_offload_mpi
 	;	
 
-obj benchmark_ham_offload_mpi_rma_dyn_obj : benchmark_ham_offload.cpp : <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC ;
+obj benchmark_ham_offload_mpi_rma_dyn_obj : benchmark_ham_offload.cpp : <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC <define>HAM_DEBUG_ON ;
 exe benchmark_ham_offload_mpi_rma_dyn
     : benchmark_ham_offload_mpi_rma_dyn_obj boost_program_options
-    : <library>/mpi//mpi <library>ham_offload_mpi_rma_dyn
+    : <library>/mpi//mpi <library>ham_offload_mpi_rma_dyn <define>HAM_DEBUG_ON
     ;
 
-obj benchmark_ham_offload_scif_obj : benchmark_ham_offload.cpp : <library>scif <define>HAM_COMM_SCIF ;
-exe benchmark_ham_offload_scif
-	: benchmark_ham_offload_scif_obj boost_program_options ham_offload_scif
-	: <library>scif 
-	;	
+# obj benchmark_ham_offload_scif_obj : benchmark_ham_offload.cpp : <library>scif <define>HAM_COMM_SCIF ;
+# exe benchmark_ham_offload_scif
+#	: benchmark_ham_offload_scif_obj boost_program_options ham_offload_scif
+#	: <library>scif
+#	;
 
 exe benchmark_intel_leo
 	: benchmark_intel_leo.cpp boost_program_options
@@ -154,14 +155,14 @@ exe ham_offload
 exe ham_offload_explicit
 	: ham_offload_explicit.cpp ham_offload_mpi_rma_dyn_explicit boost_program_options
 #	: <library>/mpi//mpi <define>HAM_COMM_MPI
-	: <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC
+	: <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC <define>HAM_DEBUG_ON
 #	: <library>scif <define>HAM_COMM_SCIF
 	;
 
-exe inner_product_scif
-	: [ obj inner_product_obj : inner_product.cpp : <library>scif <define>HAM_COMM_SCIF ] ham_offload_scif boost_program_options
-	: <library>scif <define>HAM_COMM_SCIF
-	;
+# exe inner_product_scif
+#	: [ obj inner_product_obj : inner_product.cpp : <library>scif <define>HAM_COMM_SCIF ] ham_offload_scif boost_program_options
+#	: <library>scif <define>HAM_COMM_SCIF
+#	;
 
 exe inner_product_mpi
 	: [ obj inner_product_obj : inner_product.cpp : <library>/mpi//mpi <define>HAM_COMM_MPI ] ham_offload_mpi boost_program_options
@@ -170,13 +171,13 @@ exe inner_product_mpi
 
 exe inner_product_mpi_rma_dynamic
     : [ obj inner_product_obj : inner_product.cpp : <library>/mpi//mpi <define>HAM_COMM_MPI ] ham_offload_mpi_rma_dyn boost_program_options
-    : <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC
+    : <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC <define>HAM_DEBUG_ON
     ;
 
-exe test_data_transfer_scif
-	: [ obj test_data_transfer_obj : test_data_transfer.cpp : <library>scif <define>HAM_COMM_SCIF ] ham_offload_scif boost_program_options
-	: <library>scif <define>HAM_COMM_SCIF
-	;
+# exe test_data_transfer_scif
+#	: [ obj test_data_transfer_obj : test_data_transfer.cpp : <library>scif <define>HAM_COMM_SCIF ] ham_offload_scif boost_program_options
+#	: <library>scif <define>HAM_COMM_SCIF
+#	;
 
 exe test_data_transfer_mpi
 	: [ obj test_data_transfer_obj : test_data_transfer.cpp : <library>/mpi//mpi <define>HAM_COMM_MPI ] ham_offload_mpi boost_program_options
@@ -185,13 +186,13 @@ exe test_data_transfer_mpi
 
 exe test_data_transfer_mpi_rma_dynamic
 	: [ obj test_data_transfer_obj : test_data_transfer.cpp : <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC ] ham_offload_mpi_rma_dyn boost_program_options
-	: <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC
+	: <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC <define>HAM_DEBUG_ON
 	;
 
-exe test_argument_transfer_scif
-	: [ obj test_argument_transfer_obj : test_argument_transfer.cpp : <library>scif <define>HAM_COMM_SCIF ] ham_offload_scif boost_program_options
-	: <library>scif <define>HAM_COMM_SCIF
-	;
+# exe test_argument_transfer_scif
+# 	: [ obj test_argument_transfer_obj : test_argument_transfer.cpp : <library>scif <define>HAM_COMM_SCIF ] ham_offload_scif boost_program_options
+#	: <library>scif <define>HAM_COMM_SCIF
+#	;
 
 exe test_argument_transfer_mpi
 	: [ obj test_argument_transfer_obj : test_argument_transfer.cpp : <library>/mpi//mpi <define>HAM_COMM_MPI ] ham_offload_mpi boost_program_options
@@ -200,9 +201,9 @@ exe test_argument_transfer_mpi
 
 exe test_argument_transfer_mpi_rma_dynamic
 	: [ obj test_argument_transfer_obj : test_argument_transfer.cpp : <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC ] ham_offload_mpi_rma_dyn boost_program_options
-	: <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC
+	: <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC <define>HAM_DEBUG_ON
 	;
 
 # Explicit targets (not built by default)
 explicit benchmark_intel_leo ;
-explicit test_data_transfer_scif ;
+# explicit test_data_transfer_scif ;

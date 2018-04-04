@@ -50,7 +50,7 @@ namespace net {
 #define HAM_COMM_ONE_SIDED
 #include "ham/net/communicator_scif.hpp"
 #elif defined HAM_COMM_MPI_RMA_DYNAMIC
-#include "ham/net/communicator_scif.hpp"
+#include "ham/net/communicator_mpi_rma_dynamic.hpp"
 #else
 static_assert(false, "Please define either HAM_COMM_MPI, HAM_COMM_MPI_RMA_DYNAMIC or HAM_COMM_SCIF.");
 #endif

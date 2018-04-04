@@ -147,7 +147,7 @@ private:
 
         void operator()() //const
         {
-            communicator::instance().send_data(local_source, buffer_ptr<T>(nullptr, remote_node, remote_addr), n); // NOTE: Why nullptr? This is for two-sided communicators, so we do not know the remote address, but match a receive operation that has the address.
+            communicator::instance().send_data(local_source, buffer_ptr<T>(nullptr, remote_node, remote_addr), n);
 
             // send a result message to tell the sender, that the transfer is done
             if (req.valid()) {

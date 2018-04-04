@@ -181,6 +181,8 @@ before_install:
   - eval "${MATRIX_EVAL}"
 
 script:
+  - echo "CXX_FLAGE=${CXX_FLAGS}"
+  - echo "MAKE_FLAGS=${MAKE_FLAGS}"
   - which ${CC}
   - which ${CXX}
   - mkdir -p build

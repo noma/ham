@@ -20,7 +20,7 @@ matrix:
             - g++-4.9
             - cmake-data
             - cmake
-            - libboost-program-options-dev
+            - libboost-program-options1.55-dev
             - mpich
             - libmpich-dev
             # - mpi-default-dev # open-mpi, headers cause some compiler warnings
@@ -39,7 +39,7 @@ matrix:
             - g++-5
             - cmake-data
             - cmake
-            - libboost-program-options-dev
+            - libboost-program-options1.55-dev
             - mpich
             - libmpich-dev
       env:
@@ -57,7 +57,7 @@ matrix:
             - g++-6
             - cmake-data
             - cmake
-            - libboost-program-options-dev
+            - libboost-program-options1.55-dev
             - mpich
             - libmpich-dev
       env:
@@ -75,7 +75,7 @@ matrix:
             - g++-7
             - cmake-data
             - cmake
-            - libboost-program-options-dev
+            - libboost-program-options1.55-dev
             - mpich
             - libmpich-dev
       env:
@@ -112,7 +112,7 @@ matrix:
             - clang-3.9
             - cmake-data
             - cmake
-            - libboost-program-options-dev
+            - libboost-program-options1.55-dev
             - mpich
             - libmpich-dev
       env:
@@ -131,7 +131,7 @@ matrix:
             - clang-4.0
             - cmake-data
             - cmake
-            - libboost-program-options-dev
+            - libboost-program-options1.55-dev
             - mpich
             - libmpich-dev
       env:
@@ -150,7 +150,7 @@ matrix:
             - clang-5.0
             - cmake-data
             - cmake
-            - libboost-program-options-dev
+            - libboost-program-options1.55-dev
             - mpich
             - libmpich-dev
       env:
@@ -169,7 +169,7 @@ matrix:
             - clang-6.0
             - cmake-data
             - cmake
-            - libboost-program-options-dev
+            - libboost-program-options1.55-dev
             - mpich
             - libmpich-dev
       env:

@@ -29,6 +29,9 @@ bool compare(const std::vector<T>& a, const std::vector<T>& b)
 
 int main(int argc, char* argv[])
 {
+	HAM_UNUSED_VAR(argc);
+	HAM_UNUSED_VAR(argv);
+
 	std::cout << "Testing data transfer: host -> target_a -> target_b -> host." << std::endl;
 	
 	// buffer size

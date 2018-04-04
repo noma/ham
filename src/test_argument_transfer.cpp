@@ -42,6 +42,9 @@ bool test_type_transfer(offload::node_t target, Ts... args)
  */
 int main(int argc, char* argv[])
 {
+	HAM_UNUSED_VAR(argc);
+	HAM_UNUSED_VAR(argv);
+
 	std::cout << "Testing argument and return value transfer for different types:" << std::endl;
 
 	offload::node_t target = 1;

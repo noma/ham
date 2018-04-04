@@ -227,6 +227,7 @@ public:
 	// NOTE: the local static receive buffer!
 	void* recv_msg_host(void* msg = nullptr, size_t size = constants::MSG_SIZE)
 	{
+		HAM_UNUSED_VAR(msg);
 		static msg_buffer buffer; // NOTE !
 		MPI_Recv(&buffer, size, MPI_BYTE, host_node_, constants::DEFAULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 		return static_cast<void*>(&buffer);
@@ -271,6 +272,7 @@ public:
 	template<typename T>
 	buffer_ptr<T> allocate_buffer(const size_t n, node_t source_node)
 	{
+		HAM_UNUSED_VAR(source_node); // NOTE: might be needed in other communicator implementations
 		T* ptr;
 		//int err =
 		posix_memalign((void**)&ptr, constants::CACHE_LINE_SIZE, n * sizeof(T));

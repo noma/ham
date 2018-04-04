@@ -43,6 +43,9 @@ void function_test_const_ref(const int& i)
 
 int main(int argc, char* argv[])
 {
+	HAM_UNUSED_VAR(argc);
+	HAM_UNUSED_VAR(argv);
+
 	// HAM-Offload is implicitly initialised, only the host process runs main()
 	std::cout << "ham offload test" << std::endl;
 

@@ -19,6 +19,9 @@ double inner_product(offload::buffer_ptr<double> x, offload::buffer_ptr<double> 
 
 int main(int argc, char* argv[])
 {
+	HAM_UNUSED_VAR(argc);
+	HAM_UNUSED_VAR(argv);
+
 	// buffer size
 	constexpr size_t n = 1024;
 

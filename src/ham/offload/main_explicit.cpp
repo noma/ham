@@ -68,6 +68,8 @@ int ham_finalise()
 // just a dummy for satisfying the runtime implementation
 int ham_user_main(int argc, char* argv[])
 {
+	HAM_UNUSED_VAR(argc); // surpress compiler warning
+	HAM_UNUSED_VAR(argv); // surpress compiler warning
 	// this should never be called
 	assert(false);
 	return -1;

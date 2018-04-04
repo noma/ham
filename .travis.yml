@@ -82,24 +82,24 @@ matrix:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
 
     # GCC 8
-#    - os: linux
-#      dist: trusty
-#      addons:
-#        apt:
-#          sources:
-#            - boost-latest
-#            - ubuntu-toolchain-r-test
-#          packages:
-#            - g++-8
-#            - cmake-data
-#            - cmake
-#            - libboost-program-options-dev
-#            - mpich
-#            - libmpich-dev
-#      env:
-#        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+    - os: linux
+      dist: trusty
+      addons:
+        apt:
+          sources:
+            - boost-latest
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - cmake-data
+            - cmake
+            - libboost-program-options-dev
+            - mpich
+            - libmpich-dev
+      env:
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
 
-    # Clang 3.9
+# Clang 3.9
     - os: linux
       dist: trusty
       addons:

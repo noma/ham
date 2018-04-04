@@ -8,12 +8,13 @@ env:
 
 matrix:
   include:
+    # GCC 4.9
     - os: linux
       dist: trusty
       addons:
         apt:
           sources:
-#            - boost-latest
+            - boost-latest
             - ubuntu-toolchain-r-test
           packages:
             - g++-4.9
@@ -24,24 +25,118 @@ matrix:
             - libmpich-dev
             # - mpi-default-dev # open-mpi, headers cause some compiler warnings
       env:
-        - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"            
+        - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+
+    # GCC 5
     - os: linux
       dist: trusty
       addons:
         apt:
           sources:
-#            - boost-latest
+            - boost-latest
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.7
           packages:
-            - clang-3.7
-            - g++-4.9
+            - g++-5
             - cmake-data
             - cmake
             - libboost-program-options-dev
             - mpich
+            - libmpich-dev
       env:
-        - MATRIX_EVAL="CC=clang-3.7 && CXX=clang++-3.7"
+        - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+    
+    # GCC 6
+    - os: linux
+      dist: trusty
+      addons:
+        apt:
+          sources:
+            - boost-latest
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-6
+            - cmake-data
+            - cmake
+            - libboost-program-options-dev
+            - mpich
+            - libmpich-dev
+      env:
+        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+    
+    # GCC 7
+    - os: linux
+      dist: trusty
+      addons:
+        apt:
+          sources:
+            - boost-latest
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+            - cmake-data
+            - cmake
+            - libboost-program-options-dev
+            - mpich
+            - libmpich-dev
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+    
+    # Clang 3.9
+    - os: linux
+      dist: trusty
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-3.9
+            - boost-latest
+          packages:
+            - clang-3.9
+            - cmake-data
+            - cmake
+            - libboost-program-options-dev
+            - mpich
+            - libmpich-dev
+      env:
+        - MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
+
+    # Clang 4.0
+    - os: linux
+      dist: trusty
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-4.0
+            - boost-latest
+          packages:
+            - clang-4.0
+            - cmake-data
+            - cmake
+            - libboost-program-options-dev
+            - mpich
+            - libmpich-dev
+      env:
+        - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
+
+    # Clang 5.0
+    - os: linux
+      dist: trusty
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-5.0
+            - boost-latest
+          packages:
+            - clang-5.0
+            - cmake-data
+            - cmake
+            - libboost-program-options-dev
+            - mpich
+            - libmpich-dev
+      env:
+        - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
 
 before_install:
   - export CMAKE_OPTIONS=${CMAKE_OPTIONS}" "${ENV_CMAKE_OPTIONS}
@@ -54,4 +149,4 @@ script:
   - mkdir -p build
   - cd build
   - cmake -DCMAKE_CXX_FLAGS=${CXX_FLAGS} ..
-  - make
+  - make ${MAKE_FLAGS}

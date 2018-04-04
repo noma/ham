@@ -9,9 +9,6 @@ matrix:
   include:
     - os: linux
       dist: trusty
-      compiler:
-        - gcc-4.9
-        - clang-3.7
       addons:
         apt:
           sources:
@@ -20,13 +17,30 @@ matrix:
           packages:
             - libboost1.55-all-dev
             - gcc-4.9
+            - cmake-data
+            - cmake
+      env:
+        - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"            
+    - os: linux
+      dist: trusty
+      addons:
+        apt:
+          sources:
+            - boost-latest
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.7
+          packages:
+            - libboost1.55-all-dev
             - clang-3.7
             - cmake-data
             - cmake
+      env:
+        - MATRIX_EVAL="CC=clang-3.7 && CXX=clang++-3.7"
 
 before_install:
   - export CMAKE_OPTIONS=${CMAKE_OPTIONS}" "${ENV_CMAKE_OPTIONS}
   - export CXX_FLAGS=${CXX_FLAGS}" "${ENV_CXX_FLAGS}
+  - eval "${MATRIX_EVAL}"
 
 script:
   - mkdir -p build.gcc-4.9

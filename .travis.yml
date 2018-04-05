@@ -28,8 +28,7 @@ env:
 jobs:
   include:
     # GCC 4.9
-    - os: linux
-      addons:
+    - addons:
         apt:
           sources: *common_sources
           packages:
@@ -41,8 +40,7 @@ jobs:
     # GCC 5
     - addons:
         apt:
-          sources:
-            - *common_sources
+          sources: *common_sources
           packages:
             - *common_packages
             - g++-5
@@ -52,8 +50,7 @@ jobs:
     # GCC 6
     - addons:
         apt:
-          sources:
-            - *common_sources
+          sources: *common_sources
           packages:
             - *common_packages
             - g++-6
@@ -63,8 +60,7 @@ jobs:
     # GCC 7
     - addons:
         apt:
-          sources:
-            - *common_sources
+          sources: *common_sources
           packages:
             - *common_packages
             - g++-7
@@ -92,8 +88,7 @@ jobs:
 # Clang 3.9
     - addons:
         apt:
-          sources:
-            - *common_sources
+          sources: *common_sources
             - llvm-toolchain-trusty-3.9
           packages:
             - *common_packages
@@ -104,8 +99,7 @@ jobs:
     # Clang 4.0
     - addons:
         apt:
-          sources:
-            - *common_sources
+          sources: *common_sources
             - llvm-toolchain-trusty-4.0
           packages:
             - *common_packages
@@ -128,8 +122,7 @@ jobs:
     # Clang 6.0
     - addons:
         apt:
-          sources:
-            - *common_sources
+          sources: *common_sources
             - llvm-toolchain-trusty-6.0
           packages:
             - *common_packages

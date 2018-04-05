@@ -165,7 +165,6 @@ public:
 		MPI_Comm_size(MPI_COMM_WORLD, &t);
 		nodes_ = t;
 		host_node_ = 0; // TODO(improvement): make configureable, like for SCIF
-        MPI_Win_create_dynamic(MPI_INFO_NULL, MPI_COMM_WORLD, &rma_win);
 
 		HAM_DEBUG( std::cout << "communicator::communicator(): initialising MPI done" << std::endl; )
 
@@ -194,8 +193,12 @@ public:
 		//MPI_Alltoall(&node_description, sizeof(node_descriptor), MPI_BYTE, node_descriptions.data(), sizeof(node_descriptor), MPI_BYTE, MPI_COMM_WORLD);
 		MPI_Allgather(&node_description, sizeof(node_descriptor), MPI_BYTE, node_descriptions.data(), sizeof(node_descriptor), MPI_BYTE, MPI_COMM_WORLD);
 		HAM_DEBUG( HAM_LOG << "communicator::communicator(): gathering node descriptions done" << std::endl; )
-		
+
+		// prepare global group to create pairwise groups
+		MPI_Comm_group(MPI_COMM_WORLD, &global_group);
+
 		if (is_host()) {
+
 			for (node_t i = 1; i < nodes_; ++i) { // TODO(improvement): needs to be changed when host-rank becomes configurable
 				// allocate buffers
 				peers[i].msg_buffers = allocate_peer_buffer<msg_buffer>(constants::MSG_BUFFERS, this_node_);
@@ -203,7 +206,30 @@ public:
 				for(size_t j = constants::MSG_BUFFERS; j > 0; --j) {
 					peers[i].buffer_pool.add(j-1);
 				}
+
+				// init comm to target from pairwise subgroups
+				const int members[2] = {host_node_, i}; // NOTE: this implies new group rank is 0 for host, 1 for target
+				MPI_Group pairwise_group;
+				MPI_Group_incl(global_group, 2, members, &pairwise_group);
+				MPI_Comm_create_group(MPI_COMM_WORLD, pairwise_group, 0, &(peers[i].rma_comm));
+				MPI_Group_free(&pairwise_group); // no longer needed after COMM is created
+
+				// init win to target
+				MPI_Win_create_dynamic(MPI_INFO_NULL, peers[i].rma_comm, &(peers[i].rma_win));
 			}
+
+
+		} else {
+			// init comm to host from pairwise subgroup
+			const int members[2] = {host_node_, this_node_}; // NOTE: this implies new group rank = 0 for host, 1 for target
+			MPI_Group pairwise_group;
+			MPI_Group_incl(global_group, 2, members, &pairwise_group); // should match the corresponding subgroup on host for i = this_node_
+			MPI_Comm_create_group(MPI_COMM_WORLD, pairwise_group, 0, &(peers[host_node_].rma_comm));
+			MPI_Group_free(&pairwise_group); // no longer needed after COMM is created
+
+			// init win to host
+			MPI_Win_create_dynamic(MPI_INFO_NULL, peers[host_node_].rma_comm, &(peers[host_node_].rma_win));
+
 		}
 	}
 
@@ -250,7 +276,7 @@ public:
 	void* recv_msg_host(void* msg = nullptr, size_t size = constants::MSG_SIZE)
 	{
 		static msg_buffer buffer; // NOTE !
-		MPI_Recv(&buffer, size, MPI_BYTE, host_node_, constants::DEFAULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		MPI_Recv(&buffer, size, MPI_BYTE, MPI_ANY_SOURCE, constants::DEFAULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE); // changed source from host_node_ to MPI_ANY_SOURCE so targets may react to request for setting up rma paths
 		return static_cast<void*>(&buffer);
 	}
 
@@ -263,44 +289,57 @@ public:
 		return;
 	}
 
+	// in MPI RMA backend only used by copy
+	// host uses async version
+	// targets don't send data to host as host uses rma get
 	template<typename T>
 	void send_data(T* local_source, buffer_ptr<T> remote_dest, size_t size)
 	{
-		//MPI_Send((void*)local_source, size * sizeof(T), MPI_BYTE, remote_dest.node(), constants::DATA_TAG, MPI_COMM_WORLD);
-        MPI_Win_lock(MPI_LOCK_SHARED, remote_dest.node(), 0, rma_win);
-        MPI_Put(local_source, size * sizeof(T), MPI_BYTE, remote_dest.node(), remote_dest.get_mpi_address(), size * sizeof(T), MPI_BYTE, rma_win);
-        MPI_Win_unlock(remote_dest.node(), rma_win);
+		// resolve rank for subgroup
+		int target_rank;
+		if(remote_dest.node() > this_node_) {
+			target_rank = 1;
+		} else {
+			target_rank = 0;
+		}
+		// execute transfer
+		MPI_Win_lock(MPI_LOCK_SHARED, target_rank, 0, peers[remote_dest.node()].rma_win);
+        MPI_Put(local_source, size * sizeof(T), MPI_BYTE, target_rank, remote_dest.get_mpi_address(), size * sizeof(T), MPI_BYTE, peers[remote_dest.node()].rma_win);
+        MPI_Win_unlock(target_rank, peers[remote_dest.node()].rma_win);
 	}
 
-	// to be used by the host
+	// to be used by the host only
 	template<typename T>
 	void send_data_async(request_reference_type req, T* local_source, buffer_ptr<T> remote_dest, size_t size)
 	{
-		//MPI_Isend((void*)local_source, size * sizeof(T), MPI_BYTE, remote_dest.node(), constants::DATA_TAG, MPI_COMM_WORLD, &req.next_mpi_request());
         req.uses_rma_ = true;
 
-        MPI_Win_lock(MPI_LOCK_SHARED, remote_dest.node(), 0, rma_win);
-        MPI_Rput(local_source, size * sizeof(T), MPI_BYTE, remote_dest.node(), remote_dest.get_mpi_address(), size * sizeof(T), MPI_BYTE, rma_win, &req.next_mpi_request());
+		// resolving rank for subgroup not necessary, is always 1 for the target
+        MPI_Win_lock(MPI_LOCK_SHARED, 1, 0, peers[remote_dest.node()].rma_win);
+        MPI_Rput(local_source, size * sizeof(T), MPI_BYTE, 1, remote_dest.get_mpi_address(), size * sizeof(T), MPI_BYTE, peers[remote_dest.node()].rma_win, &req.next_mpi_request());
 	}
 
-
+	// not used in MPI RMA backend
+	// host uses async version
+	// targets don't use get
+	// should be safe to remove
 	template<typename T>
 	void recv_data(buffer_ptr<T> remote_source, T* local_dest, size_t size)
 	{
-		//MPI_Recv((void*)local_dest, size * sizeof(T), MPI_BYTE, remote_source.node(), constants::DATA_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-		MPI_Win_lock(MPI_LOCK_SHARED, remote_source.node(), 0, rma_win);
-		MPI_Get(remote_source, size * sizeof(T), MPI_BYTE, remote_source.node(), remote_dest.get_mpi_address(), size * sizeof(T), MPI_BYTE, rma_win);
-		MPI_Win_unlock(remote_source.node(), rma_win);
+		MPI_Win_lock(MPI_LOCK_SHARED, 0, 0, peers[remote_source.node()].rma_win); // dummy rank number as if targets were to use recv_data from host
+		MPI_Get(remote_source, size * sizeof(T), MPI_BYTE, remote_source.node(), remote_dest.get_mpi_address(), size * sizeof(T), MPI_BYTE, peers[remote_source.node()].rma_win);
+		MPI_Win_unlock(remote_source.node(), peers[remote_source.node()].rma_win);
 	}
 	
 	// to be used by the host
 	template<typename T>
 	void recv_data_async(request_reference_type req, buffer_ptr<T> remote_source, T* local_dest, size_t size)
 	{
-		//MPI_Irecv(static_cast<void*>(local_dest), size * sizeof(T), MPI_BYTE, remote_source.node(), constants::DATA_TAG, MPI_COMM_WORLD, &req.next_mpi_request());
         req.uses_rma_ = true;
-		MPI_Win_lock(MPI_LOCK_SHARED, remote_source.node(), 0, rma_win);
-		MPI_Rget(local_dest, size * sizeof(T), MPI_BYTE, remote_source.node(), remote_source.get_mpi_address(), size * sizeof(T), MPI_BYTE, rma_win, &req.next_mpi_request());
+
+		// resolving rank for subgroup not necessary, is always 1 for the target
+		MPI_Win_lock(MPI_LOCK_SHARED, 1, 0, peers[remote_source.node()].rma_win);
+		MPI_Rget(local_dest, size * sizeof(T), MPI_BYTE, 1, remote_source.get_mpi_address(), size * sizeof(T), MPI_BYTE, peers[remote_source.node()].rma_win, &req.next_mpi_request());
 	}
 
 	template<typename T>
@@ -309,7 +348,7 @@ public:
 		T* ptr;
 		//int err =
 		posix_memalign((void**)&ptr, constants::CACHE_LINE_SIZE, n * sizeof(T));
-		MPI_Win_attach(rma_win, (void*)ptr, n * sizeof(T));
+		MPI_Win_attach(peers[source_node].rma_win, (void*)ptr, n * sizeof(T)); // only attach to the window corresponding to the requesting node, is attached to potential target-target-windows on demand
 		MPI_Aint mpi_address;
 		MPI_Get_address((void*)ptr, &mpi_address);
 		// NOTE: no ctor is called
@@ -333,6 +372,8 @@ public:
 	{
 		assert(ptr.node() == this_node_);
 		// NOTE: no dtor is called
+
+		// remove from all potential rma windows
         MPI_Win_detach(rma_win, ptr.get());
 		free(static_cast<void*>(ptr.get()));
 	}
@@ -356,20 +397,52 @@ public:
 		return instance().node_descriptions[node];
 	}
 
+	// called to check if an rma path between two targets exists, sufficient to call on one of the two targets
+	bool has_rma_path(node_t target_node) {
+		// check if copy path exists
+		return !peers[remote_dest.node()].rma_win;
+	}
+
+	// called to establish an rma path between two targets for copy operations, needs to be called on both sides
+	void establish_rma_path(node_t target_node) {
+		if(!has_rma_path(target_node)) { // make sure there is not already an rma path
+			const int members[2];
+			// NOTE: protocol for target-target sub-ranks is: lower global rank: 0, higher global rank: 1
+			// thus rank for existing copy paths can be easily translated by comparing target rank to own rank
+			if(this_node_ > target_node) {
+				members[0] = target_node;
+				members[1] = this_node_;
+			} else {
+				members[0] = this_node_;
+				members[1] = target_node;
+			}
+			MPI_Group pairwise_group;
+			MPI_Group_incl(global_group, 2, members, &pairwise_group);
+			MPI_Comm_create_group(MPI_COMM_WORLD, pairwise_group, 0, &(peers[target_node].rma_comm));
+			MPI_Group_free(&pairwise_group); // no longer needed after COMM is created
+			MPI_Win_create_dynamic(MPI_INFO_NULL, peers[target_node].rma_comm, &(peers[target_node].rma_win));
+		}
+	}
+
+
 private:
 	static communicator* instance_;
 	node_t this_node_;
 	size_t nodes_;
 	node_t host_node_;
 	std::vector<node_descriptor> node_descriptions; // not as member in peer below, because Allgather is used to exchange node descriptions
-    MPI_Win rma_win; // globally shared dynamic window for rma ops
-		
+	MPI_Group global_group;
+
 	struct mpi_peer {
 		buffer_ptr<msg_buffer> msg_buffers; // buffers used for MPI_ISend and IRecv by the sender
 
 		// needed by sender to manage which buffers are in use and which are free
 		// just manages indices, that can be used by
 		detail::resource_pool<size_t> buffer_pool;
+
+		// mpi rma dynamic window
+		MPI_Win rma_win;
+		MPI_Comm rma_comm;
 	};
 	
 	mpi_peer* peers;

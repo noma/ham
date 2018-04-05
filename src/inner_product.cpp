@@ -56,10 +56,10 @@ int main(int argc, char* argv[])
 
 	// transfer data to the device (the target is implicitly specified by the destination buffer_ptr)	
 	auto future_a_put = offload::put(a.data(), a_target, n); // async
+    future_a_put.get();
     offload::put(b.data(), b_target, n); // sync (implicitly returned future performs synchronisation in dtor), alternative: put_sync()
 
     // synchronise
-    future_a_put.get();
 
 	std::cout << "completed put" << std::endl;
 
@@ -77,7 +77,10 @@ int main(int argc, char* argv[])
 
 	// output the result
 	std::cout << "Result: " << c << std::endl;
-	
+
+    MPI_Win_create_dynamic()
+
+
 	return 0;	
 }
 

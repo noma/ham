@@ -134,9 +134,7 @@ private:
 	size_t n;
 };
 
-
-// TODO(daniel, high priority): implement offload_copy_msg, copy with one-sided rma needs a msg containing ptrs for source+target
-//#ifdef SOME_COOL_VAR_FOR_MPI_RMA_DYN // compile-integration pending
+//#ifdef HAM_COMM_MPI_RMA_DYNAMIC
     template<typename T, template<class> class ExecutionPolicy = default_execution_policy>
     class offload_rma_copy_msg
             : public active_msg<offload_rma_copy_msg<T, ExecutionPolicy>, ExecutionPolicy>
@@ -147,6 +145,9 @@ private:
 
         void operator()() //const
         {
+            communicator::instance().establish_rma_path(remote_node); // should quickly return if path already exists
+            // attach existing buffers to new target window ?!?
+
             communicator::instance().send_data(local_source, buffer_ptr<T>(nullptr, remote_node, remote_addr), n);
 
             // send a result message to tell the sender, that the transfer is done
@@ -163,6 +164,32 @@ private:
         size_t n;
     };
 //#endif
+
+// allows user to setup an rma link between two targets without a copy transfer
+#ifdef HAM_COMM_MPI_RMA_DYNAMIC
+    template<typename T, template<class> class ExecutionPolicy = default_execution_policy>
+    class setup_rma_path_msg
+            : public active_msg<setup_rma_path_msg<T, ExecutionPolicy>, ExecutionPolicy>
+    {
+    public:
+        setup_rma_path_msg(node_t remote_node)
+                : remote_node(remote_node) { }
+
+        void operator()() //const
+        {
+            communicator::instance().establish_rma_path(remote_node);
+
+            // send a result message to tell the sender that the path is set up
+            if (req.valid()) {
+                req.send_result((void*)&remote_node, sizeof remote_node);
+            }
+        }
+    private:
+        node_t remote_node;
+    };
+#endif
+
+// link buffer msg? to tell target of copy to add the buffer to the soecific window... which might not even exist...fuck
 
 } // namespace detail
 } // namespace offload

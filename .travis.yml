@@ -6,11 +6,11 @@ dist: trusty
 
 addons:
   apt:
-    sources:
+    sources: &common_sources
       - ubuntu-toolchain-r-test
     # - boost-latest
       - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
-    packages:
+    packages: &common_packages
       - cmake-data
       - cmake
     # - libboost-program-options1.55-dev # boost-latest
@@ -31,8 +31,11 @@ jobs:
     - os: linux
       addons:
         apt:
+          sources:
+            - *common_sources
           packages:
-            -g++-4.9
+            - *common_packages
+            - g++-4.9
       env:
         - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
 

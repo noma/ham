@@ -149,5 +149,5 @@ script:
   - mpirun -n 2 ./test_argument_transfer_mpi
   - mpirun -n 3 ./test_data_transfer_mpi
   - mpirun -n 3 ./ham_offload_test_mpi
-  - mpirun -n 3 ./ham_offload_test_mpi_explicit
+  - mpirun -n 3 ./ham_offload_test_explicit_mpi
   

@@ -40,4 +40,7 @@ else ()
 	message(STATUS "Could NOT find SCIF (missing: scif.h)")
 endif ()
 
+# tell the compiler to be strict
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wpedantic -Wextra")
+
 add_subdirectory(src)

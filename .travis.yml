@@ -25,9 +25,7 @@ env:
 jobs:
   include:
     # GCC 4.9
-    - os: linux
-      dist: trusty
-      addons:
+    - addons:
         apt:
           sources:
             - *common_sources
@@ -43,15 +41,10 @@ jobs:
       addons:
         apt:
           sources:
-            - boost-latest
-            - ubuntu-toolchain-r-test
+            - *common_sources
           packages:
+            - *common_packages
             - g++-5
-            - cmake-data
-            - cmake
-            - libboost-program-options1.55-dev
-            - mpich
-            - libmpich-dev
       env:
         - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
     
@@ -61,15 +54,10 @@ jobs:
       addons:
         apt:
           sources:
-            - boost-latest
-            - ubuntu-toolchain-r-test
+            - *common_sources
           packages:
+            - *common_packages
             - g++-6
-            - cmake-data
-            - cmake
-            - libboost-program-options1.55-dev
-            - mpich
-            - libmpich-dev
       env:
         - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
     
@@ -79,15 +67,10 @@ jobs:
       addons:
         apt:
           sources:
-            - boost-latest
-            - ubuntu-toolchain-r-test
+            - *common_sources
           packages:
+            - *common_packages
             - g++-7
-            - cmake-data
-            - cmake
-            - libboost-program-options1.55-dev
-            - mpich
-            - libmpich-dev
       env:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
 

@@ -1,83 +1,68 @@
 language: cpp
 
+os: linux
+dist: trusty
+
+addons:
+  apt:
+    sources: &common_sources
+      - ubuntu-toolchain-r-test
+    # - boost-latest
+      - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
+    packages: &common_packages
+      - cmake-data
+      - cmake
+    # - libboost-program-options1.55-dev # boost-latest
+      - libboost-program-options1.60-dev
+      - mpich
+      - libmpich-dev
+    # - mpi-default-dev # open-mpi, headers cause some compiler warnings
+
 env:
   global:
     - LINUX_DIST=trusty
-    - CXX_FLAGS="-Wall -Wextra -Wpedantic" # -Werror
+    - CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror"
     - MAKE_FLAGS="-j2" # VERBOSE=1
 
-matrix:
+jobs:
   include:
     # GCC 4.9
-    - os: linux
-      dist: trusty
-      addons:
+    - addons:
         apt:
-          sources:
-            - boost-latest
-            - ubuntu-toolchain-r-test
+          sources: *common_sources
           packages:
+            - *common_packages
             - g++-4.9
-            - cmake-data
-            - cmake
-            - libboost-program-options-dev
-            - mpich
-            - libmpich-dev
-            # - mpi-default-dev # open-mpi, headers cause some compiler warnings
       env:
         - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
 
     # GCC 5
-    - os: linux
-      dist: trusty
-      addons:
+    - addons:
         apt:
-          sources:
-            - boost-latest
-            - ubuntu-toolchain-r-test
+          sources: *common_sources
           packages:
+            - *common_packages
             - g++-5
-            - cmake-data
-            - cmake
-            - libboost-program-options-dev
-            - mpich
-            - libmpich-dev
       env:
         - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
     
     # GCC 6
-    - os: linux
-      dist: trusty
-      addons:
+    - addons:
         apt:
-          sources:
-            - boost-latest
-            - ubuntu-toolchain-r-test
+          sources: *common_sources
           packages:
+            - *common_packages
             - g++-6
-            - cmake-data
-            - cmake
-            - libboost-program-options-dev
-            - mpich
-            - libmpich-dev
       env:
         - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
     
     # GCC 7
-    - os: linux
-      dist: trusty
-      addons:
+    - addons:
         apt:
-          sources:
-            - boost-latest
-            - ubuntu-toolchain-r-test
+          sources: *common_sources
           packages:
+            - *common_packages
             - g++-7
-            - cmake-data
-            - cmake
-            - libboost-program-options-dev
-            - mpich
-            - libmpich-dev
       env:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
 
@@ -100,78 +85,55 @@ matrix:
 #        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
 
 # Clang 3.9
-    - os: linux
-      dist: trusty
-      addons:
+    - addons:
         apt:
           sources:
+            # << : [ *common_sources, llvm-toolchain-trusty-3.9 ]
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-3.9
-            - boost-latest
+            - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
           packages:
+            - *common_packages
             - clang-3.9
-            - cmake-data
-            - cmake
-            - libboost-program-options-dev
-            - mpich
-            - libmpich-dev
       env:
         - MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
 
     # Clang 4.0
-    - os: linux
-      dist: trusty
-      addons:
+    - addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-4.0
-            - boost-latest
+            - llvm-toolchain-trusty-3.9
+            - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
           packages:
+            - *common_packages
             - clang-4.0
-            - cmake-data
-            - cmake
-            - libboost-program-options-dev
-            - mpich
-            - libmpich-dev
       env:
         - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
 
     # Clang 5.0
-    - os: linux
-      dist: trusty
-      addons:
+    - addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-5.0
-            - boost-latest
+            - llvm-toolchain-trusty-3.9
+            - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
           packages:
+            - *common_packages
             - clang-5.0
-            - cmake-data
-            - cmake
-            - libboost-program-options-dev
-            - mpich
-            - libmpich-dev
       env:
         - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
 
     # Clang 6.0
-    - os: linux
-      dist: trusty
-      addons:
+    - addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-6.0
-            - boost-latest
+            - llvm-toolchain-trusty-3.9
+            - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
           packages:
+            - *common_packages
             - clang-6.0
-            - cmake-data
-            - cmake
-            - libboost-program-options-dev
-            - mpich
-            - libmpich-dev
       env:
         - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
 
@@ -179,8 +141,9 @@ before_install:
   - export CMAKE_OPTIONS=${CMAKE_OPTIONS}" "${ENV_CMAKE_OPTIONS}
   - export CXX_FLAGS=${CXX_FLAGS}" "${ENV_CXX_FLAGS}
   - eval "${MATRIX_EVAL}"
-
+  
 script:
+# build
   - echo "CXX_FLAGE=${CXX_FLAGS}"
   - echo "MAKE_FLAGS=${MAKE_FLAGS}"
   - which ${CC}
@@ -189,3 +152,9 @@ script:
   - cd build
   - cmake -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" ..
   - make ${MAKE_FLAGS}
+# test  
+  - mpirun -n 2 ./test_argument_transfer_mpi
+  - mpirun -n 3 ./test_data_transfer_mpi
+  - mpirun -n 3 ./ham_offload_test_mpi
+  - mpirun -n 3 ./ham_offload_test_explicit_mpi
+  

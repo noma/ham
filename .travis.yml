@@ -3,13 +3,18 @@ language: cpp
 os: linux
 dist: trusty
 
+boost_source: &boost_sources
+  - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
+    key_url: 'https://keyserver.ubuntu.com/pks/lookup?fingerprint=on&op=index&search=0xCB9BF221FEDFF07F6EC35826E369A2C71FD3FA53'
+
+  
+
 addons:
   apt:
     sources: &common_sources
       - ubuntu-toolchain-r-test
+      - *boost_sources
     # - boost-latest
-      - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
-        key_url: 'https://keyserver.ubuntu.com/pks/lookup?fingerprint=on&op=index&search=0xCB9BF221FEDFF07F6EC35826E369A2C71FD3FA53'
     packages: &common_packages
       - cmake-data
       - cmake

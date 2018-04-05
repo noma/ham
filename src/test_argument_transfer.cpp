@@ -22,7 +22,7 @@ template<typename T>
 bool test_type_invokation(offload::node_t target, T arg)
 {
 	T result = offload::sync(target, f2f(&type_transfer_function<T>, arg));
-	bool passed = (result == arg);
+	bool passed = result == arg;
 	std::cout << "Result for type \"" << typeid(T).name() << "\": " << (passed ? "pass" : "fail") << std::endl;
 	return passed;
 }

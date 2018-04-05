@@ -88,8 +88,7 @@ jobs:
 # Clang 3.9
     - addons:
         apt:
-          sources: *common_sources
-            - llvm-toolchain-trusty-3.9
+          sources: [ *common_sources, llvm-toolchain-trusty-3.9 ]
           packages:
             - *common_packages
             - clang-3.9
@@ -99,8 +98,7 @@ jobs:
     # Clang 4.0
     - addons:
         apt:
-          sources: *common_sources
-            - llvm-toolchain-trusty-4.0
+          sources: [ *common_sources, llvm-toolchain-trusty-4.0 ]
           packages:
             - *common_packages
             - clang-4.0
@@ -110,9 +108,7 @@ jobs:
     # Clang 5.0
     - addons:
         apt:
-          sources:
-            - *common_sources
-            - llvm-toolchain-trusty-5.0
+          sources: [ *common_sources, llvm-toolchain-trusty-5.0 ]
           packages:
             - *common_packages
             - clang-5.0
@@ -122,8 +118,7 @@ jobs:
     # Clang 6.0
     - addons:
         apt:
-          sources: *common_sources
-            - llvm-toolchain-trusty-6.0
+          sources: [ common_sources, llvm-toolchain-trusty-6.0 ]
           packages:
             - *common_packages
             - clang-6.0

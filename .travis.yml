@@ -9,6 +9,7 @@ addons:
       - ubuntu-toolchain-r-test
     # - boost-latest
       - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
+        key_url: 'https://keyserver.ubuntu.com/pks/lookup?fingerprint=on&op=index&search=0xCB9BF221FEDFF07F6EC35826E369A2C71FD3FA53'
     packages: &common_packages
       - cmake-data
       - cmake

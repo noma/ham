@@ -6,7 +6,7 @@ dist: trusty
 common_sources: &common_sources
 - ubuntu-toolchain-r-test
 - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
-  key_url: 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xE369A2C71FD3FA53'
+#  key_url: 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xE369A2C71FD3FA53'
 
 common_packages: &common_packages
 - cmake-data

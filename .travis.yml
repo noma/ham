@@ -3,7 +3,6 @@ language: cpp
 os: linux
 dist: trusty
 
-
 addons:
   apt:
     sources: &common_sources
@@ -90,6 +89,9 @@ jobs:
         apt:
           sources:
             # << : [ *common_sources, llvm-toolchain-trusty-3.9 ]
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-3.9
+            - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
           packages:
             - *common_packages
             - clang-3.9

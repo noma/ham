@@ -1,5 +1,21 @@
 language: cpp
 
+os: linux
+dist: trusty
+
+addons:
+  apt:
+    sources:
+      - boost-latest
+      - ubuntu-toolchain-r-test
+    packages:
+      - cmake-data
+      - cmake
+      - libboost-program-options1.55-dev
+      - mpich
+      - libmpich-dev
+    # - mpi-default-dev # open-mpi, headers cause some compiler warnings
+
 env:
   global:
     - LINUX_DIST=trusty
@@ -13,17 +29,8 @@ jobs:
       dist: trusty
       addons:
         apt:
-          sources:
-            - boost-latest
-            - ubuntu-toolchain-r-test
           packages:
             - g++-4.9
-            - cmake-data
-            - cmake
-            - libboost-program-options1.55-dev
-            - mpich
-            - libmpich-dev
-            # - mpi-default-dev # open-mpi, headers cause some compiler warnings
       env:
         - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
 

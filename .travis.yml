@@ -6,7 +6,7 @@ env:
     - CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror"
     - MAKE_FLAGS="-j2" # VERBOSE=1
 
-matrix:
+jobs:
   include:
     # GCC 4.9
     - os: linux
@@ -183,18 +183,12 @@ before_install:
 #  - sudo apt-get update -q
 #  - sudo apt-get install boost1.58 -y
   
-jobs:
-  include:
-    - stage: build
-      script:
-        - echo "CXX_FLAGE=${CXX_FLAGS}"
-        - echo "MAKE_FLAGS=${MAKE_FLAGS}"
-        - which ${CC}
-        - which ${CXX}
-        - mkdir -p build
-        - cd build
-        - cmake -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" ..
-        - make ${MAKE_FLAGS}
-    - stage: test
-      script:
-        - echo "Test"
+script:
+  - echo "CXX_FLAGE=${CXX_FLAGS}"
+  - echo "MAKE_FLAGS=${MAKE_FLAGS}"
+  - which ${CC}
+  - which ${CXX}
+  - mkdir -p build
+  - cd build
+  - cmake -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" ..
+  - make ${MAKE_FLAGS}

@@ -17,6 +17,14 @@ common_packages: &common_packages
 - libmpich-dev
 # - mpi-default-dev # open-mpi, headers cause some compiler warnings
 
+addons:
+  apt:
+    sources:
+      - *common_sources
+    packages:
+      - *common_packages
+      - g++-4.9
+
 
 #addons:
 #  apt:
@@ -43,13 +51,6 @@ jobs:
   include:
     # GCC 4.9
     - os: linux
-      addons:
-        apt:
-          sources:
-            - *common_sources
-          packages:
-            - *common_packages
-            - g++-4.9
       env:
         - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
 

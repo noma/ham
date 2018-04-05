@@ -20,9 +20,14 @@ common_packages: &common_packages
 addons:
   apt:
     sources:
-      - *common_sources
+      - ubuntu-toolchain-r-test
+      - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
     packages:
-      - *common_packages
+      - cmake-data
+      - cmake
+      - libboost-program-options1.60-dev
+      - mpich
+      - libmpich-dev
       - g++-4.9
 
 

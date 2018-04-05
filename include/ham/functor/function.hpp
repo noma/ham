@@ -97,28 +97,36 @@ private:
 #define F2F_7(...)          F2F_N_ARGS(__VA_ARGS__)
 #define F2F_8(...)          F2F_N_ARGS(__VA_ARGS__)
 #define F2F_9(...)          F2F_N_ARGS(__VA_ARGS__)
-#define F2F_10(...)          F2F_N_ARGS(__VA_ARGS__)
-#define F2F_11(...)          F2F_N_ARGS(__VA_ARGS__)
-#define F2F_12(...)          F2F_N_ARGS(__VA_ARGS__)
-#define F2F_13(...)          F2F_N_ARGS(__VA_ARGS__)
-#define F2F_14(...)          F2F_N_ARGS(__VA_ARGS__)
-#define F2F_15(...)          F2F_N_ARGS(__VA_ARGS__)
-#define F2F_16(...)          F2F_N_ARGS(__VA_ARGS__)
-#define F2F_17(...)          F2F_N_ARGS(__VA_ARGS__)
-#define F2F_18(...)          F2F_N_ARGS(__VA_ARGS__)
-#define F2F_19(...)          F2F_N_ARGS(__VA_ARGS__)
-#define F2F_20(...)          F2F_N_ARGS(__VA_ARGS__)
-#define F2F_21(...)          F2F_N_ARGS(__VA_ARGS__)
-#define F2F_22(...)          F2F_N_ARGS(__VA_ARGS__)
-#define F2F_23(...)          F2F_N_ARGS(__VA_ARGS__)
-#define F2F_24(...)          F2F_N_ARGS(__VA_ARGS__)
-#define F2F_25(...)          F2F_N_ARGS(__VA_ARGS__)
-#define F2F_26(...)          F2F_N_ARGS(__VA_ARGS__)
-#define F2F_27(...)          F2F_N_ARGS(__VA_ARGS__)
-#define F2F_28(...)          F2F_N_ARGS(__VA_ARGS__)
-#define F2F_29(...)          F2F_N_ARGS(__VA_ARGS__)
+#define F2F_10(...)         F2F_N_ARGS(__VA_ARGS__)
+#define F2F_11(...)         F2F_N_ARGS(__VA_ARGS__)
+#define F2F_12(...)         F2F_N_ARGS(__VA_ARGS__)
+#define F2F_13(...)         F2F_N_ARGS(__VA_ARGS__)
+#define F2F_14(...)         F2F_N_ARGS(__VA_ARGS__)
+#define F2F_15(...)         F2F_N_ARGS(__VA_ARGS__)
+#define F2F_16(...)         F2F_N_ARGS(__VA_ARGS__)
+#define F2F_17(...)         F2F_N_ARGS(__VA_ARGS__)
+#define F2F_18(...)         F2F_N_ARGS(__VA_ARGS__)
+#define F2F_19(...)         F2F_N_ARGS(__VA_ARGS__)
+#define F2F_20(...)         F2F_N_ARGS(__VA_ARGS__)
+#define F2F_21(...)         F2F_N_ARGS(__VA_ARGS__)
+#define F2F_22(...)         F2F_N_ARGS(__VA_ARGS__)
+#define F2F_23(...)         F2F_N_ARGS(__VA_ARGS__)
+#define F2F_24(...)         F2F_N_ARGS(__VA_ARGS__)
+#define F2F_25(...)         F2F_N_ARGS(__VA_ARGS__)
+#define F2F_26(...)         F2F_N_ARGS(__VA_ARGS__)
+#define F2F_27(...)         F2F_N_ARGS(__VA_ARGS__)
+#define F2F_28(...)         F2F_N_ARGS(__VA_ARGS__)
+#define F2F_29(...)         F2F_N_ARGS(__VA_ARGS__)
 
 #define f2f(...) BOOST_PP_OVERLOAD(F2F_,__VA_ARGS__)(__VA_ARGS__)
+
+/* NOTE: a generate function using type deduction is not an option
+ *
+ *     template<typename F_PTR_T, typename... Args>
+ *     constexpr auto f2f(F_PTR_T&& function_ptr, Args&&... args) -> decltype(ham::function<F_PTR_T, fptr>(args...)) { ... }
+ *
+ * as function_ptr 'is not a constant expression' (the function could be called with a runtime value, even if it is not).
+ */
 
 /**
  * Copyability of Function<...> is defined by the conjunction of the copyability of

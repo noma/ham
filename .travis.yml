@@ -5,10 +5,10 @@ dist: trusty
 
 addons:
   apt:
-    sources:
+    sources: &common_sources
       - boost-latest
       - ubuntu-toolchain-r-test
-    packages:
+    packages: &common_packages
       - cmake-data
       - cmake
       - libboost-program-options1.55-dev
@@ -29,7 +29,10 @@ jobs:
       dist: trusty
       addons:
         apt:
+          sources:
+            - *common_sources
           packages:
+            - *common_packages
             - g++-4.9
       env:
         - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"

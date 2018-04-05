@@ -170,8 +170,8 @@ exe inner_product_mpi
 	;
 
 exe inner_product_mpi_rma_dynamic
-    : [ obj inner_product_obj : inner_product.cpp : <library>/mpi//mpi <define>HAM_COMM_MPI ] ham_offload_mpi_rma_dyn boost_program_options
-    : <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC <define>HAM_DEBUG_ON
+    : [ obj inner_product_obj : inner_product.cpp : <library>/mpi//mpi <define>HAM_COMM_MPI_RMA_DYNAMIC ] ham_offload_mpi_rma_dyn boost_program_options
+    : <library>/mpi//mpi <cflags>-g <define>HAM_COMM_MPI_RMA_DYNAMIC <define>HAM_DEBUG_ON
     ;
 
 # exe test_data_transfer_scif

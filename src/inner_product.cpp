@@ -50,25 +50,24 @@ int main(int argc, char* argv[])
 	// allocate device memory (returns a buffer_ptr<T>)
 	auto a_target = offload::allocate<double>(target, n);
 	std::cout << "allocated remote buffer 1" << std::endl;
-	//auto b_target = offload::allocate<double>(target, n);
-	//std::cout << "allocated remote buffer 2" << std::endl;
+	auto b_target = offload::allocate<double>(target, n);
+	std::cout << "allocated remote buffer 2" << std::endl;
 
 
 	// transfer data to the device (the target is implicitly specified by the destination buffer_ptr)	
-	//auto future_a_put = offload::put(a.data(), a_target, n); // async
-	offload::put(a.data(), a_target, n); // sync
-	//offload::put(b.data(), b_target, n); // sync (implicitly returned future performs synchronisation in dtor), alternative: put_sync()
-	
-	// synchronise
-	//future_a_put.get();
+	auto future_a_put = offload::put(a.data(), a_target, n); // async
+    offload::put(b.data(), b_target, n); // sync (implicitly returned future performs synchronisation in dtor), alternative: put_sync()
+
+    // synchronise
+    future_a_put.get();
 
 	std::cout << "completed put" << std::endl;
 
 	// asynchronously offload the call to inner_product
-	//auto c_future = offload::async(target, f2f(&inner_product, a_target, b_target, n));
+	auto c_future = offload::async(target, f2f(&inner_product, a_target, b_target, n));
 
 	// synchronise on the result
-	//double c = c_future.get();
+	double c = c_future.get();
 
 	// we also could have used:
 	// double c = offload::async(...).get();
@@ -77,7 +76,7 @@ int main(int argc, char* argv[])
 	// offload.async(...);
 
 	// output the result
-	//std::cout << "Result: " << c << std::endl;
+	std::cout << "Result: " << c << std::endl;
 	
 	return 0;	
 }

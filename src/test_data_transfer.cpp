@@ -76,15 +76,16 @@ int main(int argc, char* argv[])
 	
 	// host -> target_a -> target_b -> host
 	std::cout << "put to target_a: ";
-	offload::put(write_buffer.data(), target_buffer_a, n);
-	std::cout << "done" << std::endl;
+	auto put_future = offload::put(write_buffer.data(), target_buffer_a, n);
+    put_future.get();
+    std::cout << "done" << std::endl;
 
-	offload::sync(target_a, f2f(&print_buffer_content, target_buffer_a, n));
 
-	std::cout << "copy from target_a to target_b: ";
-	offload::copy_sync(target_buffer_a, target_buffer_b, n);
-	std::cout << "done" << std::endl;
+    offload::sync(target_a, f2f(&print_buffer_content, target_buffer_a, n));
 
+    std::cout << "copy from target_a to target_b: ";
+    offload::copy_sync(target_buffer_a, target_buffer_b, n);
+    std::cout << "done" << std::endl;
 	offload::async(target_b, f2f(&print_buffer_content, target_buffer_b, n));
 
 	std::cout << "get from target_b: ";

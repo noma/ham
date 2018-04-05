@@ -31,8 +31,7 @@ jobs:
     - os: linux
       addons:
         apt:
-          sources:
-            - *common_sources
+          sources: *common_sources
           packages:
             - *common_packages
             - g++-4.9

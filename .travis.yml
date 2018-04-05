@@ -101,7 +101,10 @@ jobs:
     # Clang 4.0
     - addons:
         apt:
-          sources: [ *common_sources, llvm-toolchain-trusty-4.0 ]
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-3.9
+            - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
           packages:
             - *common_packages
             - clang-4.0
@@ -111,7 +114,10 @@ jobs:
     # Clang 5.0
     - addons:
         apt:
-          sources: [ *common_sources, llvm-toolchain-trusty-5.0 ]
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-3.9
+            - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
           packages:
             - *common_packages
             - clang-5.0
@@ -121,7 +127,10 @@ jobs:
     # Clang 6.0
     - addons:
         apt:
-          sources: [ common_sources, llvm-toolchain-trusty-6.0 ]
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-3.9
+            - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
           packages:
             - *common_packages
             - clang-6.0

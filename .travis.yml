@@ -7,21 +7,30 @@ common_sources: &common_sources
 - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
   key_url: 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xE369A2C71FD3FA53'
 - ubuntu-toolchain-r-test
-  
 
-addons:
-  apt:
+common_packages: &common_packages
+- cmake-data
+- cmake
+# - libboost-program-options1.55-dev # boost-latest
+- libboost-program-options1.60-dev
+- mpich
+- libmpich-dev
+# - mpi-default-dev # open-mpi, headers cause some compiler warnings
+
+
+#addons:
+#  apt:
 #    sources: &common_sources
 #      - ubuntu-toolchain-r-test
 #      - *boost_sources
 #    # - boost-latest
-    packages: &common_packages
-      - cmake-data
-      - cmake
+#    packages: &common_packages
+#      - cmake-data
+#      - cmake
     # - libboost-program-options1.55-dev # boost-latest
-      - libboost-program-options1.60-dev
-      - mpich
-      - libmpich-dev
+#      - libboost-program-options1.60-dev
+#      - mpich
+#      - libmpich-dev
     # - mpi-default-dev # open-mpi, headers cause some compiler warnings
 
 env:

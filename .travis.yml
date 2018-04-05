@@ -42,7 +42,8 @@ env:
 jobs:
   include:
     # GCC 4.9
-    - addons:
+    - os: linux
+      addons:
         apt:
           sources:
             - *common_sources

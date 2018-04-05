@@ -88,7 +88,8 @@ jobs:
 # Clang 3.9
     - addons:
         apt:
-          sources: [ *common_sources, llvm-toolchain-trusty-3.9 ]
+          sources:
+            << : [ *common_sources, llvm-toolchain-trusty-3.9 ]
           packages:
             - *common_packages
             - clang-3.9

@@ -4,8 +4,8 @@ os: linux
 dist: trusty
 
 boost_source: &boost_sources
-  - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
-    key_url: 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xE369A2C71FD3FA53'
+- sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
+  key_url: 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xE369A2C71FD3FA53'
 
   
 

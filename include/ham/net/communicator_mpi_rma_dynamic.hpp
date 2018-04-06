@@ -327,7 +327,7 @@ public:
 	void recv_data(buffer_ptr<T> remote_source, T* local_dest, size_t size)
 	{
 		MPI_Win_lock(MPI_LOCK_SHARED, remote_source.node(), 0, peers[remote_source.node()].rma_win);
-		MPI_Get(remote_source, size * sizeof(T), MPI_BYTE, remote_source.node(), remote_dest.get_mpi_address(), size * sizeof(T), MPI_BYTE, peers[remote_source.node()].rma_win);
+		MPI_Get(remote_source, size * sizeof(T), MPI_BYTE, remote_source.node(), remote_source.get_mpi_address(), size * sizeof(T), MPI_BYTE, peers[remote_source.node()].rma_win);
 		MPI_Win_unlock(remote_source.node(), peers[remote_source.node()].rma_win);
 	}
 	

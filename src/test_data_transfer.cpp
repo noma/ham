@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
 	bool passed = compare(write_buffer, read_buffer);
 	
 	std::cout << "Verified data? " << passed << std::endl;
-	
-	return 0;	
+
+	return passed ? 0 : -1;
 }
 

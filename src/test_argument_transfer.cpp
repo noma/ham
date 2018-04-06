@@ -83,6 +83,6 @@ int main(int argc, char* argv[])
 	
 	std::cout << "Overall result: " << (passed ? "pass" : "fail") << std::endl;
 	
-	return 0;	
+	return passed ? 0 : -1;
 }
 

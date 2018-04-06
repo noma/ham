@@ -66,7 +66,11 @@ int main(int argc, char* argv[])
 
 	// output the result
 	std::cout << "Result: " << c << std::endl;
-	
-	return 0;	
+
+	// compare with local computation, with explicitly created buffer_ptr temporaries pointing to the local data of the std:array objects
+	double c_compare = inner_product(offload::buffer_ptr<double>(a.data(), offload::this_node()), offload::buffer_ptr<double>(b.data(), offload::this_node()), n);
+	bool passed = c == c_compare; // NOTE: floating point comparison
+
+	return passed ? 0 : -1;
 }
 

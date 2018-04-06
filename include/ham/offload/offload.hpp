@@ -309,7 +309,7 @@ void get_sync(buffer_ptr<T> remote_source, T* local_dest, size_t n)
 
 //}
 
-#ifdef HAM_COMM_MPI_RMA_DYNAMIC // compile-integration pending
+#ifdef HAM_COMM_MPI_RMA_DYNAMIC
         template<typename T>
 future<void> copy(buffer_ptr<T> source, buffer_ptr<T> dest, size_t n)
 {

@@ -145,9 +145,9 @@ private:
 
         void operator()() //const
         {
-            communicator::instance().establish_rma_path(remote_node); // should quickly return if path already exists
+        /*   communicator::instance().establish_rma_path(remote_node); // should quickly return if path already exists
             // attach existing buffers to new target window ?!?
-
+        */
             communicator::instance().send_data(local_source, buffer_ptr<T>(nullptr, remote_node, remote_addr), n);
 
             // send a result message to tell the sender, that the transfer is done
@@ -165,6 +165,7 @@ private:
     };
 //#endif
 
+/*
 // allows user to setup an rma link between two targets without a copy transfer
 #ifdef HAM_COMM_MPI_RMA_DYNAMIC
     template<typename T, template<class> class ExecutionPolicy = default_execution_policy>
@@ -188,8 +189,7 @@ private:
         node_t remote_node;
     };
 #endif
-
-// link buffer msg? to tell target of copy to add the buffer to the soecific window... which might not even exist...fuck
+*/
 
 } // namespace detail
 } // namespace offload

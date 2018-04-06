@@ -77,8 +77,7 @@ int main(int argc, char* argv[])
 
 	// output the result
 	std::cout << "Result: " << c << std::endl;
-
-    MPI_Win_create_dynamic()
+    
 
 
 	return 0;	

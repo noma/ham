@@ -55,6 +55,7 @@ jobs:
             - g++-6
       env:
         - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+        - CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror -Wno-error=unused-but-set-variable"
     
     # GCC 7
     - addons:
@@ -65,6 +66,7 @@ jobs:
             - g++-7
       env:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        - CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror -Wno-error=unused-but-set-variable"
 
     # GCC 8
 #    - os: linux
@@ -103,7 +105,7 @@ jobs:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-3.9
+            - llvm-toolchain-trusty-4.0
             - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
           packages:
             - *common_packages
@@ -116,7 +118,7 @@ jobs:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-3.9
+            - llvm-toolchain-trusty-5.0
             - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
           packages:
             - *common_packages
@@ -129,7 +131,7 @@ jobs:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-3.9
+            - llvm-toolchain-trusty-6.0
             - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
           packages:
             - *common_packages

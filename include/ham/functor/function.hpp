@@ -12,7 +12,7 @@
 #include <boost/preprocessor/facilities/overload.hpp>
 
 #include "ham/misc/traits.hpp"
-#include "ham/util/make_seq.hpp"
+#include "ham/util/make_index_sequence.hpp"
 #include "ham/misc/migratable.hpp"
 
 namespace ham {
@@ -58,12 +58,12 @@ public:
 	Result operator()() const
 	{
 		// call a helper with an integer sequence to unpack the tupel
-		return evaluation_helper(typename util::make_seq<sizeof...(Pars)>::type());
+		return evaluation_helper(typename util::make_index_sequence<sizeof...(Pars)>::type());
 	}
 private:
 	// this helper is needed to extract the actual integer sequence from seq by template argument deduction
-	template<int... S>
-	Result evaluation_helper(util::seq<S...>) const
+	template<std::size_t... S>
+	Result evaluation_helper(util::index_sequence<S...>) const
 	{
 		// call the function with the unpacked tuple
 		return FunctionPtr(std::get<S>(args)...);

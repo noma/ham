@@ -121,7 +121,7 @@ void offload_call()
 char* local_allocate(size_t size)
 {
 	//return new char[data_size];
-	char* ptr = NULL;
+	char* ptr = nullptr;
 	int err = 0;
 	if ((err = posix_memalign((void**)&ptr, HOST_ALIGNMENT, size * sizeof(char))))
 		std::cout << "error, posix_memalign() returned: " << err << std::endl;

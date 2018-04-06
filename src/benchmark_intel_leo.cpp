@@ -4,12 +4,12 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/program_options.hpp>
+#include <noma/bmt/bmt.hpp>
+
 #include <iostream>
 #include <string>
 #include <sstream>
 #include <stdlib.h> // posix_memalign
-
-#include "ham/util/time.hpp"
 
 // memory allocation macros for offload pragma modifiers
 #define ALLOC alloc_if(1)
@@ -211,8 +211,8 @@ int main(int argc, char * argv[])
 	// allocate host data of given size
 	char* data = local_allocate(data_size);
 
-	std::string header_string = "name\t" + statistics::header_string();
-	std::string header_string_data = "name\t" + statistics::header_string() + "\tdata_size";
+	std::string header_string = statistics::header_string(true);
+	std::string header_string_data = statistics::header_string(true) + "\tdata_size";
 
 	if (vm.count("allocate"))
 	{

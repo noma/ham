@@ -43,4 +43,5 @@ endif ()
 # tell the compiler to be strict
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wpedantic -Wextra")
 
+add_subdirectory(thirdparty/bmt ${CMAKE_CURRENT_BINARY_DIR}/build.noma_bmt)
 add_subdirectory(src)

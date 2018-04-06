@@ -22,7 +22,7 @@ namespace ham {
 namespace msg {
 
 // NOTE: this sets the default, maybe use defines here for simple compile time configuration
-typedef msg_handler_registry_abi msg_handler_registry;
+using msg_handler_registry = msg_handler_registry_abi;
 
 } // namespace msg
 } // namespace ham

@@ -13,7 +13,7 @@ namespace ham {
 template<class T>
 class new_buffer {
 public:
-	typedef net::buffer_ptr<T> result_type;
+	using result_type = net::buffer_ptr<T>;
 	new_buffer(size_t n, node_t source) : n(n), source(source) { }
 
 	result_type operator()() const
@@ -29,8 +29,8 @@ private:
 template<class T>
 class delete_buffer {
 public:
-	typedef void result_type;
-	delete_buffer(net::buffer_ptr<T> ptr) : ptr(ptr) { }
+	using result_type = void;
+	delete_buffer(const net::buffer_ptr<T>& ptr) : ptr(ptr) { }
 
 	result_type operator()()
 	{

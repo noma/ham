@@ -22,7 +22,7 @@ struct make_seq : make_seq<N - 1, N - 1, Tail...> { };
 
 template<int... Tail>
 struct make_seq<0, Tail...> {
-	typedef seq<Tail...> type;
+	using type = seq<Tail...>;
 };
 
 } // namespace util

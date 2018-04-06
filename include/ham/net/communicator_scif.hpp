@@ -195,7 +195,7 @@ public:
 		if (is_host())
 		{
 			HAM_DEBUG( HAM_LOG << "num_nodes_: " << num_nodes_ << std::endl; )
-			HAM_DEBUG( for(int i = 0; i < num_nodes_; ++i) HAM_LOG << "node_id " << i << ": " << nodes[i] << std::endl; )
+			HAM_DEBUG( for (int i = 0; i < num_nodes_; ++i) HAM_LOG << "node_id " << i << ": " << nodes[i] << std::endl; )
 
 			// open endpoint to list on (own peer)
 			peers[ham_address].endpoint = scif_open();
@@ -249,7 +249,7 @@ public:
 				errno_handler(SCIF_MMAP_FAILED == peer.mapped_remote_flags ? -1 : 0, "scif_mmap flags");
 
 				// fill resource pools
-				for(size_t j = constants::MSG_BUFFERS; j > 0; --j) {
+				for (size_t j = constants::MSG_BUFFERS; j > 0; --j) {
 					peer.remote_buffer_pool.add(j-1);
 					peer.local_buffer_pool.add(j-1);
 				}

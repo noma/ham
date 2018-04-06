@@ -7,6 +7,7 @@
 #define ham_msg_msg_handler_registry_abi_hpp
 
 #include <iostream>
+#include <limits>
 #include <map>
 #include <string>
 #include <ostream>
@@ -42,13 +43,12 @@ namespace msg {
  */
 class msg_handler_registry_abi {
 public:
-	typedef size_t key_type;
-	typedef void (*pointer_type)(void*);
-	typedef void (*handler_type)(void*);
-	typedef void (*set_key_type)(size_t);
-	typedef std::pair<handler_type, set_key_type> handler_map_value_type;
-	typedef std::map<std::string, handler_map_value_type> handler_map_type;
-	typedef std::vector<handler_type> handler_vector_type;
+	using key_type = size_t;
+	using handler_type = void (*)(void*);
+	using set_key_type = void (*)(key_type);
+	using handler_map_value_type = std::pair<handler_type, set_key_type>;
+	using handler_map_type = std::map<std::string, handler_map_value_type>;
+	using handler_vector_type = std::vector<handler_type>;
 
 	static void init()
 	{
@@ -57,10 +57,10 @@ public:
 		handler_map_type& handler_map = get_handler_map();
 		handler_vector_type& handler_vector = get_handler_vector();
 		size_t index = 0;
-		for (auto it = handler_map.begin(); it != handler_map.end(); ++it) 
+		for (auto& key_value_pair : handler_map)
 		{
-			handler_vector.push_back(it->second.first); // store the handler
-			it->second.second(index); // this actually calls active_msg::set_handler_index()
+			handler_vector.push_back(key_value_pair.second.first); // store the handler
+			key_value_pair.second.second(index); // this actually calls active_msg::set_handler_index()
 			++index;
 		}
 	}
@@ -74,17 +74,17 @@ public:
 	static key_type register_handler() {
 		get_handler_map().insert(std::pair<std::string,handler_map_value_type>(typeid(Msg).name(),
 							   handler_map_value_type(&Msg::handler, &Msg::set_handler_key)));
-		return -1;
+		return INVALID_KEY_VALUE;
 	}
 
 	static void print_handler_map(std::ostream& out)
 	{
 		handler_map_type& handler_map = get_handler_map();
 		out << "==================== BEGIN HANDLER MAP =====================" << std::endl;
-		for (handler_map_type::iterator it = handler_map.begin(); it != handler_map.end(); ++it)
+		for (auto& key_value_pair : handler_map)
 		{
-			out << "typeid_name: " << it->first << ",\t"
-				      << "handler_address: " << (void*)it->second.first << std::endl;
+			out << "typeid_name: " << key_value_pair.first << ",\t"
+				      << "handler_address: " << (void*)key_value_pair.second.first << std::endl;
 		}
 		out << "==================== END HANDLER MAP =======================" << std::endl;
 	}
@@ -125,6 +125,8 @@ protected:
 		static handler_vector_type handler_vector;
 		return handler_vector;
 	}
+
+	static const key_type INVALID_KEY_VALUE { std::numeric_limits<key_type>::max() };
 };
 
 } // namespace msg

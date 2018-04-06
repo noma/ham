@@ -10,7 +10,7 @@
 
 #include <cassert>
 #include <cstring> // memcpy
-#include <stdlib.h> // posix_memalign
+#include <cstdlib> // posix_memalign
 
 #include "ham/misc/constants.hpp"
 #include "ham/misc/resource_pool.hpp"
@@ -122,8 +122,8 @@ public:
 		MPI_Request mpi_reqs[NUM_REQUESTS]; // for sending the msg, receiving the result, and an associated data transfer
 	}; // class request
 	
-	typedef request& request_reference_type;
-	typedef const request& request_const_reference_type;
+	using request_reference_type = request&;
+	using request_const_reference_type = const request&;
 
 	communicator(int argc, char* argv[])
 	{
@@ -140,9 +140,9 @@ public:
 
 		int t;
 		MPI_Comm_rank(MPI_COMM_WORLD, &t);
-		this_node_ = t;
+		this_node_ = static_cast<node_t>(t);
 		MPI_Comm_size(MPI_COMM_WORLD, &t);
-		nodes_ = t;
+		nodes_ = static_cast<size_t>(t);
 		host_node_ = 0; // TODO(improvement): make configureable, like for SCIF
 
 		HAM_DEBUG( std::cout << "communicator::communicator(): initialising MPI done" << std::endl; )
@@ -174,12 +174,13 @@ public:
 		HAM_DEBUG( HAM_LOG << "communicator::communicator(): gathering node descriptions done" << std::endl; )
 		
 		if (is_host()) {
-			for (node_t i = 1; i < nodes_; ++i) { // TODO(improvement): needs to be changed when host-rank becomes configurable
+			for (size_t i = 1; i < nodes_; ++i) { // TODO(improvement): needs to be changed when host-rank becomes configurable
+				node_t current_node = static_cast<node_t>(i);
 				// allocate buffers
-				peers[i].msg_buffers = allocate_buffer<msg_buffer>(constants::MSG_BUFFERS, this_node_);
+				peers[current_node].msg_buffers = allocate_buffer<msg_buffer>(constants::MSG_BUFFERS, this_node_);
 				// fill resource pools
-				for(size_t j = constants::MSG_BUFFERS; j > 0; --j) {
-					peers[i].buffer_pool.add(j-1);
+				for (size_t j = constants::MSG_BUFFERS; j > 0; --j) {
+					peers[current_node].buffer_pool.add(j - 1);
 				}
 			}
 		}
@@ -239,7 +240,6 @@ public:
 		// nothing todo here, since this communicator implementation uses one-sided communication
 		// the data is already where it is expected (in the buffer referenced in req)
 		MPI_Irecv(static_cast<void*>(&peers[req.target_node].msg_buffers[req.recv_buffer_index]), constants::MSG_SIZE, MPI_BYTE, req.target_node, constants::RESULT_TAG, MPI_COMM_WORLD, &req.next_mpi_request());
-		return;
 	}
 
 	template<typename T>

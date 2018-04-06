@@ -9,7 +9,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-#include <stdlib.h> // posix_memalign
+#include <cstdlib> // posix_memalign
 
 #include "ham/util/time.hpp"
 
@@ -68,7 +68,6 @@ float fun_mul(float a, float b)
 
 void fun()
 {
-	return;
 }
 
 void offload_call()
@@ -103,7 +102,7 @@ int main(int argc, char * argv[])
 {
 	// document command line
 	std::cout << "# Command line was: " << std::endl << "# ";
-	for(int i = 0; i < argc; ++i)
+	for (int i = 0; i < argc; ++i)
 		std::cout << argv[i] << " ";
 	std::cout << std::endl;
 

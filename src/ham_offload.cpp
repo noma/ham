@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
 	// HAM-Offload is implicitly initialised, only the host process runs main()
 	std::cout << "ham offload test" << std::endl;
 
-	for (node_t i = 0; i < offload::num_nodes(); ++i)
+	for (node_t i = 0; i < static_cast<node_t>(offload::num_nodes()); ++i)
 	{
 		if(!offload::is_host(i))
 		{

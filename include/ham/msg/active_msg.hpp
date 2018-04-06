@@ -22,7 +22,7 @@ protected:
 	active_msg()
 	: active_msg_base(handler_key_static)
 	{ }
-		
+
 public:
 	using ExecutionPolicy<Derived>::handler;
 	

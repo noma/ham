@@ -35,7 +35,7 @@ template<typename Functor>
 struct helper<Functor, void> {
 	static result_container<void> execute(Functor& func) {
 		func.operator()(); // execute functor
-		return result_container<void>();
+		return {}; // NOTE: return default initialised return type
 	}
 };
 
@@ -46,7 +46,7 @@ class offload_result_msg
 	, public Functor
 {
 public:
-	typedef typename Functor::result_type Result;
+	using Result = typename Functor::result_type;
 
 	offload_result_msg(Functor& f, const communicator::request& req)
 	 : Functor(std::forward<Functor>(f)), req(req) { }

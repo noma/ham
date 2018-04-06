@@ -11,12 +11,12 @@
 
 namespace ham {
 
-typedef size_t node_t; // node type, e.g. MPI rank, identifies remote target process
-typedef char*  msg_buffer_t; // buffer type for messages
+using node_t = int; // node type, e.g. MPI rank, identifies remote target process
+using msg_buffer_t = char*; // buffer type for messages
 
 namespace net {
 class communicator;
-}
+} // namespace net
 
 namespace detail {
 

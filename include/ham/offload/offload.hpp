@@ -38,7 +38,7 @@ template<typename T>
 class future
 {
 public:
-	future() : valid_(false) {}
+	future() = default;
 	
 	// create a dummy future, request is still invalid
 	future(bool valid) : valid_(valid)
@@ -154,8 +154,8 @@ template<typename Functor>
 future<typename std::remove_reference<Functor>::type::result_type> async(node_t node, Functor&& func)
 //auto async(node_t node, Functor&& func) -> typename Functor::result_type
 {
-	typedef typename std::remove_reference<Functor>::type FunctorT;
-	typedef typename FunctorT::result_type Result;
+	using FunctorT = typename std::remove_reference<Functor>::type;
+	using Result = typename FunctorT::result_type;
 
 	net::communicator& comm = runtime::instance().communicator();
 
@@ -190,7 +190,7 @@ typename std::remove_reference<Functor>::type::result_type sync(node_t node, Fun
 template<typename Functor>
 void ping(node_t node, Functor&& func)
 {
-	typedef typename std::remove_reference<Functor>::type FunctorT;
+	using FunctorT = typename std::remove_reference<Functor>::type;
 	net::communicator& comm = runtime::instance().communicator();
 	
 	auto msg = detail::offload_msg<FunctorT, msg::execution_policy_direct>(std::forward<Functor>(func));

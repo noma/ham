@@ -18,14 +18,12 @@ template<typename T>
 class resource_pool
 {
 public:
-    typedef T value_type;
-    typedef size_t size_type;
-    typedef typename std::vector<value_type> container_type;
+    using value_type = T;
+    using size_type = int;
+    using container_type = std::vector<value_type>;
 
 	//resource_pool(size_t count) //: values(count)
-    resource_pool() //: values(count)
-    {
-    }
+    resource_pool() = default; //: values(count)
 
 	resource_pool(const resource_pool&) = delete;
 	resource_pool(resource_pool&& other)
@@ -40,9 +38,7 @@ public:
 		return *this;
 	}
 
-	~resource_pool()
-	{
-	}
+	~resource_pool() = default;
 
 	//void add(value_type&& v)
 	void add(value_type v)
@@ -58,10 +54,10 @@ public:
 			value_type result = free_stack.top();
 			free_stack.pop();
 			return result;
-		} else {
-			std::cerr << "resource_pool::allocate(), error: ran out of resources, returning default object." << std::endl;
-			return value_type();
 		}
+		// else:
+		std::cerr << "resource_pool::allocate(), error: ran out of resources, returning default object." << std::endl;
+		return value_type();
 	}
 
 	value_type next()
@@ -93,7 +89,7 @@ private:
 };
 
 } // namespace detail
-} // namespace ham	
+} // namespace ham
 
 #endif // ham_misc_resource_pool_hpp
 

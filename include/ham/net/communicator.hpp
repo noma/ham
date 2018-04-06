@@ -40,8 +40,8 @@ namespace net {
 	
 	
 	node_t this_node();
-}
-}
+} // namespace net
+} // namespace ham
 
 // NOTE: include new communication backends here, define HAM_COMM_ONE_SIDED accordingly
 #ifdef HAM_COMM_MPI

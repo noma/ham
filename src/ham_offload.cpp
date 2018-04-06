@@ -95,5 +95,5 @@ int main(int argc, char* argv[])
 		} // if
 	} // for
 
-	return 0;	
+	return 0;
 }

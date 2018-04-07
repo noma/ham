@@ -95,7 +95,7 @@ public:
 			HAM_DEBUG( HAM_LOG << "request::get(), after MPI_Waitall()" << std::endl; )
             if(uses_rma_)
             {
-                MPI_Win_unlock(target_node, communicator::instance().peers[target_node].rma_win);
+                MPI_Win_flush(target_node, communicator::instance().peers[target_node].rma_win);
             }
 			return static_cast<void*>(&communicator::instance().peers[target_node].msg_buffers[recv_buffer_index]);
 		}
@@ -212,6 +212,13 @@ public:
             MPI_Win_create_dynamic(MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[i].rma_win));
         }
 
+		// get all locks to targets
+		if (is_host()) {
+			for (node_t i = 1; i < nodes_; ++i) { // TODO(improvement): needs to be changed when host-rank becomes configurable
+				MPI_Win_lock(MPI_LOCK_SHARED, i, 0, peers[i].rma_win);
+			}
+		}
+
         HAM_DEBUG( HAM_LOG << "communicator::communicator(): rma window creation done" << std::endl; )
 /* pairwise COMM stuff
        // both
@@ -304,9 +311,10 @@ public:
 	void send_data(T* local_source, buffer_ptr<T> remote_dest, size_t size)
 	{
 		// execute transfer
-		MPI_Win_lock(MPI_LOCK_SHARED, remote_dest.node(), 0, peers[remote_dest.node()].rma_win);
+		// MPI_Win_lock(MPI_LOCK_SHARED, remote_dest.node(), 0, peers[remote_dest.node()].rma_win);
         MPI_Put(local_source, size * sizeof(T), MPI_BYTE, remote_dest.node(), remote_dest.get_mpi_address(), size * sizeof(T), MPI_BYTE, peers[remote_dest.node()].rma_win);
-        MPI_Win_unlock(remote_dest.node(), peers[remote_dest.node()].rma_win);
+        MPI_Win_flush(remote_dest.node(), peers[remote_dest.node()].rma_win);
+		// MPI_Win_unlock(remote_dest.node(), peers[remote_dest.node()].rma_win);
 	}
 
 	// to be used by the host only
@@ -315,7 +323,7 @@ public:
 	{
         req.uses_rma_ = true;
 
-        MPI_Win_lock(MPI_LOCK_SHARED, remote_dest.node(), 0, peers[remote_dest.node()].rma_win);
+        // MPI_Win_lock(MPI_LOCK_SHARED, remote_dest.node(), 0, peers[remote_dest.node()].rma_win);
         MPI_Rput(local_source, size * sizeof(T), MPI_BYTE, remote_dest.node(), remote_dest.get_mpi_address(), size * sizeof(T), MPI_BYTE, peers[remote_dest.node()].rma_win, &req.next_mpi_request());
 	}
 
@@ -326,9 +334,10 @@ public:
 	template<typename T>
 	void recv_data(buffer_ptr<T> remote_source, T* local_dest, size_t size)
 	{
-		MPI_Win_lock(MPI_LOCK_SHARED, remote_source.node(), 0, peers[remote_source.node()].rma_win);
+		// MPI_Win_lock(MPI_LOCK_SHARED, remote_source.node(), 0, peers[remote_source.node()].rma_win);
 		MPI_Get(remote_source, size * sizeof(T), MPI_BYTE, remote_source.node(), remote_source.get_mpi_address(), size * sizeof(T), MPI_BYTE, peers[remote_source.node()].rma_win);
-		MPI_Win_unlock(remote_source.node(), peers[remote_source.node()].rma_win);
+		MPI_Win_flush(remote_source.node(), peers[remote_source.node()].rma_win);
+		// MPI_Win_unlock(remote_source.node(), peers[remote_source.node()].rma_win);
 	}
 	
 	// to be used by the host
@@ -337,7 +346,7 @@ public:
 	{
         req.uses_rma_ = true;
 
-		MPI_Win_lock(MPI_LOCK_SHARED, remote_source.node(), 0, peers[remote_source.node()].rma_win);
+		// MPI_Win_lock(MPI_LOCK_SHARED, remote_source.node(), 0, peers[remote_source.node()].rma_win);
 		MPI_Rget(local_dest, size * sizeof(T), MPI_BYTE, remote_source.node(), remote_source.get_mpi_address(), size * sizeof(T), MPI_BYTE, peers[remote_source.node()].rma_win, &req.next_mpi_request());
 	}
 

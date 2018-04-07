@@ -215,7 +215,7 @@ public:
 		// get all locks to targets
 		if (is_host()) {
 			for (node_t i = 1; i < nodes_; ++i) { // TODO(improvement): needs to be changed when host-rank becomes configurable
-				MPI_Win_lock(MPI_LOCK_SHARED, i, 0, peers[i].rma_win);
+				MPI_Win_lock(MPI_LOCK_SHARED, i, 0, peers[i].rma_win);  // shared locks so host won't need to unlock for target-target-copy
 			}
 		}
 
@@ -311,10 +311,10 @@ public:
 	void send_data(T* local_source, buffer_ptr<T> remote_dest, size_t size)
 	{
 		// execute transfer
-		// MPI_Win_lock(MPI_LOCK_SHARED, remote_dest.node(), 0, peers[remote_dest.node()].rma_win);
+		MPI_Win_lock(MPI_LOCK_SHARED, remote_dest.node(), 0, peers[remote_dest.node()].rma_win);
         MPI_Put(local_source, size * sizeof(T), MPI_BYTE, remote_dest.node(), remote_dest.get_mpi_address(), size * sizeof(T), MPI_BYTE, peers[remote_dest.node()].rma_win);
-        MPI_Win_flush(remote_dest.node(), peers[remote_dest.node()].rma_win);
-		// MPI_Win_unlock(remote_dest.node(), peers[remote_dest.node()].rma_win);
+        // MPI_Win_flush(remote_dest.node(), peers[remote_dest.node()].rma_win);
+		MPI_Win_unlock(remote_dest.node(), peers[remote_dest.node()].rma_win);
 	}
 
 	// to be used by the host only

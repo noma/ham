@@ -10,8 +10,6 @@ add_subdirectory(ham)
 
 ### Benchmarks
 
-message(${CMAKE_CXX_COMPILER_ID})
-
 ## Explicit targets (not built by default)
 # Intel LEO offload directive benchmark, requires Intel compiler
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")

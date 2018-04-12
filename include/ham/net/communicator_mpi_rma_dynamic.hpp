@@ -213,11 +213,13 @@ public:
         }
 
 		// get all locks to targets
-		if (is_host()) {
-			for (node_t i = 1; i < nodes_; ++i) { // TODO(improvement): needs to be changed when host-rank becomes configurable
-				MPI_Win_lock(MPI_LOCK_SHARED, i, 0, peers[i].rma_win);  // shared locks so host won't need to unlock for target-target-copy
-			}
-		}
+        // targets lock to other targets for copies
+        for (node_t i = 1; i < nodes_; ++i) { // TODO(improvement): needs to be changed when host-rank becomes configurable
+            if(i != this_node_) {
+                MPI_Win_lock(MPI_LOCK_SHARED, i, 0, peers[i].rma_win);  // shared locks because all ranks lock on every target concurrently
+            }
+        }
+
 
         HAM_DEBUG( HAM_LOG << "communicator::communicator(): rma window creation done" << std::endl; )
 /* pairwise COMM stuff
@@ -311,10 +313,10 @@ public:
 	void send_data(T* local_source, buffer_ptr<T> remote_dest, size_t size)
 	{
 		// execute transfer
-		MPI_Win_lock(MPI_LOCK_SHARED, remote_dest.node(), 0, peers[remote_dest.node()].rma_win);
+		// MPI_Win_lock(MPI_LOCK_SHARED, remote_dest.node(), 0, peers[remote_dest.node()].rma_win); // not needed since all ranks have locks on all targets
         MPI_Put(local_source, size * sizeof(T), MPI_BYTE, remote_dest.node(), remote_dest.get_mpi_address(), size * sizeof(T), MPI_BYTE, peers[remote_dest.node()].rma_win);
         // MPI_Win_flush(remote_dest.node(), peers[remote_dest.node()].rma_win);
-		MPI_Win_unlock(remote_dest.node(), peers[remote_dest.node()].rma_win);
+		// MPI_Win_unlock(remote_dest.node(), peers[remote_dest.node()].rma_win);
 	}
 
 	// to be used by the host only
@@ -356,10 +358,11 @@ public:
 		T* ptr;
 		//int err =
 		posix_memalign((void**)&ptr, constants::CACHE_LINE_SIZE, n * sizeof(T));
-        // attach to all windows
-        for (node_t i = 1; i < nodes_; ++i) {
+        // attach to own window
+        MPI_Win_attach(peers[this_node_].rma_win, (void*)ptr, n * sizeof(T));
+        /* for (node_t i = 1; i < nodes_; ++i) { // nonsense, all accesses to a rank will only take place on that targets window, no need to attach to other
             MPI_Win_attach(peers[i].rma_win, (void*)ptr, n * sizeof(T));
-        }
+        } */
 		MPI_Aint mpi_address;
 		MPI_Get_address((void*)ptr, &mpi_address);
 		// NOTE: no ctor is called
@@ -382,10 +385,11 @@ public:
 	{
 		assert(ptr.node() == this_node_);
 		// NOTE: no dtor is called
-		// remove from all rma windows
-        for (node_t i = 1; i < nodes_; ++i) {
+        // remove from own rma window
+        MPI_Win_detach(peers[this_node_].rma_win, ptr.get());
+        /* for (node_t i = 1; i < nodes_; ++i) { // nonsense, all accesses to a rank will only take place on that targets window, no need to attach to other
             MPI_Win_detach(peers[i].rma_win, ptr.get());
-        }
+        } */
 		free(static_cast<void*>(ptr.get()));
 	}
 

@@ -315,7 +315,7 @@ public:
 		// execute transfer
 		// MPI_Win_lock(MPI_LOCK_SHARED, remote_dest.node(), 0, peers[remote_dest.node()].rma_win); // not needed since all ranks have locks on all targets
         MPI_Put(local_source, size * sizeof(T), MPI_BYTE, remote_dest.node(), remote_dest.get_mpi_address(), size * sizeof(T), MPI_BYTE, peers[remote_dest.node()].rma_win);
-        // MPI_Win_flush(remote_dest.node(), peers[remote_dest.node()].rma_win);
+        MPI_Win_flush(remote_dest.node(), peers[remote_dest.node()].rma_win);
 		// MPI_Win_unlock(remote_dest.node(), peers[remote_dest.node()].rma_win);
 	}
 

@@ -10,6 +10,7 @@
 #include <string>
 #include <sstream>
 #include <stdlib.h> // posix_memalign
+//#include <ham/net/communicator_mpi.hpp>
 
 #include "ham/util/time.hpp"
 
@@ -124,6 +125,7 @@ int main(int argc, char * argv[])
 		("allocate,a", boost::program_options::value<bool>()->zero_tokens(), "benchmark memory allocation/deallocation on target")
 		("copy-in,i", boost::program_options::value<bool>()->zero_tokens(), "benchmark data copy to target")
 		("copy-out,o", boost::program_options::value<bool>()->zero_tokens(), "benchmark data copy from target")
+		("copy-direct,d", boost::program_options::value<bool>()->zero_tokens(), "benchmark data copy from target to another target")
 		("call,c", boost::program_options::value<bool>()->zero_tokens(), "benchmark function call on target")
 		("call-mul,m", boost::program_options::value<bool>()->zero_tokens(), "benchmark function call (multiplication) on target")
 		("async,y", boost::program_options::value<bool>()->zero_tokens(), "perform benchmark function calls asynchronously")
@@ -157,6 +159,11 @@ int main(int argc, char * argv[])
 		std::cout << "# COMM_MPI                     enabled" << std::endl;
 	#else
 		std::cout << "# COMM_MPI                     disabled" << std::endl;
+    #endif
+	#ifdef HAM_COMM_MPI_RMA_DYNAMIC
+		std::cout << "# COMM_MPI_RMA_DYNAMIC         enabled" << std::endl;
+	#else
+		std::cout << "# COMM_MPI_RMA_DYNAMIC         disabled" << std::endl;
 	#endif
 
 #ifdef HAM_COMM_SCIF
@@ -256,6 +263,29 @@ int main(int argc, char * argv[])
 			 << header_string_data << endl
 			 << "copy-out:\t" << copy_out_time.string() << "\t" << data_size << endl;
 		copy_out_time.to_file(filename + "copy_out_time");
+	}
+
+	if (vm.count("copy-direct"))
+	{
+		// first allocate memory
+		offload::buffer_ptr<char> remote_source = offload::allocate<char>(1, data_size);
+		offload::buffer_ptr<char> remote_target = offload::allocate<char>(2, data_size);
+		statistics copy_direct_time(runs, warmup_runs);
+
+		for (size_t i = 0; i < (runs + warmup_runs); ++i)
+		{
+			timer clock;
+			offload_copy_direct(remote_source, remote_target, data_size);
+			copy_direct_time.add(clock);
+		}
+		// free memory
+		offload_free(remote_source);
+		offload_free(remote_target);
+
+		cout << "HAM-Offload copy-direct time: " << endl
+			 << header_string_data << endl
+			 << "copy-direct:\t" << copy_direct_time.string() << "\t" << data_size << endl;
+		copy_direct_time.to_file(filename + "copy_direct_time");
 	}
 
 	if (vm.count("call"))

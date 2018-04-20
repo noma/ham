@@ -134,7 +134,7 @@ private:
 	size_t n;
 };
 
-//#ifdef HAM_COMM_MPI_RMA_DYNAMIC
+#ifdef HAM_COMM_MPI_RMA_DYNAMIC
     template<typename T, template<class> class ExecutionPolicy = default_execution_policy>
     class offload_rma_copy_msg
             : public active_msg<offload_rma_copy_msg<T, ExecutionPolicy>, ExecutionPolicy>
@@ -163,7 +163,7 @@ private:
         T* local_source;
         size_t n;
     };
-//#endif
+#endif
 
 /*
 // allows user to setup an rma link between two targets without a copy transfer

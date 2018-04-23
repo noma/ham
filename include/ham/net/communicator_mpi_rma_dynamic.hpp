@@ -234,6 +234,7 @@ public:
                     // fill resource pools
                     for (size_t j = 0; j < nodes_; ++j) {
                         for (size_t k = constants::MSG_BUFFERS; k > 0; --k) {
+                            // target buffers
                             peers[j].local_buffer_pool.add(k - 1);
                             peers[j].remote_buffer_pool.add(k - 1);
                         }
@@ -364,7 +365,7 @@ public:
         // set flags to false
         // local flag inside large host flag buffer @ peers[host]
         // index offset computed using target node
-        size_t offset = sizeof(cache_line_buffer) * constants::MSG_BUFFERS * req.target_node;
+        size_t offset = constants::MSG_BUFFERS * req.target_node;
         volatile size_t* local_flag = reinterpret_cast<size_t*>(&peers[host_node_].flag_data.get()[offset + req.local_buffer_index]);
         *local_flag= FLAG_FALSE;
         // remote flag on target
@@ -414,7 +415,7 @@ public:
         volatile size_t* local_flag;
 
         if (this_node_ == host_node_) {
-            size_t offset = sizeof(cache_line_buffer) * constants::MSG_BUFFERS * node;
+            size_t offset = constants::MSG_BUFFERS * node;
             local_flag = reinterpret_cast<size_t*>(&peers[host_node_].flag_data.get()[offset + buffer_index]);
         } else {
             local_flag = reinterpret_cast<size_t*>(&peers[this_node_].flag_data.get()[buffer_index]);
@@ -427,7 +428,7 @@ public:
             peers[node].next_flag = *local_flag;
 
         if (this_node_ == host_node_) {
-            size_t offset = sizeof(msg_buffer) * constants::MSG_BUFFERS * node;
+            size_t offset = constants::MSG_BUFFERS * node;
             return &peers[host_node_].msg_data.get()[offset + buffer_index];
         } else {
             return &peers[this_node_].msg_data.get()[buffer_index];

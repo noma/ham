@@ -380,20 +380,18 @@ public:
 
 public:
     // make private?!
-    // only called by host
     // called by func below
     void send_msg(node_t node, size_t buffer_index, size_t next_buffer_index, void* msg, size_t size) {
         // write msg to target msg buffer
         MPI_Put(msg, size, MPI_BYTE, node, buffer_index, size, MPI_BYTE, peers[node].msg_win);
 
         // TODO DANIEL: because MPI does not guarantee order on RMA ops, there might be a FLUSH necessary here
-
+        MPI_Win_flush(node ,peers[node].msg_win);
         // write flag to target flags buffer
         // not sure on the size here?
         MPI_Put(&next_buffer_index, 1, MPI_INT64_T, node, buffer_index, 1, MPI_INT64_T, peers[node].flag_win);
     }
 
-    // only called by host
 	void send_msg(request_reference_type req, void* msg, size_t size)
 	{
 		/*
@@ -419,7 +417,7 @@ public:
             size_t offset = sizeof(cache_line_buffer) * constants::MSG_BUFFERS * node;
             local_flag = reinterpret_cast<size_t*>(&peers[host_node_].flag_data.get()[offset + buffer_index]);
         } else {
-            local_flag = reinterpret_cast<size_t*>(&peers[node].flag_data.get()[buffer_index]);
+            local_flag = reinterpret_cast<size_t*>(&peers[this_node_].flag_data.get()[buffer_index]);
         }
 
 

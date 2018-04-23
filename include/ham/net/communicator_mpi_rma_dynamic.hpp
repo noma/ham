@@ -386,13 +386,20 @@ public:
     // called by func below
     void send_msg(node_t node, size_t buffer_index, size_t next_buffer_index, void* msg, size_t size) {
         // write msg to target msg buffer
-        MPI_Put(msg, size, MPI_BYTE, node, buffer_index, size, MPI_BYTE, peers[node].msg_win);
+        if (node != host_node_) { // to targets
+            MPI_Put(msg, size, MPI_BYTE, node, sizeof(msg_buffer) * buffer_index, size, MPI_BYTE, peers[node].msg_win);
 
-        // TODO DANIEL: because MPI does not guarantee order on RMA ops, there might be a FLUSH necessary here
-        MPI_Win_flush(node ,peers[node].msg_win);
-        // write flag to target flags buffer
-        // not sure on the size here?
-        MPI_Put(&next_buffer_index, 1, MPI_INT64_T, node, buffer_index, 1, MPI_INT64_T, peers[node].flag_win);
+            // TODO DANIEL: because MPI does not guarantee order on RMA ops, there might be a FLUSH necessary here
+            MPI_Win_flush(node, peers[node].msg_win);
+            // write flag to target flags buffer
+            // not sure on the size here?
+            MPI_Put(&next_buffer_index, sizeof(cache_line_buffer), MPI_BYTE, node, sizeof(cache_line_buffer) * buffer_index, sizeof(cache_line_buffer), MPI_BYTE, peers[node].flag_win);
+        } else { // to host, used by send_result
+            size_t offset = constants::MSG_BUFFERS * this_node_;
+            MPI_Put(msg, size, MPI_BYTE, node, sizeof(msg_buffer) * (offset + buffer_index), size, MPI_BYTE, peers[node].msg_win);
+            MPI_Win_flush(node, peers[node].msg_win);
+            MPI_Put(&next_buffer_index, sizeof(cache_line_buffer), MPI_BYTE, node, sizeof(cache_line_buffer) * (offset + buffer_index), sizeof(cache_line_buffer), MPI_BYTE, peers[node].flag_win);
+        }
     }
 
 	void send_msg(request_reference_type req, void* msg, size_t size)

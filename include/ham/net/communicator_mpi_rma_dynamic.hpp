@@ -430,7 +430,7 @@ public:
             size_t offset = sizeof(msg_buffer) * constants::MSG_BUFFERS * node;
             return &peers[host_node_].msg_data.get()[offset + buffer_index];
         } else {
-            return &peers[node].msg_data.get()[buffer_index];
+            return &peers[this_node_].msg_data.get()[buffer_index];
         }
     }
 

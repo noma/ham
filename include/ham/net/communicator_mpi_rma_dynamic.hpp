@@ -231,6 +231,7 @@ public:
                     // MSG_SIZE/FLAG_SIZE * MSG_BUFFERS * num_nodes for host
                     peers[this_node_].msg_data = allocate_peer_buffer<msg_buffer>(constants::MSG_BUFFERS * nodes_, this_node_);
                     peers[this_node_].flag_data = allocate_peer_buffer<cache_line_buffer>(constants::MSG_BUFFERS * nodes_, this_node_);
+                    reset_flags(peers[this_node_].flag_data);
                     // fill resource pools
                     for (size_t j = 0; j < nodes_; ++j) {
                         for (size_t k = constants::MSG_BUFFERS; k > 0; --k) {
@@ -245,6 +246,7 @@ public:
                     // MSG_SIZE/FLAG_SIZE * MSG_BUFFERS for targets
                     peers[this_node_].msg_data = allocate_peer_buffer<msg_buffer>(constants::MSG_BUFFERS, this_node_);
                     peers[this_node_].flag_data = allocate_peer_buffer<cache_line_buffer>(constants::MSG_BUFFERS, this_node_);
+                    reset_flags(peers[this_node_].flag_data);
                 }
 
                 // create windows
@@ -460,6 +462,18 @@ public:
         volatile size_t * local_flag = reinterpret_cast<size_t*>(&peers[node].flag_data.get()[buffer_index]);
         return *local_flag != FLAG_FALSE;
     }
+
+    void reset_flags(buffer_ptr<cache_line_buffer> flags)
+	{
+		cache_line_buffer fill_value;
+		cache_line_buffer* fill_value_ptr = &fill_value;
+		// null fill_value
+		std::fill(reinterpret_cast<unsigned char*>(fill_value_ptr), reinterpret_cast<unsigned char*>(fill_value_ptr) + sizeof(cache_line_buffer), 0);
+		// set to flag false
+		*reinterpret_cast<size_t*>(fill_value_ptr) = FLAG_FALSE;
+		// set all flags to fill_value
+		std::fill(flags.get(), flags.get() + constants::MSG_BUFFERS, fill_value);
+	}
 
 	// in MPI RMA backend only used by copy
 	// host uses async version

@@ -100,17 +100,19 @@ public:
 
 		void* get() // blocks
 		{
-            /*
+
             HAM_DEBUG( HAM_LOG << "request::get(), before MPI_Waitall()" << std::endl; )
 			MPI_Waitall(req_count, mpi_reqs, MPI_STATUS_IGNORE); // must wait for all requests to satisfy the standard
 			HAM_DEBUG( HAM_LOG << "request::get(), after MPI_Waitall()" << std::endl; )
             if(uses_rma_)
             {
                 MPI_Win_flush(target_node, communicator::instance().peers[target_node].rma_data_win);
+                // this is just a dummy return, there is no reply from the target for rma data transfers
+                // TODO, Daniel - design decision on what to return here
+                return static_cast<void*>(&communicator::instance().peers[communicator::this_node()].msg_data[local_buffer_index]);
+            } else {
+                return communicator::instance().recv_msg(target_node, local_buffer_index);
             }
-			return static_cast<void*>(&communicator::instance().peers[target_node].msg_buffers[recv_buffer_index]);
-            */
-            return communicator::instance().recv_msg(target_node, local_buffer_index);
 		}
 
 		template<class T>

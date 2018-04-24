@@ -250,8 +250,8 @@ public:
                 }
 
                 // create windows
-                MPI_Win_create(&(peers[this_node_].msg_data), sizeof(msg_buffer) * constants::MSG_BUFFERS * nodes_, MPI_BYTE, MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[this_node_].msg_win));
-                MPI_Win_create(&(peers[this_node_].flag_data), sizeof(cache_line_buffer) * constants::MSG_BUFFERS * nodes_, MPI_BYTE, MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[this_node_].flag_win));
+                MPI_Win_create((peers[this_node_].msg_data.get()), sizeof(msg_buffer) * constants::MSG_BUFFERS * nodes_, MPI_BYTE, MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[this_node_].msg_win));
+                MPI_Win_create((peers[this_node_].flag_data.get()), sizeof(cache_line_buffer) * constants::MSG_BUFFERS * nodes_, MPI_BYTE, MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[this_node_].flag_win));
 
             } else { //create remote windows without memory
                 void* dump;

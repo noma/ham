@@ -250,13 +250,13 @@ public:
                 }
 
                 // create windows
-                MPI_Win_create((peers[this_node_].msg_data.get()), sizeof(msg_buffer) * constants::MSG_BUFFERS * nodes_, MPI_BYTE, MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[this_node_].msg_win));
-                MPI_Win_create((peers[this_node_].flag_data.get()), sizeof(cache_line_buffer) * constants::MSG_BUFFERS * nodes_, MPI_BYTE, MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[this_node_].flag_win));
+                MPI_Win_create((peers[this_node_].msg_data.get()), sizeof(msg_buffer) * constants::MSG_BUFFERS * nodes_, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[this_node_].msg_win));
+                MPI_Win_create((peers[this_node_].flag_data.get()), sizeof(cache_line_buffer) * constants::MSG_BUFFERS * nodes_, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[this_node_].flag_win));
 
             } else { //create remote windows without memory
                 void* dump;
-                MPI_Win_create(dump, 0, MPI_BYTE, MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[i].msg_win));
-                MPI_Win_create(dump, 0, MPI_BYTE, MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[i].flag_win));
+                MPI_Win_create(dump, 0, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[i].msg_win));
+                MPI_Win_create(dump, 0, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[i].flag_win));
 
                 //MPI_Win_allocate(0, 1, MPI_INFO_NULL, MPI_COMM_WORLD, peers[i].msg_win_data, &(peers[i].rma_msg_win));
                 //MPI_Win_allocate(0, 1, MPI_INFO_NULL, MPI_COMM_WORLD, peers[i].flag_win_data, &(peers[i].rma_flag_win));

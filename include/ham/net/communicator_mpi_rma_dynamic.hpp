@@ -414,7 +414,7 @@ public:
         } else { // to host, used by send_result
             size_t offset = constants::MSG_BUFFERS * this_node_;
             MPI_Put(msg, size, MPI_BYTE, node, sizeof(msg_buffer) * (offset + buffer_index), size, MPI_BYTE, peers[node].msg_win);
-            MPI_Win_flush(node, peers[node].msg_win);
+            //MPI_Win_flush(node, peers[node].msg_win);
             MPI_Put(&next_buffer_index, sizeof(next_buffer_index), MPI_BYTE, node, sizeof(cache_line_buffer) * (offset + buffer_index), sizeof(next_buffer_index), MPI_BYTE, peers[node].flag_win);
         }
     }

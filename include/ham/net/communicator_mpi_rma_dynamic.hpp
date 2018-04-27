@@ -380,7 +380,7 @@ public:
         *local_flag= FLAG_FALSE;
         // remote flag on target
         size_t remote_flag = FLAG_FALSE;
-        MPI_Put(&remote_flag, 1, MPI_INT64_T, req.target_node, 0, 1, MPI_INT64_T, peer.flag_win);
+        MPI_Put(&remote_flag, sizeof(remote_flag), MPI_BYTE, req.target_node, 0, sizeof(remote_flag), MPI_BYTE, peer.flag_win);
         // flush? don't think so
 
         // only free buffer indices if they are valid

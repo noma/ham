@@ -377,6 +377,7 @@ public:
 
         mpi_peer& peer = peers[req.target_node];
 
+
         // set flags to false
         // local flag inside large host flag buffer @ peers[host]
         // index offset computed using target node
@@ -384,10 +385,11 @@ public:
         volatile size_t* local_flag = reinterpret_cast<size_t*>(&peers[host_node_].flag_data.get()[offset + req.local_buffer_index]);
         *local_flag= FLAG_FALSE;
         // remote flag on target
+        /* This is done by the target after having reveived the new index to poll on
         size_t remote_flag = FLAG_FALSE;
         MPI_Put(&remote_flag, sizeof(remote_flag), MPI_BYTE, req.target_node, 0, sizeof(remote_flag), MPI_BYTE, peer.flag_win);
         // flush? don't think so
-
+        */
 
         peer.remote_buffer_pool.free(req.remote_buffer_index);
 
@@ -450,6 +452,8 @@ public:
 
         if (*local_flag != NO_BUFFER_INDEX) // the flag contains the next buffer index to poll on
             peers[node].next_flag = *local_flag;
+
+        *local_flag = FLAG_FALSE;
 
         if (this_node_ == host_node_) {
             size_t offset = constants::MSG_BUFFERS * node;

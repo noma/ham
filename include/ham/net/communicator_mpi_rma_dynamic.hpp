@@ -407,7 +407,7 @@ public:
             MPI_Put(msg, size, MPI_BYTE, node, sizeof(msg_buffer) * buffer_index, size, MPI_BYTE, peers[node].msg_win);
 
             // TODO DANIEL: because MPI does not guarantee order on RMA ops, there might be a FLUSH necessary here
-            MPI_Win_flush(node, peers[node].msg_win);
+            //MPI_Win_flush(node, peers[node].msg_win);
             // write flag to target flags buffer
             // not sure on the size here?
             MPI_Put(&next_buffer_index, sizeof(next_buffer_index), MPI_BYTE, node, sizeof(cache_line_buffer) * buffer_index, sizeof(next_buffer_index), MPI_BYTE, peers[node].flag_win);
@@ -554,7 +554,7 @@ public:
 		//int err =
 		posix_memalign((void**)&ptr, constants::CACHE_LINE_SIZE, n * sizeof(T));
         // attach to own window
-        HAM_DEBUG( HAM_LOG << "communicator::allocate_buffer(), allocating buffer @: " << (long)ptr << " belonging to node: " << source_node << std::endl; )
+        HAM_DEBUG( HAM_LOG << "communicator::allocate_buffer(), allocating buffer @: " << (long)ptr << std::endl; )
         MPI_Win_attach(peers[this_node_].rma_data_win, (void*)ptr, n * sizeof(T));
         /* for (node_t i = 1; i < nodes_; ++i) { // nonsense, all accesses to a rank will only take place on that targets window, no need to attach to other
             MPI_Win_attach(peers[i].rma_data_win, (void*)ptr, n * sizeof(T));

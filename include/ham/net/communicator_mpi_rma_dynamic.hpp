@@ -568,7 +568,7 @@ public:
 		assert(ptr.node() == this_node_);
 		// NOTE: no dtor is called
         // remove from own rma window
-        HAM_DEBUG( cout << "freeing buffer @: " << ptr << " on node: " << node << std::endl; )
+        HAM_DEBUG( cout << "freeing buffer @: " << ptr << " on node: " << this_node_ << std::endl; )
         MPI_Win_detach(peers[this_node_].rma_data_win, ptr.get());
         /* for (node_t i = 1; i < nodes_; ++i) { // nonsense, all accesses to a rank will only take place on that targets window, no need to attach to other
             MPI_Win_detach(peers[i].rma_data_win, ptr.get());

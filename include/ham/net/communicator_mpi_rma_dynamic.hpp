@@ -419,7 +419,7 @@ public:
 
     // make private?!
     // called by function below
-    void * recv_msg(node_t node, size_t buffer_index = NO_BUFFER_INDEX, void* msg = nullptr, size_t size = constants::MSG_SIZE)
+    void* recv_msg(node_t node, size_t buffer_index = NO_BUFFER_INDEX, void* msg = nullptr, size_t size = constants::MSG_SIZE)
     {
         buffer_index = buffer_index == NO_BUFFER_INDEX ? peers[node].next_flag : buffer_index;
 
@@ -537,6 +537,7 @@ public:
 		//int err =
 		posix_memalign((void**)&ptr, constants::CACHE_LINE_SIZE, n * sizeof(T));
         // attach to own window
+        HAM_DEBUG( cout << "allocated buffer @: " << ptr << " on node: " << node << std::endl; )
         MPI_Win_attach(peers[this_node_].rma_data_win, (void*)ptr, n * sizeof(T));
         /* for (node_t i = 1; i < nodes_; ++i) { // nonsense, all accesses to a rank will only take place on that targets window, no need to attach to other
             MPI_Win_attach(peers[i].rma_data_win, (void*)ptr, n * sizeof(T));
@@ -567,6 +568,7 @@ public:
 		assert(ptr.node() == this_node_);
 		// NOTE: no dtor is called
         // remove from own rma window
+        HAM_DEBUG( cout << "freeing buffer @: " << ptr << " on node: " << node << std::endl; )
         MPI_Win_detach(peers[this_node_].rma_data_win, ptr.get());
         /* for (node_t i = 1; i < nodes_; ++i) { // nonsense, all accesses to a rank will only take place on that targets window, no need to attach to other
             MPI_Win_detach(peers[i].rma_data_win, ptr.get());

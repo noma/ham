@@ -537,7 +537,7 @@ public:
 		//int err =
 		posix_memalign((void**)&ptr, constants::CACHE_LINE_SIZE, n * sizeof(T));
         // attach to own window
-        HAM_DEBUG( HAM_LOG << "allocated buffer @: " << ptr << std::endl; )
+        HAM_DEBUG( HAM_LOG << "allocated buffer @: " << ptr.get() << std::endl; )
         HAM_DEBUG( HAM_LOG << "on node: " << source_node << std::endl; )
         MPI_Win_attach(peers[this_node_].rma_data_win, (void*)ptr, n * sizeof(T));
         /* for (node_t i = 1; i < nodes_; ++i) { // nonsense, all accesses to a rank will only take place on that targets window, no need to attach to other
@@ -569,7 +569,7 @@ public:
 		assert(ptr.node() == this_node_);
 		// NOTE: no dtor is called
         // remove from own rma window
-        HAM_DEBUG( HAM_LOG << "freeing buffer @: " << (long)ptr << std::endl; )
+        HAM_DEBUG( HAM_LOG << "freeing buffer @: " << ptr.get() << std::endl; )
         HAM_DEBUG( HAM_LOG << "on node: " << this_node_ << std::endl; )
         MPI_Win_detach(peers[this_node_].rma_data_win, ptr.get());
         /* for (node_t i = 1; i < nodes_; ++i) { // nonsense, all accesses to a rank will only take place on that targets window, no need to attach to other

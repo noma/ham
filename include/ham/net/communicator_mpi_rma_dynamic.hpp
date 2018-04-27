@@ -369,8 +369,13 @@ public:
 	{
 		assert(req.valid());
 		assert(req.source_node == this_node_);
-	
-		mpi_peer& peer = peers[req.target_node];
+
+        // dont do any of the following for data transfer requests
+        if(req.remote_buffer_index == NO_BUFFER_INDEX ) {
+            return;
+        }
+
+        mpi_peer& peer = peers[req.target_node];
 
         // set flags to false
         // local flag inside large host flag buffer @ peers[host]
@@ -383,17 +388,13 @@ public:
         MPI_Put(&remote_flag, sizeof(remote_flag), MPI_BYTE, req.target_node, 0, sizeof(remote_flag), MPI_BYTE, peer.flag_win);
         // flush? don't think so
 
-        // only free buffer indices if they are valid
-        // necessary to avoid data transfer requests that do not allocate indices messing up the index pools
-        if(req.remote_buffer_index < NO_BUFFER_INDEX ) {
-            peer.remote_buffer_pool.free(req.remote_buffer_index);
-        }
-        if(req.local_buffer_index < NO_BUFFER_INDEX) {
-            peer.local_buffer_pool.free(req.local_buffer_index);
-        }
 
-		req.valid_ = false;
-	}
+        peer.remote_buffer_pool.free(req.remote_buffer_index);
+
+        peer.local_buffer_pool.free(req.local_buffer_index);
+
+        req.valid_ = false;
+    }
 
 public:
     // make private?!

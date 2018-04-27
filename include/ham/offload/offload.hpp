@@ -235,7 +235,7 @@ future<void> put(T* local_source, buffer_ptr<T>& remote_dest, size_t n)
 	
 	return result;
 #elif HAM_COMM_MPI_RMA_DYNAMIC
-    future<void> result(comm.allocate_request(remote_dest.node()));
+    future<void> result(comm.allocate_data_request(remote_dest.node()));
 	HAM_DEBUG( HAM_LOG << "offload::put(): initiating RMA put..." << std::endl; )
 	comm.send_data_async(result.get_request(), local_source, remote_dest, n);
     return result;
@@ -273,7 +273,7 @@ future<void> get(buffer_ptr<T> remote_source, T* local_dest, size_t n)
 
 	return result;
 #elif defined HAM_COMM_MPI_RMA_DYNAMIC
-	future<void> result(comm.allocate_request(remote_source.node()));
+	future<void> result(comm.allocate_data_request(remote_source.node()));
 	HAM_DEBUG( HAM_LOG << "offload::put(): initiating RMA get..." << std::endl; )
 	comm.recv_data_async(result.get_request(), remote_source, local_dest, n);
     return result;

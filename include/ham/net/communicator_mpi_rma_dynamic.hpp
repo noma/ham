@@ -383,8 +383,14 @@ public:
         MPI_Put(&remote_flag, 1, MPI_INT64_T, req.target_node, 0, 1, MPI_INT64_T, peer.flag_win);
         // flush? don't think so
 
-		peer.remote_buffer_pool.free(req.remote_buffer_index);
-		peer.local_buffer_pool.free(req.local_buffer_index);
+        // only free buffer indices if they are valid
+        // necessary to avoid data transfer requests that do not allocate indices messing up the index pools
+        if(req.remote_buffer_index < NO_BUFFER_INDEX ) {
+            peer.remote_buffer_pool.free(req.remote_buffer_index);
+        }
+        if(req.local_buffer_index < NO_BUFFER_INDEX) {
+            peer.local_buffer_pool.free(req.local_buffer_index);
+        }
 
 		req.valid_ = false;
 	}
@@ -574,7 +580,7 @@ public:
 		assert(ptr.node() == this_node_);
 		// NOTE: no dtor is called
         // remove from own rma window
-        HAM_DEBUG( HAM_LOG << "communicator::allocate_buffer(), freeing buffer @: " << (long)ptr.get() << " belonging to node: " << ptr.node() << std::endl; )
+        HAM_DEBUG( HAM_LOG << "communicator::free_buffer(), freeing buffer @: " << (long)ptr.get() << " belonging to node: " << ptr.node() << std::endl; )
         MPI_Win_detach(peers[this_node_].rma_data_win, ptr.get());
         /* for (node_t i = 1; i < nodes_; ++i) { // nonsense, all accesses to a rank will only take place on that targets window, no need to attach to other
             MPI_Win_detach(peers[i].rma_data_win, ptr.get());

@@ -429,7 +429,7 @@ public:
 
             // TODO DANIEL: because MPI does not guarantee order on RMA ops, there might be a FLUSH necessary here
             ham::util::time::timer t2;
-            //MPI_Win_flush(node, peers[node].msg_win);
+            MPI_Win_flush(node, peers[node].msg_win);
             flush.add(t2);
             HAM_DEBUG( HAM_LOG << "communicator::send_msg(): flushed msg" << std::endl; )
             HAM_DEBUG( HAM_LOG << "communicator::send_msg(): flushing msg took: " << flush.min().count() << std::endl; )
@@ -455,7 +455,7 @@ public:
             HAM_DEBUG( HAM_LOG << "communicator::send_msg(): writing msg took: " << msg_put.min().count() << std::endl; )
 
             ham::util::time::timer t2;
-            //MPI_Win_flush(node, peers[node].msg_win);
+            MPI_Win_flush(node, peers[node].msg_win);
             flush.add(t2);
             HAM_DEBUG( HAM_LOG << "communicator::send_msg(): flushed msg" << std::endl; )
             HAM_DEBUG( HAM_LOG << "communicator::send_msg(): flushing msg took: " << flush.min().count() << std::endl; )

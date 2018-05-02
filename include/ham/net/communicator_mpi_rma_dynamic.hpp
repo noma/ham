@@ -292,8 +292,16 @@ public:
         for (node_t i = 0; i < nodes_; ++i) { // TODO(improvement): needs to be changed when host-rank becomes configurable
             if (i != this_node_) {
                 MPI_Win_lock(MPI_LOCK_SHARED, i, 0, peers[i].rma_data_win);  // shared locks because all ranks lock on every target concurrently
-                MPI_Win_lock(MPI_LOCK_SHARED, i, 0, peers[i].msg_win);  // shared locks because all ranks lock on every target concurrently
-                MPI_Win_lock(MPI_LOCK_SHARED, i, 0, peers[i].flag_win);  // shared locks because all ranks lock on every target concurrently
+            }
+        }
+
+        if (this_node_ != host_node_) { // targets
+            MPI_Win_lock(MPI_LOCK_SHARED, 0, 0, peers[0].msg_win);
+            MPI_Win_lock(MPI_LOCK_SHARED, 0, 0, peers[0].flag_win);
+        } else { // host
+            for (node_t i = 0; i < nodes_; ++i) {
+                MPI_Win_lock(MPI_LOCK_SHARED, i, 0, peers[i].msg_win);
+                MPI_Win_lock(MPI_LOCK_SHARED, i, 0, peers[i].flag_win);
             }
         }
 

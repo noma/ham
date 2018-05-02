@@ -416,15 +416,15 @@ public:
             MPI_Put(msg, size, MPI_BYTE, node, sizeof(msg_buffer) * buffer_index, size, MPI_BYTE, peers[node].msg_win);
             msg_put.add(t1);
             HAM_DEBUG( HAM_LOG << "communicator::send_msg(): wrote msg" << std::endl; )
-            HAM_DEBUG( HAM_LOG << "communicator::send_msg(): writing msg took" << msg_put.min().count() << std::endl; )
+            HAM_DEBUG( HAM_LOG << "communicator::send_msg(): writing msg took: " << msg_put.min().count() << std::endl; )
 
 
             // TODO DANIEL: because MPI does not guarantee order on RMA ops, there might be a FLUSH necessary here
             ham::util::time::timer t2;
-            MPI_Win_flush(node, peers[node].msg_win);
+            //MPI_Win_flush(node, peers[node].msg_win);
             flush.add(t2);
             HAM_DEBUG( HAM_LOG << "communicator::send_msg(): flushed msg" << std::endl; )
-            HAM_DEBUG( HAM_LOG << "communicator::send_msg(): flushing msg took" << flush.min().count() << std::endl; )
+            HAM_DEBUG( HAM_LOG << "communicator::send_msg(): flushing msg took: " << flush.min().count() << std::endl; )
 
             // write flag to target flags buffer
             // not sure on the size here?
@@ -432,14 +432,14 @@ public:
             MPI_Put(&next_buffer_index, sizeof(next_buffer_index), MPI_BYTE, node, sizeof(cache_line_buffer) * buffer_index, sizeof(next_buffer_index), MPI_BYTE, peers[node].flag_win);
             flag_put.add(t3);
             HAM_DEBUG( HAM_LOG << "communicator::send_msg(): wrote flag" << std::endl; )
-            HAM_DEBUG( HAM_LOG << "communicator::send_msg(): writing flag took" << flag_put.min().count() <<std::endl; )
+            HAM_DEBUG( HAM_LOG << "communicator::send_msg(): writing flag took: " << flag_put.min().count() <<std::endl; )
 
         } else { // to host, used by send_result
             size_t offset = constants::MSG_BUFFERS * this_node_;
             MPI_Put(msg, size, MPI_BYTE, node, sizeof(msg_buffer) * (offset + buffer_index), size, MPI_BYTE, peers[node].msg_win);
             HAM_DEBUG( HAM_LOG << "communicator::send_msg(): wrote msg" << std::endl; )
 
-            MPI_Win_flush(node, peers[node].msg_win);
+            //MPI_Win_flush(node, peers[node].msg_win);
             HAM_DEBUG( HAM_LOG << "communicator::send_msg(): flushed msg" << std::endl; )
 
             MPI_Put(&next_buffer_index, sizeof(next_buffer_index), MPI_BYTE, node, sizeof(cache_line_buffer) * (offset + buffer_index), sizeof(next_buffer_index), MPI_BYTE, peers[node].flag_win);

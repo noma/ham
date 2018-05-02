@@ -17,6 +17,7 @@
 #include "ham/misc/types.hpp"
 #include "ham/util/debug.hpp"
 #include "ham/util/log.hpp"
+#include "ham/util/time.hpp"
 #include "communicator.hpp"
 
 namespace ham {
@@ -450,6 +451,9 @@ public:
     // called by function below
     void* recv_msg(node_t node, size_t buffer_index = NO_BUFFER_INDEX, void* msg = nullptr, size_t size = constants::MSG_SIZE)
     {
+        statistics pre_poll(1,0);
+        statistics poll(1,0);
+        timer t1;
         buffer_index = buffer_index == NO_BUFFER_INDEX ? peers[node].next_flag : buffer_index;
         HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): remote node is: " << node << std::endl; )
 		HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): using buffer index: " << buffer_index << std::endl; )
@@ -464,8 +468,14 @@ public:
         }
 
         HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): FLAG before polling: " << (int)*local_flag << std::endl; )
+        pre_poll.add(t1);
+        HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): pre-polling took: " << pre_poll.min() << std::endl; )
+        timer t2;
         while (*local_flag == FLAG_FALSE); // poll on flag for completion
+        poll.add(t2);
         HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): FLAG after polling: " << (int)*local_flag << std::endl; )
+        HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): polling took: " << poll.min() << std::endl; )
+
 
         if (*local_flag != NO_BUFFER_INDEX) // the flag contains the next buffer index to poll on
             peers[node].next_flag = *local_flag;

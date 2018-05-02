@@ -403,19 +403,33 @@ public:
     // called by func below
     void send_msg(node_t node, size_t buffer_index, size_t next_buffer_index, void* msg, size_t size) {
         // write msg to target msg buffer
+        HAM_DEBUG( HAM_LOG << "communicator::send_msg(): node =  " << node << std::endl; )
+        HAM_DEBUG( HAM_LOG << "communicator::send_msg(): remote buffer index = " << buffer_index << std::endl; )
+
         if (node != host_node_) { // to targets
             MPI_Put(msg, size, MPI_BYTE, node, sizeof(msg_buffer) * buffer_index, size, MPI_BYTE, peers[node].msg_win);
+            HAM_DEBUG( HAM_LOG << "communicator::send_msg(): wrote msg" << std::endl; )
 
             // TODO DANIEL: because MPI does not guarantee order on RMA ops, there might be a FLUSH necessary here
-            //MPI_Win_flush(node, peers[node].msg_win);
+            MPI_Win_flush(node, peers[node].msg_win);
+            HAM_DEBUG( HAM_LOG << "communicator::send_msg(): flushed msg" << std::endl; )
+
             // write flag to target flags buffer
             // not sure on the size here?
             MPI_Put(&next_buffer_index, sizeof(next_buffer_index), MPI_BYTE, node, sizeof(cache_line_buffer) * buffer_index, sizeof(next_buffer_index), MPI_BYTE, peers[node].flag_win);
+            HAM_DEBUG( HAM_LOG << "communicator::send_msg(): wrote flag" << std::endl; )
+
         } else { // to host, used by send_result
             size_t offset = constants::MSG_BUFFERS * this_node_;
             MPI_Put(msg, size, MPI_BYTE, node, sizeof(msg_buffer) * (offset + buffer_index), size, MPI_BYTE, peers[node].msg_win);
-            //MPI_Win_flush(node, peers[node].msg_win);
+            HAM_DEBUG( HAM_LOG << "communicator::send_msg(): wrote msg" << std::endl; )
+
+            MPI_Win_flush(node, peers[node].msg_win);
+            HAM_DEBUG( HAM_LOG << "communicator::send_msg(): flushed msg" << std::endl; )
+
             MPI_Put(&next_buffer_index, sizeof(next_buffer_index), MPI_BYTE, node, sizeof(cache_line_buffer) * (offset + buffer_index), sizeof(next_buffer_index), MPI_BYTE, peers[node].flag_win);
+            HAM_DEBUG( HAM_LOG << "communicator::send_msg(): wrote flag" << std::endl; )
+
         }
     }
 
@@ -437,6 +451,8 @@ public:
     void* recv_msg(node_t node, size_t buffer_index = NO_BUFFER_INDEX, void* msg = nullptr, size_t size = constants::MSG_SIZE)
     {
         buffer_index = buffer_index == NO_BUFFER_INDEX ? peers[node].next_flag : buffer_index;
+        HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): remote node is: " << node << std::endl; )
+		HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): using buffer index: " << buffer_index << std::endl; )
 
         volatile size_t* local_flag;
 
@@ -447,8 +463,9 @@ public:
             local_flag = reinterpret_cast<size_t*>(&peers[this_node_].flag_data.get()[buffer_index]);
         }
 
-
+        HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): FLAG before polling: " << (int)*local_flag << std::endl; )
         while (*local_flag == FLAG_FALSE); // poll on flag for completion
+        HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): FLAG after polling: " << (int)*local_flag << std::endl; )
 
         if (*local_flag != NO_BUFFER_INDEX) // the flag contains the next buffer index to poll on
             peers[node].next_flag = *local_flag;

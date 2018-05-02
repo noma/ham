@@ -469,12 +469,12 @@ public:
 
         HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): FLAG before polling: " << (int)*local_flag << std::endl; )
         pre_poll.add(t1);
-        HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): pre-polling took: " << pre_poll.min() << std::endl; )
+        HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): pre-polling took: " << pre_poll.min().count() << std::endl; )
         ham::util::time::timer t2;
         while (*local_flag == FLAG_FALSE); // poll on flag for completion
         poll.add(t2);
         HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): FLAG after polling: " << (int)*local_flag << std::endl; )
-        HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): polling took: " << poll.min() << std::endl; )
+        HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): polling took: " << poll.min().count() << std::endl; )
 
 
         if (*local_flag != NO_BUFFER_INDEX) // the flag contains the next buffer index to poll on

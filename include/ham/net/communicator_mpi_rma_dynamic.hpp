@@ -17,7 +17,7 @@
 #include "ham/misc/types.hpp"
 #include "ham/util/debug.hpp"
 #include "ham/util/log.hpp"
-#include "ham/util/time.hpp"
+// #include "ham/util/time.hpp"
 #include "communicator.hpp"
 
 namespace ham {
@@ -416,55 +416,55 @@ public:
         HAM_DEBUG( HAM_LOG << "communicator::send_msg(): remote buffer index = " << buffer_index << std::endl; )
 
         if (node != host_node_) { // to targets
-            ham::util::time::statistics msg_put(1,0);
-            ham::util::time::statistics flush(1,0);
-            ham::util::time::statistics flag_put(1,0);
+            // ham::util::time::statistics msg_put(1,0);
+            // ham::util::time::statistics flush(1,0);
+            // ham::util::time::statistics flag_put(1,0);
 
-            ham::util::time::timer t1;
+            // ham::util::time::timer t1;
             MPI_Put(msg, size, MPI_BYTE, node, sizeof(msg_buffer) * buffer_index, size, MPI_BYTE, peers[node].msg_win);
-            msg_put.add(t1);
+            // msg_put.add(t1);
             HAM_DEBUG( HAM_LOG << "communicator::send_msg(): wrote msg" << std::endl; )
-            HAM_DEBUG( HAM_LOG << "communicator::send_msg(): writing msg took: " << msg_put.min().count() << std::endl; )
+            HAM_DEBUG( HAM_LOG << "communicator::send_msg(): writing msg took: " << ""/*msg_put.min().count()*/ << std::endl; )
 
 
             // TODO DANIEL: because MPI does not guarantee order on RMA ops, there might be a FLUSH necessary here
-            ham::util::time::timer t2;
+            // ham::util::time::timer t2;
             MPI_Win_flush(node, peers[node].msg_win);
-            flush.add(t2);
+            // flush.add(t2);
             HAM_DEBUG( HAM_LOG << "communicator::send_msg(): flushed msg" << std::endl; )
-            HAM_DEBUG( HAM_LOG << "communicator::send_msg(): flushing msg took: " << flush.min().count() << std::endl; )
+            HAM_DEBUG( HAM_LOG << "communicator::send_msg(): flushing msg took: " << ""/*flush.min().count()*/ << std::endl; )
 
             // write flag to target flags buffer
             // not sure on the size here?
-            ham::util::time::timer t3;
+            // ham::util::time::timer t3;
             MPI_Put(&next_buffer_index, sizeof(next_buffer_index), MPI_BYTE, node, sizeof(cache_line_buffer) * buffer_index, sizeof(next_buffer_index), MPI_BYTE, peers[node].flag_win);
-            flag_put.add(t3);
+            // flag_put.add(t3);
             HAM_DEBUG( HAM_LOG << "communicator::send_msg(): wrote flag" << std::endl; )
-            HAM_DEBUG( HAM_LOG << "communicator::send_msg(): writing flag took: " << flag_put.min().count() <<std::endl; )
+            HAM_DEBUG( HAM_LOG << "communicator::send_msg(): writing flag took: " << ""/*flag_put.min().count()*/ <<std::endl; )
 
         } else { // to host, used by send_result
-            ham::util::time::statistics msg_put(1,0);
-            ham::util::time::statistics flush(1,0);
-            ham::util::time::statistics flag_put(1,0);
+            // ham::util::time::statistics msg_put(1,0);
+            // ham::util::time::statistics flush(1,0);
+            // ham::util::time::statistics flag_put(1,0);
 
             size_t offset = constants::MSG_BUFFERS * this_node_;
-            ham::util::time::timer t1;
+            // ham::util::time::timer t1;
             MPI_Put(msg, size, MPI_BYTE, node, sizeof(msg_buffer) * (offset + buffer_index), size, MPI_BYTE, peers[node].msg_win);
-            msg_put.add(t1);
+            // msg_put.add(t1);
             HAM_DEBUG( HAM_LOG << "communicator::send_msg(): wrote msg" << std::endl; )
-            HAM_DEBUG( HAM_LOG << "communicator::send_msg(): writing msg took: " << msg_put.min().count() << std::endl; )
+            HAM_DEBUG( HAM_LOG << "communicator::send_msg(): writing msg took: " << ""/*msg_put.min().count()*/ << std::endl; )
 
-            ham::util::time::timer t2;
+            // ham::util::time::timer t2;
             MPI_Win_flush(node, peers[node].msg_win);
-            flush.add(t2);
+            // flush.add(t2);
             HAM_DEBUG( HAM_LOG << "communicator::send_msg(): flushed msg" << std::endl; )
-            HAM_DEBUG( HAM_LOG << "communicator::send_msg(): flushing msg took: " << flush.min().count() << std::endl; )
+            HAM_DEBUG( HAM_LOG << "communicator::send_msg(): flushing msg took: " << ""/*flush.min().count()*/ << std::endl; )
 
-            ham::util::time::timer t3;
+            // ham::util::time::timer t3;
             MPI_Put(&next_buffer_index, sizeof(next_buffer_index), MPI_BYTE, node, sizeof(cache_line_buffer) * (offset + buffer_index), sizeof(next_buffer_index), MPI_BYTE, peers[node].flag_win);
-            flag_put.add(t3);
+            // flag_put.add(t3);
             HAM_DEBUG( HAM_LOG << "communicator::send_msg(): wrote flag" << std::endl; )
-            HAM_DEBUG( HAM_LOG << "communicator::send_msg(): writing flag took: " << flag_put.min().count() <<std::endl; )
+            HAM_DEBUG( HAM_LOG << "communicator::send_msg(): writing flag took: " << ""/*flag_put.min().count()*/ <<std::endl; )
 
         }
     }
@@ -486,9 +486,9 @@ public:
     // called by function below
     void* recv_msg(node_t node, size_t buffer_index = NO_BUFFER_INDEX, void* msg = nullptr, size_t size = constants::MSG_SIZE)
     {
-        ham::util::time::statistics pre_poll(1,0);
-        ham::util::time::statistics poll(1,0);
-        ham::util::time::timer t1;
+        // ham::util::time::statistics pre_poll(1,0);
+        // ham::util::time::statistics poll(1,0);
+        // ham::util::time::timer t1;
         buffer_index = buffer_index == NO_BUFFER_INDEX ? peers[node].next_flag : buffer_index;
         HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): remote node is: " << node << std::endl; )
 		HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): using buffer index: " << buffer_index << std::endl; )
@@ -503,13 +503,13 @@ public:
         }
 
         HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): FLAG before polling: " << (int)*local_flag << std::endl; )
-        pre_poll.add(t1);
-        HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): pre-polling took: " << pre_poll.min().count() << std::endl; )
-        ham::util::time::timer t2;
+        // pre_poll.add(t1);
+        HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): pre-polling took: " << ""/*pre_poll.min().count()*/ << std::endl; )
+        // ham::util::time::timer t2;
         while (*local_flag == FLAG_FALSE); // poll on flag for completion
-        poll.add(t2);
+        // poll.add(t2);
         HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): FLAG after polling: " << (int)*local_flag << std::endl; )
-        HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): polling took: " << poll.min().count() << std::endl; )
+        HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): polling took: " << ""/*poll.min().count()*/ << std::endl; )
 
 
         if (*local_flag != NO_BUFFER_INDEX) // the flag contains the next buffer index to poll on

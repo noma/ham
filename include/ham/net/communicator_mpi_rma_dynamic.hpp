@@ -3,8 +3,8 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef ham_net_communicator_mpi_hpp
-#define ham_net_communicator_mpi_hpp
+#ifndef ham_net_communicator_mpi_rma_dynamic_hpp
+#define ham_net_communicator_mpi_rma_dynamic_hpp
 
 #include <mpi.h>
 
@@ -265,7 +265,8 @@ public:
                 //MPI_Win_allocate(0, 1, MPI_INFO_NULL, MPI_COMM_WORLD, peers[i].flag_win_data, &(peers[i].rma_flag_win));
             }
         }
-/*
+
+/*      // no longer needed
         // initialise all windows for target -> host
         for (node_t i = 1; i < nodes_; ++i) {
             if (is_host()) {
@@ -287,7 +288,7 @@ public:
             }
         }
 */
-		// get all locks to targets
+		// get all locks to targets for data
         // targets lock to other targets for copies
         for (node_t i = 0; i < nodes_; ++i) { // TODO(improvement): needs to be changed when host-rank becomes configurable
             if (i != this_node_) {
@@ -295,6 +296,8 @@ public:
             }
         }
 
+        /* // locking will be done when accessing remote memory
+        // locks for active message rma transfers
         if (this_node_ != host_node_) { // targets
             MPI_Win_lock(MPI_LOCK_SHARED, 0, 0, peers[0].msg_win);
             MPI_Win_lock(MPI_LOCK_SHARED, 0, 0, peers[0].flag_win);
@@ -304,7 +307,7 @@ public:
                 MPI_Win_lock(MPI_LOCK_SHARED, i, 0, peers[i].flag_win);
             }
         }
-
+        */
 
         HAM_DEBUG( HAM_LOG << "communicator::communicator(): rma window creation done" << std::endl; )
 /* pairwise COMM stuff
@@ -421,6 +424,7 @@ public:
             // ham::util::time::statistics flag_put(1,0);
 
             // ham::util::time::timer t1;
+            MPI_Win_lock(MPI_LOCK_EXCLUSIVE, node, 0, peers[node].msg_win);
             MPI_Put(msg, size, MPI_BYTE, node, sizeof(msg_buffer) * buffer_index, size, MPI_BYTE, peers[node].msg_win);
             // msg_put.add(t1);
             HAM_DEBUG( HAM_LOG << "communicator::send_msg(): wrote msg" << std::endl; )
@@ -428,19 +432,23 @@ public:
 
 
             // TODO DANIEL: because MPI does not guarantee order on RMA ops, there might be a FLUSH necessary here
+            // unlock includes flush, no need for it here
+            MPI_Win_unlock(node, peers[node].msg_win);
             // ham::util::time::timer t2;
-            MPI_Win_flush(node, peers[node].msg_win);
+            // MPI_Win_flush(node, peers[node].msg_win);
             // flush.add(t2);
-            HAM_DEBUG( HAM_LOG << "communicator::send_msg(): flushed msg" << std::endl; )
-            HAM_DEBUG( HAM_LOG << "communicator::send_msg(): flushing msg took: " << ""/*flush.min().count()*/ << std::endl; )
+            // HAM_DEBUG( HAM_LOG << "communicator::send_msg(): flushed msg" << std::endl; )
+            // HAM_DEBUG( HAM_LOG << "communicator::send_msg(): flushing msg took: " << ""/*flush.min().count()*/ << std::endl; )
 
             // write flag to target flags buffer
             // not sure on the size here?
             // ham::util::time::timer t3;
+            MPI_Win_lock(MPI_LOCK_EXCLUSIVE, node, 0, peers[node].flag_win);
             MPI_Put(&next_buffer_index, sizeof(next_buffer_index), MPI_BYTE, node, sizeof(cache_line_buffer) * buffer_index, sizeof(next_buffer_index), MPI_BYTE, peers[node].flag_win);
             // flag_put.add(t3);
             HAM_DEBUG( HAM_LOG << "communicator::send_msg(): wrote flag" << std::endl; )
             HAM_DEBUG( HAM_LOG << "communicator::send_msg(): writing flag took: " << ""/*flag_put.min().count()*/ <<std::endl; )
+            MPI_Win_unlock(node, peers[node].flag_win);
 
         } else { // to host, used by send_result
             // ham::util::time::statistics msg_put(1,0);
@@ -449,20 +457,25 @@ public:
 
             size_t offset = constants::MSG_BUFFERS * this_node_;
             // ham::util::time::timer t1;
+            MPI_Win_lock(MPI_LOCK_EXCLUSIVE, node, 0, peers[node].msg_win);
             MPI_Put(msg, size, MPI_BYTE, node, sizeof(msg_buffer) * (offset + buffer_index), size, MPI_BYTE, peers[node].msg_win);
             // msg_put.add(t1);
             HAM_DEBUG( HAM_LOG << "communicator::send_msg(): wrote msg" << std::endl; )
             HAM_DEBUG( HAM_LOG << "communicator::send_msg(): writing msg took: " << ""/*msg_put.min().count()*/ << std::endl; )
+            MPI_Win_unlock(node, peers[node].msg_win);
 
             // ham::util::time::timer t2;
-            MPI_Win_flush(node, peers[node].msg_win);
+            // MPI_Win_flush(node, peers[node].msg_win);
             // flush.add(t2);
             HAM_DEBUG( HAM_LOG << "communicator::send_msg(): flushed msg" << std::endl; )
             HAM_DEBUG( HAM_LOG << "communicator::send_msg(): flushing msg took: " << ""/*flush.min().count()*/ << std::endl; )
 
             // ham::util::time::timer t3;
+            MPI_Win_lock(MPI_LOCK_EXCLUSIVE, node, 0, peers[node].flag_win);
+
             MPI_Put(&next_buffer_index, sizeof(next_buffer_index), MPI_BYTE, node, sizeof(cache_line_buffer) * (offset + buffer_index), sizeof(next_buffer_index), MPI_BYTE, peers[node].flag_win);
             // flag_put.add(t3);
+            MPI_Win_unlock(node, peers[node].flag_win);
             HAM_DEBUG( HAM_LOG << "communicator::send_msg(): wrote flag" << std::endl; )
             HAM_DEBUG( HAM_LOG << "communicator::send_msg(): writing flag took: " << ""/*flag_put.min().count()*/ <<std::endl; )
 
@@ -493,24 +506,38 @@ public:
         HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): remote node is: " << node << std::endl; )
 		HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): using buffer index: " << buffer_index << std::endl; )
 
-        volatile size_t* local_flag;
+        size_t received_flag;
 
+
+        /* not needed with get
         if (this_node_ == host_node_) {
-            size_t offset = constants::MSG_BUFFERS * node;
             local_flag = reinterpret_cast<size_t*>(&peers[host_node_].flag_data.get()[offset + buffer_index]);
         } else {
             local_flag = reinterpret_cast<size_t*>(&peers[this_node_].flag_data.get()[buffer_index]);
         }
+        */
 
         HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): FLAG before polling: " << (int)*local_flag << std::endl; )
         // pre_poll.add(t1);
         HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): pre-polling took: " << ""/*pre_poll.min().count()*/ << std::endl; )
         // ham::util::time::timer t2;
-        while (*local_flag == FLAG_FALSE); // poll on flag for completion
+
+
+        // needed on host to access the memory belonging to the node from which to receive
+        size_t offset = (this_node_ == host_node_) ? constants::MSG_BUFFERS * node : 0;
+
+        while (received_flag == FLAG_FALSE) {
+            MPI_Win_lock(MPI_LOCK_EXCLUSIVE, this_node_, 0, peers[this_node_].flag_win);
+            MPI_Get(&received_flag, sizeof(size_t), MPI_BYTE, this_node_, offset , sizeof(size_t), MPI_BYTE, peers[this_node_].flag_win)
+            MPI_Win_unlock(this_node_, peers[this_node_].flag_win);
+        } // poll on flag for completion
         // poll.add(t2);
         HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): FLAG after polling: " << (int)*local_flag << std::endl; )
         HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): polling took: " << ""/*poll.min().count()*/ << std::endl; )
 
+        // make sure message window is updated locally too
+        MPI_Win_lock(MPI_LOCK_SHARED, this_node_, 0, peers[this_node_].msg_win);
+        MPI_Win_unlock(this_node_, peers[this_node_].msg_win);
 
         if (*local_flag != NO_BUFFER_INDEX) // the flag contains the next buffer index to poll on
             peers[node].next_flag = *local_flag;

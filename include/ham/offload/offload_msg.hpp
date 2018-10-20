@@ -95,6 +95,7 @@ public:
 		communicator::instance().recv_data(buffer_ptr<T>(nullptr, remote_node), local_dest, n); // NOTE: Why nullptr? This is for two-sided communicators, so we do not know the remote address, but match a send operation that has the address.
 
 		// send a result to tell the sender, that the transfer is done
+        // TODO(improvement): this may be
 		if (req.valid()) {
 			req.send_result((void*)&n, sizeof n);
 		}
@@ -122,6 +123,7 @@ public:
 		communicator::instance().send_data(local_source, buffer_ptr<T>(nullptr, remote_node), n); // NOTE: Why nullptr? This is for two-sided communicators, so we do not know the remote address, but match a receive operation that has the address.
 		
 		// send a result message to tell the sender, that the transfer is done
+        // TODO(improvement): this may be removed along with receiving the result in offload get()
 		if (req.valid()) {
 			req.send_result((void*)&n, sizeof n);
 		}

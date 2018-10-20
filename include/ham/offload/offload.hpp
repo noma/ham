@@ -270,6 +270,7 @@ future<void> get(buffer_ptr<T> remote_source, T* local_dest, size_t n)
 	comm.send_msg(result.get_request(), (void*)&msg, sizeof msg);
 	comm.recv_data_async(result.get_request(), remote_source, local_dest, n);
 	comm.recv_result(result.get_request()); // trigger receiving the result
+	// TODO(improvement): the recv_result() is not needed, could remove and remove send_result() from offload_read_msg to reduce synchronization overhead
 
 	return result;
 #elif defined HAM_COMM_MPI_RMA_DYNAMIC
@@ -355,6 +356,7 @@ void copy_sync(buffer_ptr<T> source, buffer_ptr<T> dest, size_t n)
 	comm.recv_result(write_result.get_request()); // trigger receiving the msg result // async
 	
 	// synchronise
+	// TODO(improvement): this is oversynchronized, waiting for the target to complete receiving should be sufficient
 	read_result.get();
 	write_result.get();
 #elif defined HAM_COMM_MPI_RMA_DYNAMIC

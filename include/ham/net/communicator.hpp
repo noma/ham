@@ -37,7 +37,13 @@ namespace net {
 	{
 		char data[constants::MSG_SIZE];
 	};
-	
+
+	struct
+	msg_flag_buffer
+	{
+		// buffer for fully rma backend. windows will consist of several of those
+		char data[constants::MSG_SIZE + constants::FLAG_SIZE];
+	};
 	
 	node_t this_node();
 }

@@ -104,13 +104,13 @@ public:
 
             HAM_DEBUG( HAM_LOG << "request::get(), before MPI_Waitall()" << std::endl; )
 			MPI_Waitall(req_count, mpi_reqs, MPI_STATUS_IGNORE); // must wait for all requests to satisfy the standard
-			HAM_DEBUG( HAM_LOG << "request::get(), after MPI_Waitall()" << std::endl; )
-            if(uses_rma_)
-            {
-                MPI_Win_flush(target_node, communicator::instance().peers[target_node].rma_data_win);
-                // this is just a dummy return, there is no reply from the target for rma data transfers
-                // TODO, Daniel - design decision on what to return here
-                return static_cast<void*>(&communicator::instance().peers[communicator::this_node()].msg_data[local_buffer_index]);
+            // for async get from receive_data_async() this will block until get is completed
+            HAM_DEBUG( HAM_LOG << "request::get(), after MPI_Waitall()" << std::endl; )
+
+            if(uses_rma_)  {
+                // this will only be true for async rma data transfers
+                // there will be no result returned, so this won't poll on anything and return a dummy instead.
+                return nullptr;
             } else {
                 return communicator::instance().recv_msg(target_node, local_buffer_index);
             }
@@ -223,19 +223,27 @@ public:
             }
         }*/
 
-        // initialise all windows
+        // initialise data windows
         for (node_t i = 0; i < nodes_; ++i) {
             // dynamic data window
             MPI_Win_create_dynamic(MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[i].rma_data_win));
+        }
+
+        // initialise message windows
+        for (node_t i = 0; i < nodes_; ++i) { // loop through ranks
 
             if (i == this_node_) { // create local windows with allocated memory for targets, host creates one inbound set of windows for all targets
-                // allocate memory
-                if (this_node_ == host_node_) {
-                    // MSG_SIZE/FLAG_SIZE * MSG_BUFFERS * num_nodes for host
-                    peers[this_node_].msg_data = allocate_peer_buffer<msg_buffer>(constants::MSG_BUFFERS * nodes_, this_node_);
-                    peers[this_node_].flag_data = allocate_peer_buffer<cache_line_buffer>(constants::MSG_BUFFERS * nodes_, this_node_);
-                    reset_flags(peers[this_node_].flag_data, constants::MSG_BUFFERS * nodes_);
-                    // fill resource pools
+
+                // allocate memory and create windows
+                if (this_node_ == host_node_) { // host creates one large window with subsets associated with different targets
+
+                    // (MSG_SIZE+FLAG_SIZE) * MSG_BUFFERS * num_nodes = bytes of memory allocated (sizes are implicit in msg_flag_buffer struct)
+                    peers[this_node_].msg_flag_data = allocate_peer_buffer<msg_flag_buffer>(constants::MSG_BUFFERS * nodes_, this_node_);
+                    // peers[this_node_].flag_data = allocate_peer_buffer<cache_line_buffer>(constants::MSG_BUFFERS * nodes_, this_node_);
+                    // set flags to FLAG_FALSE
+                    reset_flags(peers[this_node_].msg_flag_data, constants::MSG_BUFFERS * nodes_); // TODO: Daniel - this may be bad if buffer structs are not contiguos - check
+
+                    // fill resource pools for managing indices on the host
                     for (size_t j = 0; j < nodes_; ++j) {
                         for (size_t k = constants::MSG_BUFFERS; k > 0; --k) {
                             // target buffers
@@ -245,49 +253,37 @@ public:
                         // allocate first next_request,
                         allocate_next_request(j);
                     }
-                } else {
-                    // MSG_SIZE/FLAG_SIZE * MSG_BUFFERS for targets
-                    peers[this_node_].msg_data = allocate_peer_buffer<msg_buffer>(constants::MSG_BUFFERS, this_node_);
-                    peers[this_node_].flag_data = allocate_peer_buffer<cache_line_buffer>(constants::MSG_BUFFERS, this_node_);
+                    // create window with memory
+                    MPI_Win_create((peers[this_node_].msg_flag_data.get()), sizeof(msg_flag_buffer) * constants::MSG_BUFFERS * nodes_, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[this_node_].msg_flag_win));
+                    // MPI_Win_create((peers[this_node_].flag_data.get()), sizeof(cache_line_buffer) * constants::MSG_BUFFERS * nodes_, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[this_node_].flag_win));
+
+                } else { // targets create one window with the size of their msg "queue"
+                    // (MSG_SIZE+FLAG_SIZE) * MSG_BUFFERS = bytes of memory allocated (sizes are implicit in msg_flag_buffer struct)
+                    peers[this_node_].msg_flag_data = allocate_peer_buffer<msg_flag_buffer>(constants::MSG_BUFFERS, this_node_);
+                    // peers[this_node_].flag_data = allocate_peer_buffer<cache_line_buffer>(constants::MSG_BUFFERS, this_node_);
+                    // set flags to FLAG_FALSE
                     reset_flags(peers[this_node_].flag_data, constants::MSG_BUFFERS);
+
+                    // create window with memory
+                    MPI_Win_create((peers[this_node_].msg_flag_data.get()), sizeof(msg_buffer) * constants::MSG_BUFFERS, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[this_node_].msg_flag_win));
+                    // MPI_Win_create((peers[this_node_].flag_data.get()), sizeof(cache_line_buffer) * constants::MSG_BUFFERS, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[this_node_].flag_win));
                 }
 
-                // create windows
-                MPI_Win_create((peers[this_node_].msg_data.get()), sizeof(msg_buffer) * constants::MSG_BUFFERS * nodes_, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[this_node_].msg_win));
-                MPI_Win_create((peers[this_node_].flag_data.get()), sizeof(cache_line_buffer) * constants::MSG_BUFFERS * nodes_, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[this_node_].flag_win));
+                // debug msg
+                HAM_DEBUG( std::cout << "Rank: " << this_node_ << " in loop run " << i << " created REAL windows..." << std::endl; )
 
-            } else { //create remote windows without memory
-                void* dump;
-                MPI_Win_create(dump, 0, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[i].msg_win));
-                MPI_Win_create(dump, 0, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[i].flag_win));
 
+            } else { // create remote windows without memory (join the collective call and retreive the window handle)
+
+                MPI_Win_create(nullptr, 0, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[i].msg_flag_win));
+                // MPI_Win_create(nullptr, 0, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[i].flag_win));
+                // debug msg
+                HAM_DEBUG( std::cout << "Rank: " << this_node_ << " in loop run " << i << " creating EMPTY windows..." << std::endl; )
                 //MPI_Win_allocate(0, 1, MPI_INFO_NULL, MPI_COMM_WORLD, peers[i].msg_win_data, &(peers[i].rma_msg_win));
                 //MPI_Win_allocate(0, 1, MPI_INFO_NULL, MPI_COMM_WORLD, peers[i].flag_win_data, &(peers[i].rma_flag_win));
             }
         }
 
-/*      // no longer needed
-        // initialise all windows for target -> host
-        for (node_t i = 1; i < nodes_; ++i) {
-            if (is_host()) {
-                // create local wins with memory for all targets
-                // allocate memory
-
-
-                // create window
-                MPI_Win_create(memptr, SIZE, MPI_BYTE, MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[i].local_msg_win));
-                MPI_Win_create(memptr, SIZE, MPI_BYTE, MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[i].local_flag_win));
-
-            } else {
-                // create remote wins without memory for host
-                if (i == this_node_) {
-                    MPI_Win_create(memptr, 0, MPI_BYTE, MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[host_node_].local_msg_win));
-                    MPI_Win_create(memptr, 0, MPI_BYTE, MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[host_node_].local_msg_win));
-
-                }
-            }
-        }
-*/
 		// get all locks to targets for data
         // targets lock to other targets for copies
         for (node_t i = 0; i < nodes_; ++i) { // TODO(improvement): needs to be changed when host-rank becomes configurable
@@ -295,6 +291,9 @@ public:
                 MPI_Win_lock(MPI_LOCK_SHARED, i, 0, peers[i].rma_data_win);  // shared locks because all ranks lock on every target concurrently
             }
         }
+
+        // MPI_Barrier(MPI_COMM_WORLD);
+
 
         /* // locking will be done when accessing remote memory
         // locks for active message rma transfers
@@ -309,33 +308,8 @@ public:
         }
         */
 
-        HAM_DEBUG( HAM_LOG << "communicator::communicator(): rma window creation done" << std::endl; )
-/* pairwise COMM stuff
-       // both
-                // prepare global group to create pairwise groups
-                MPI_Comm_group(MPI_COMM_WORLD, &global_group);
-       // host
- 				// init comm to target from pairwise subgroups
- 				const int members[2] = {host_node_, i}; // NOTE: this implies new group rank is 0 for host, 1 for target
- 				MPI_Group pairwise_group;
- 				MPI_Group_incl(global_group, 2, members, &pairwise_group);
- 				MPI_Comm_create_group(MPI_COMM_WORLD, pairwise_group, 0, &(peers[i].rma_comm));
- 				MPI_Group_free(&pairwise_group); // no longer needed after COMM is created
-
- 				// init win to target
- 				MPI_Win_create_dynamic(MPI_INFO_NULL, peers[i].rma_comm, &(peers[i].rma_data_win));
-       // targets
- 			    // init comm to host from pairwise subgroup
- 			    const int members[2] = {host_node_, this_node_}; // NOTE: this implies new group rank = 0 for host, 1 for target
- 			    MPI_Group pairwise_group;
- 			    MPI_Group_incl(global_group, 2, members, &pairwise_group); // should match the corresponding subgroup on host for i = this_node_
- 			    MPI_Comm_create_group(MPI_COMM_WORLD, pairwise_group, 0, &(peers[host_node_].rma_comm));
- 			    MPI_Group_free(&pairwise_group); // no longer needed after COMM is created
-
- 			    // init win to host
- 			    MPI_Win_create_dynamic(MPI_INFO_NULL, peers[host_node_].rma_comm, &(peers[host_node_].rma_data_win));
- */
-
+        HAM_DEBUG( HAM_LOG << "communicator::communicator(): rma window creation completed" << std::endl; )
+        HAM_DEBUG( HAM_LOG << "communicator::communicator(): communicator initialization completed" << std::endl; )
 	}
 
 	~communicator()
@@ -344,20 +318,20 @@ public:
 		HAM_DEBUG( HAM_LOG << "~communicator" << std::endl; )
 	}
 
-    // this is only used by the host
+    // this is only used by the host to manage remote msg buffers and local reply buffers and assign them to requests
     const request& allocate_next_request(node_t remote_node)
     {
-        // this allocates a host-managed index for the remote nodes msg and flag buffers
+        // this allocates a host-managed index for the remote nodes msg "queue"
         // so the host knows which buffers are available on the target
         const size_t remote_buffer_index = peers[remote_node].remote_buffer_pool.allocate();
-        // this allocates an index for the hosts large msg and flag buffers
-        // request is included in offload message, so target knows into which buffers answers must be written
+        // this allocates an index in the hosts "reply queue"
+        // request is included in offload message, so the target knows into which buffers replys must be written
         // when used, the index will need to be added to an offset determined by a targets rank to address the part of the buffer belonging to this target
         // NOTE: the actual host buffer is stored at the hosts peers[0], but the buffer_pools are stored at the corresponding peers[target]
         // buffer_pools manage idices within the targets section of the hosts buffer
         const size_t local_buffer_index = peers[remote_node].local_buffer_pool.allocate();
 
-        peers[remote_node].next_request = { remote_node, this_node_, remote_buffer_index, local_buffer_index};
+        peers[remote_node].next_request = {remote_node, this_node_, remote_buffer_index, local_buffer_index};
 
         return peers[remote_node].next_request;
     }
@@ -370,7 +344,8 @@ public:
 		return peers[remote_node].next_request;
 	}
 
-    // used for async rma data transfers, so they wont take up buffer indices they dont need
+    // used for rma data transfers, so they wont take up unneeded buffer indices
+    // only put() and get() use this, copy() offloads an active msg to the data source and therefore uses allocate_request()
     request allocate_data_request(node_t remote_node) {
         HAM_DEBUG( HAM_LOG << "communicator::allocate_next_request(): remote_node = " << remote_node << std::endl; )
         return { remote_node, this_node_, NO_BUFFER_INDEX, NO_BUFFER_INDEX };
@@ -390,12 +365,13 @@ public:
         mpi_peer& peer = peers[req.target_node];
 
 
-        // set flags to false
-        // local flag inside large host flag buffer @ peers[host]
+        // set flag for buffer indices associated with request to false
+        // local flag is inside the hosts large array of msg_flag_buffers @ peers[host]
         // index offset computed using target node
-        size_t offset = constants::MSG_BUFFERS * req.target_node;
-        volatile size_t* local_flag = reinterpret_cast<size_t*>(&peers[host_node_].flag_data.get()[offset + req.local_buffer_index]);
-        *local_flag= FLAG_FALSE;
+        // TODO: Daniel - figure out access to flag memory
+        size_t offset = constants::MSG_BUFFERS * req.target_node; // offset msg_flag_buffers to the corresponding nodes region
+        volatile size_t* local_flag = reinterpret_cast<size_t*>(&peers[host_node_].msg_flag_data.get()[offset + req.local_buffer_index]); // this will point to the beginning of a msg_flag_buffer
+        *local_flag = FLAG_FALSE;
         // remote flag on target
         /* This is done by the target after having reveived the new index to poll on
         size_t remote_flag = FLAG_FALSE;
@@ -455,7 +431,9 @@ public:
             // ham::util::time::statistics flush(1,0);
             // ham::util::time::statistics flag_put(1,0);
 
+            // compute offset in the hosts window
             size_t offset = constants::MSG_BUFFERS * this_node_;
+            HAM_DEBUG( HAM_LOG << "communicator::send_msg(): using msg host-offset (bytes): " << offset*sizeof(msg_buffer) << std::endl; )
             // ham::util::time::timer t1;
             MPI_Win_lock(MPI_LOCK_EXCLUSIVE, node, 0, peers[node].msg_win);
             MPI_Put(msg, size, MPI_BYTE, node, sizeof(msg_buffer) * (offset + buffer_index), size, MPI_BYTE, peers[node].msg_win);
@@ -471,8 +449,8 @@ public:
             HAM_DEBUG( HAM_LOG << "communicator::send_msg(): flushing msg took: " << ""/*flush.min().count()*/ << std::endl; )
 
             // ham::util::time::timer t3;
+            HAM_DEBUG( HAM_LOG << "communicator::send_msg(): using flag host-offset (bytes): " << offset*sizeof(cache_line_buffer) << std::endl; )
             MPI_Win_lock(MPI_LOCK_EXCLUSIVE, node, 0, peers[node].flag_win);
-
             MPI_Put(&next_buffer_index, sizeof(next_buffer_index), MPI_BYTE, node, sizeof(cache_line_buffer) * (offset + buffer_index), sizeof(next_buffer_index), MPI_BYTE, peers[node].flag_win);
             // flag_put.add(t3);
             MPI_Win_unlock(node, peers[node].flag_win);
@@ -506,43 +484,50 @@ public:
         HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): remote node is: " << node << std::endl; )
 		HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): using buffer index: " << buffer_index << std::endl; )
 
-        size_t received_flag;
 
+        size_t *local_flag;
+        size_t received_flag = FLAG_FALSE;
 
-        /* not needed with get
+		// needed on host to access the memory belonging to the node from which to receive
+		size_t offset = (this_node_ == host_node_) ? constants::MSG_BUFFERS * node : 0;
+
         if (this_node_ == host_node_) {
             local_flag = reinterpret_cast<size_t*>(&peers[host_node_].flag_data.get()[offset + buffer_index]);
         } else {
             local_flag = reinterpret_cast<size_t*>(&peers[this_node_].flag_data.get()[buffer_index]);
         }
-        */
+
 
         HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): FLAG before polling: " << (int)*local_flag << std::endl; )
         // pre_poll.add(t1);
         HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): pre-polling took: " << ""/*pre_poll.min().count()*/ << std::endl; )
         // ham::util::time::timer t2;
+		HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): polling at offset (bytes): " << offset * sizeof(cache_line_buffer) << ""/*pre_poll.min().count()*/ << std::endl; )
 
 
-        // needed on host to access the memory belonging to the node from which to receive
-        size_t offset = (this_node_ == host_node_) ? constants::MSG_BUFFERS * node : 0;
 
         while (received_flag == FLAG_FALSE) {
             MPI_Win_lock(MPI_LOCK_EXCLUSIVE, this_node_, 0, peers[this_node_].flag_win);
-            MPI_Get(&received_flag, sizeof(size_t), MPI_BYTE, this_node_, offset , sizeof(size_t), MPI_BYTE, peers[this_node_].flag_win)
+            MPI_Get(&received_flag, sizeof(cache_line_buffer), MPI_BYTE, this_node_, (offset + buffer_index) * sizeof(cache_line_buffer) , sizeof(cache_line_buffer), MPI_BYTE, peers[this_node_].flag_win);
             MPI_Win_unlock(this_node_, peers[this_node_].flag_win);
         } // poll on flag for completion
         // poll.add(t2);
         HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): FLAG after polling: " << (int)*local_flag << std::endl; )
         HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): polling took: " << ""/*poll.min().count()*/ << std::endl; )
 
+        // reset the flag (thanks mpi for requiring me to get a lock for that again...
+        MPI_Win_lock(MPI_LOCK_EXCLUSIVE, this_node_, 0, peers[this_node_].flag_win);
+        *local_flag = FLAG_FALSE;
+        MPI_Win_unlock(this_node_, peers[this_node_].flag_win);
+
         // make sure message window is updated locally too
         MPI_Win_lock(MPI_LOCK_SHARED, this_node_, 0, peers[this_node_].msg_win);
         MPI_Win_unlock(this_node_, peers[this_node_].msg_win);
 
-        if (*local_flag != NO_BUFFER_INDEX) // the flag contains the next buffer index to poll on
-            peers[node].next_flag = *local_flag;
+        if (received_flag != NO_BUFFER_INDEX) // the flag contains the next buffer index to poll on
+            peers[node].next_flag = received_flag;
 
-        *local_flag = FLAG_FALSE;
+        HAM_DEBUG( HAM_LOG << "communicator::recv_msg(): done " << ""/*poll.min().count()*/ << std::endl; )
 
         if (this_node_ == host_node_) {
             size_t offset = constants::MSG_BUFFERS * node;
@@ -566,14 +551,16 @@ public:
 	void recv_result(request_reference_type req)
 	{
 		// nothing todo here, since this communicator implementation uses one-sided communication
-		// the data is already where it is expected (in the buffer referenced in req)
+		// the data will be written to where it is expected
 
         // MPI_Irecv(static_cast<void*>(&peers[req.target_node].msg_buffers[req.recv_buffer_index]), constants::MSG_SIZE, MPI_BYTE, req.target_node, constants::RESULT_TAG, MPI_COMM_WORLD, &req.next_mpi_request());
 		return;
 	}
 
+    // only used by the host
     bool test_local_flag(node_t node, size_t buffer_index)
     {
+        size_t offset = (constants::MSG_SIZE + constants::FLAG_SIZE) * node;
         volatile size_t * local_flag = reinterpret_cast<size_t*>(&peers[node].flag_data.get()[buffer_index]);
         return *local_flag != FLAG_FALSE;
     }
@@ -597,10 +584,8 @@ public:
 	void send_data(T* local_source, buffer_ptr<T> remote_dest, size_t size)
 	{
 		// execute transfer
-		// MPI_Win_lock(MPI_LOCK_SHARED, remote_dest.node(), 0, peers[remote_dest.node()].rma_data_win); // not needed since all ranks have locks on all targets
         MPI_Put(local_source, size * sizeof(T), MPI_BYTE, remote_dest.node(), remote_dest.get_mpi_address(), size * sizeof(T), MPI_BYTE, peers[remote_dest.node()].rma_data_win);
         MPI_Win_flush(remote_dest.node(), peers[remote_dest.node()].rma_data_win);
-		// MPI_Win_unlock(remote_dest.node(), peers[remote_dest.node()].rma_data_win);
 	}
 
 	// to be used by the host only
@@ -609,7 +594,6 @@ public:
 	{
         req.uses_rma_ = true;
 
-        // MPI_Win_lock(MPI_LOCK_SHARED, remote_dest.node(), 0, peers[remote_dest.node()].rma_data_win);
         MPI_Rput(local_source, size * sizeof(T), MPI_BYTE, remote_dest.node(), remote_dest.get_mpi_address(), size * sizeof(T), MPI_BYTE, peers[remote_dest.node()].rma_data_win, &req.next_mpi_request());
 	}
 
@@ -620,10 +604,8 @@ public:
 	template<typename T>
 	void recv_data(buffer_ptr<T> remote_source, T* local_dest, size_t size)
 	{
-		// MPI_Win_lock(MPI_LOCK_SHARED, remote_source.node(), 0, peers[remote_source.node()].rma_data_win);
 		MPI_Get(local_dest, size * sizeof(T), MPI_BYTE, remote_source.node(), remote_source.get_mpi_address(), size * sizeof(T), MPI_BYTE, peers[remote_source.node()].rma_data_win);
 		MPI_Win_flush(remote_source.node(), peers[remote_source.node()].rma_data_win);
-		// MPI_Win_unlock(remote_source.node(), peers[remote_source.node()].rma_data_win);
 	}
 	
 	// to be used by the host
@@ -632,7 +614,6 @@ public:
 	{
         req.uses_rma_ = true;
 
-		// MPI_Win_lock(MPI_LOCK_SHARED, remote_source.node(), 0, peers[remote_source.node()].rma_data_win);
 		MPI_Rget(local_dest, size * sizeof(T), MPI_BYTE, remote_source.node(), remote_source.get_mpi_address(), size * sizeof(T), MPI_BYTE, peers[remote_source.node()].rma_data_win, &req.next_mpi_request());
 	}
 
@@ -642,12 +623,11 @@ public:
 		T* ptr;
 		//int err =
 		posix_memalign((void**)&ptr, constants::CACHE_LINE_SIZE, n * sizeof(T));
+
         // attach to own window
         HAM_DEBUG( HAM_LOG << "communicator::allocate_buffer(), allocating buffer @: " << (long)ptr << std::endl; )
         MPI_Win_attach(peers[this_node_].rma_data_win, (void*)ptr, n * sizeof(T));
-        /* for (node_t i = 1; i < nodes_; ++i) { // nonsense, all accesses to a rank will only take place on that targets window, no need to attach to other
-            MPI_Win_attach(peers[i].rma_data_win, (void*)ptr, n * sizeof(T));
-        } */
+
 		MPI_Aint mpi_address;
 		MPI_Get_address((void*)ptr, &mpi_address);
 		// NOTE: no ctor is called
@@ -658,13 +638,10 @@ public:
 	template<typename T>
 	buffer_ptr<T> allocate_peer_buffer(const size_t n, node_t source_node)
 	{
-        // TODO DANIEL: this is where mem is allocated that should be mapped to static mpi windows
         T* ptr;
-		//int err =
 		posix_memalign((void**)&ptr, constants::CACHE_LINE_SIZE, n * sizeof(T));
 		// NOTE: no ctor is called
 		return buffer_ptr<T>(ptr, this_node_);
-
 	}
 
     // used for data buffers only
@@ -704,36 +681,6 @@ public:
 		return instance().node_descriptions[node];
 	}
 
-/*
-	// called to check if an rma path between two targets exists, sufficient to call on one of the two targets
-	bool has_rma_path(node_t target_node) {
-		// check if copy path exists
-		return !peers[remote_dest.node()].rma_data_win;
-	}
-*/
-/*
-	// called to establish an rma path between two targets for copy operations, needs to be called on both sides
-	void establish_rma_path(node_t target_node) {
-		if(!has_rma_path(target_node)) { // make sure there is not already an rma path
-			const int members[2];
-			// NOTE: protocol for target-target sub-ranks is: lower global rank: 0, higher global rank: 1
-			// thus rank for existing copy paths can be easily translated by comparing target rank to own rank
-			if(this_node_ > target_node) {
-				members[0] = target_node;
-				members[1] = this_node_;
-			} else {
-				members[0] = this_node_;
-				members[1] = target_node;
-			}
-			MPI_Group pairwise_group;
-			MPI_Group_incl(global_group, 2, members, &pairwise_group);
-			MPI_Comm_create_group(MPI_COMM_WORLD, pairwise_group, 0, &(peers[target_node].rma_comm));
-			MPI_Group_free(&pairwise_group); // no longer needed after COMM is created
-			MPI_Win_create_dynamic(MPI_INFO_NULL, peers[target_node].rma_comm, &(peers[target_node].rma_data_win));
-		}
-	}
-*/
-
 private:
 	static communicator* instance_;
 	node_t this_node_;
@@ -751,15 +698,11 @@ private:
 
         request next_request;
         size_t next_flag = 0;
+        // NOTE: behind these buffers are MSG_BUFFERS many buffers of size MSG_SIZE+FLAG_SIZE, indices are managed by buffer_pool
 
-        // NOTE: behind these buffers are MSG_BUFFERS many buffers of size MSG_SIZE/CACHE_LINE_SIZE, indices are managed by buffer_pool
-
-        // static window for inbound rma messages
-        buffer_ptr<msg_buffer> msg_data;
-        MPI_Win msg_win;
-        // static window for inbound message flags
-        buffer_ptr<cache_line_buffer> flag_data;
-        MPI_Win flag_win;
+        // static window for inbound rma messages and their flags
+        buffer_ptr<msg_flag_buffer> msg_flag_data;
+        MPI_Win msg_flag_win;
 
 		// mpi rma dynamic window for data
 		MPI_Win rma_data_win;

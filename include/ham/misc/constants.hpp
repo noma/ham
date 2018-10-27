@@ -17,7 +17,8 @@ namespace constants {
 enum net {
 	MSG_SIZE = HAM_MESSAGE_SIZE,
 	MSG_BUFFERS = 256,
-	FLAG_SIZE = sizeof(size_t),
+	DATA_PUT_CODE = 1,
+	DATA_GET_CODE = 2,
 };
 
 enum arch {

@@ -1,0 +1,36 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../include/noma/bmt/bmt.hpp
+chrono
+-
+cmath
+-
+ratio
+-
+string
+-
+sstream
+-
+iomanip
+-
+fstream
+-
+type_traits
+-
+vector
+-
+
+/home/bemdeppi/ham/thirdparty/bmt/src/example.cpp
+noma/bmt/bmt.hpp
+-
+iostream
+-
+thread
+-
+

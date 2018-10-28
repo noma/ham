@@ -1,0 +1,5 @@
+/home/bemdeppi/ham/thirdparty/bmt/build/CMakeFiles/edit_cache.dir
+/home/bemdeppi/ham/thirdparty/bmt/build/CMakeFiles/rebuild_cache.dir
+/home/bemdeppi/ham/thirdparty/bmt/build/src/CMakeFiles/edit_cache.dir
+/home/bemdeppi/ham/thirdparty/bmt/build/src/CMakeFiles/rebuild_cache.dir
+/home/bemdeppi/ham/thirdparty/bmt/build/src/CMakeFiles/example.dir

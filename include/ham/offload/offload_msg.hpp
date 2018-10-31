@@ -6,7 +6,9 @@
 #ifndef ham_offload_offload_msg_hpp
 #define ham_offload_offload_msg_hpp
 
+#ifdef HAM_COMM_MPI_RMA_DYNAMIC
 #include <mpi.h>
+#endif
 #include "ham/msg/active_msg.hpp"
 #include "ham/msg/execution_policy.hpp"
 #include "ham/misc/constants.hpp"

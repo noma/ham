@@ -244,7 +244,7 @@ public:
 				 acc.accept(*temp_socks[i]); // accept connection
 
 				// recv rank
-				boost::asio::read(temp_socks[i], boost::asio::buffer((void *) &req_ranks[i], sizeof(node_t)));
+				boost::asio::read(*temp_socks[i], boost::asio::buffer((void *) &req_ranks[i], sizeof(node_t)));
 			}
 
 			// rearrange sockets and inform targets of resulting rank
@@ -262,7 +262,7 @@ public:
 				} else {
 					node_t rrank = req_ranks[j];
 					HAM_DEBUG( HAM_LOG << "communicator::communicator(): connection " << j << " requested ham-address: " << rrank << std::endl; )
-					peers[rrank].tcp_socket = &std::move(temp_socks[j]); // = move https://www.boost.org/doc/libs/1_65_0/doc/html/boost_asio/reference/basic_stream_socket/operator_eq_.html
+					peers[rrank].tcp_socket = temp_socks[j]; // = move https://www.boost.org/doc/libs/1_65_0/doc/html/boost_asio/reference/basic_stream_socket/operator_eq_.html
 					taken_ranks[rrank] = true; // mark the requested rank as taken
 					HAM_DEBUG( HAM_LOG << "communicator::communicator(): associated ham-address: " << rrank << " with connection " << j << std::endl; )
 					// send assigned rank to target

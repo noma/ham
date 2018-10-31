@@ -221,9 +221,9 @@ public:
 
 			// send requested rank to host
 			HAM_DEBUG( HAM_LOG << "communicator::communicator(): requesting ham-address " << this_node_ << "from host" << std::endl; )
-			boost::asio::write(peers[host_node_].tcp_socket, boost::asio::buffer((void*)&this_node_, sizeof(this_node_)));
+			boost::asio::write(*peers[host_node_].tcp_socket, boost::asio::buffer((void*)&this_node_, sizeof(this_node_)));
 			// recv rank from host
-			boost::asio::read(peers[host_node_].tcp_socket, boost::asio::buffer((void*)&this_node_, sizeof(this_node_)));
+			boost::asio::read(*peers[host_node_].tcp_socket, boost::asio::buffer((void*)&this_node_, sizeof(this_node_)));
 			HAM_DEBUG( HAM_LOG << "communicator::communicator(): received ham-address " << this_node_ << "from host" << std::endl; )
 		}
 
@@ -352,7 +352,7 @@ public:
 
 		// tcp write
 		auto self(shared_from_this());
-		boost::asio::async_write(peers[req.target_node].tcp_socket, boost::asio::buffer(msg_buffer, size),
+		boost::asio::async_write(*peers[req.target_node].tcp_socket, boost::asio::buffer(msg_buffer, size),
 								[this, self, &req](boost::system::error_code ec, size_t length) {
 									req.sent_ = true;
 								}
@@ -366,7 +366,7 @@ public:
 	{
 		static msg_buffer buffer; // NOTE !
 		// MPI_Recv(&buffer, size, MPI_BYTE, host_node_, constants::DEFAULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-		boost::asio::read(peers[host_node_].tcp_socket, boost::asio::buffer(&buffer, size));
+		boost::asio::read(*peers[host_node_].tcp_socket, boost::asio::buffer(&buffer, size));
         return static_cast<void*>(&buffer);
 	}
 
@@ -375,7 +375,7 @@ public:
     template<class T>
     void send_result(node_t target_node, T* message, size_t size) {
 
-        boost::asio::write(peers[target_node].tcp_socket, boost::asio::buffer((void*)message, size));
+        boost::asio::write(*peers[target_node].tcp_socket, boost::asio::buffer((void*)message, size));
     }
 
 	// trigger receiving the result of an active message on the host
@@ -383,7 +383,7 @@ public:
 	{
 		// tcp receive
         auto self(shared_from_this());
-        boost::asio::async_read(peers[req.target_node].tcp_socket, boost::asio::buffer(static_cast<void*>(&peers[req.target_node].msg_buffers[req.recv_buffer_index]), constants::MSG_SIZE),
+        boost::asio::async_read(*peers[req.target_node].tcp_socket, boost::asio::buffer(static_cast<void*>(&peers[req.target_node].msg_buffers[req.recv_buffer_index]), constants::MSG_SIZE),
 				[this, self, &req](boost::system::error_code ec, size_t length) {
 					req.received_ = true;
 				}
@@ -397,7 +397,7 @@ public:
 	{
 		// tcp send
 
-        boost::asio::write(peers[remote_dest.node()].tcp_socket, boost::asio::buffer((void*)local_source, size * sizeof(T)));
+        boost::asio::write(*peers[remote_dest.node()].tcp_socket, boost::asio::buffer((void*)local_source, size * sizeof(T)));
 		// MPI_Send((void*)local_source, size * sizeof(T), MPI_BYTE, remote_dest.node(), constants::DATA_TAG, MPI_COMM_WORLD);
 	}
 
@@ -406,7 +406,7 @@ public:
 	void send_data_async(request_reference_type req, T* local_source, buffer_ptr<T> remote_dest, size_t size)
 	{
 		auto self(shared_from_this());
-		boost::asio::async_write(peers[remote_dest.node()].tcp_socket, boost::asio::buffer((void*)local_source, size*sizeof(T)),
+		boost::asio::async_write(*peers[remote_dest.node()].tcp_socket, boost::asio::buffer((void*)local_source, size*sizeof(T)),
 								 [this, self, &req](boost::system::error_code ec, size_t length) {
 									 req.sent_ = true;
 								 }

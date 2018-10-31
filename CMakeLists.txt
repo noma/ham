@@ -13,7 +13,7 @@ message(STATUS "CMAKE_BINARY_DIR: " ${CMAKE_BINARY_DIR})
 ### thirdparty dependencies
 
 # Boost
-find_package(Boost 1.40 COMPONENTS program_options REQUIRED)
+find_package(Boost 1.40 COMPONENTS program_options system REQUIRED)
 add_library(boost_library INTERFACE)
 target_include_directories (boost_library INTERFACE ${Boost_INCLUDE_DIRS})
 target_link_libraries (boost_library INTERFACE ${Boost_LIBRARIES})

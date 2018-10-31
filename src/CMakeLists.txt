@@ -11,6 +11,11 @@ add_subdirectory(ham)
 ### Benchmarks
 
 ## Explicit targets (not built by default)
+
+# TCP benchmarks
+add_executable(benchmark_ham_offload_tcp benchmark_ham_offload.cpp)
+target_link_libraries(benchmark_ham_offload_tcp ham_offload_tcp)
+
 # Intel LEO offload directive benchmark, requires Intel compiler
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
 	add_executable(benchmark_intel_leo EXCLUDE_FROM_ALL benchmark_intel_leo.cpp)
@@ -36,7 +41,21 @@ endif()
 add_executable(active_msgs active_msgs.cpp)
 target_link_libraries(active_msgs ham_interface)
 
+# TCP tests
+add_executable(ham_offload_test_tcp ham_offload.cpp)
+target_link_libraries(ham_offload_test_tcp ham_offload_tcp)
+
+add_executable(inner_product_tcp inner_product.cpp)
+target_link_libraries(inner_product_tcp ham_offload_tcp)
+
+add_executable(test_data_transfer_tcp test_data_transfer.cpp)
+target_link_libraries(test_data_transfer_tcp ham_offload_tcp)
+
+add_executable(test_argument_transfer_tcp test_argument_transfer.cpp)
+target_link_libraries(test_argument_transfer_tcp ham_offload_tcp)
+
 if (MPI_FOUND)
+# two-sided MPI
 	add_executable(ham_offload_test_mpi ham_offload.cpp)
 	target_link_libraries(ham_offload_test_mpi ham_offload_mpi)
 
@@ -52,6 +71,8 @@ if (MPI_FOUND)
 	add_executable(test_argument_transfer_mpi test_argument_transfer.cpp)
 	target_link_libraries(test_argument_transfer_mpi ham_offload_mpi)
 
+# RMA MPI
+
 	add_executable(ham_offload_test_mpi_rma_dynamic ham_offload.cpp)
 	target_link_libraries(ham_offload_test_mpi_rma_dynamic ham_offload_mpi_rma_dynamic)
 
@@ -63,6 +84,7 @@ if (MPI_FOUND)
 
 	add_executable(test_argument_transfer_mpi_rma_dynamic test_argument_transfer.cpp)
 	target_link_libraries(test_argument_transfer_mpi_rma_dynamic ham_offload_mpi_rma_dynamic)
+
 endif()
 
 if (SCIF_FOUND)

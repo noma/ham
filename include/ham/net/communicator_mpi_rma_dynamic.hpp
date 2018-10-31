@@ -163,7 +163,7 @@ public:
 
 	communicator(int argc, char* argv[])
 	{
-		HAM_DEBUG( std::cout << "communicator::communicator(): initialising MPI" << std::endl; )
+		HAM_DEBUG( HAM_LOG << "communicator::communicator(): initialising MPI" << std::endl; )
 
 		instance_ = this;
 		int p;
@@ -172,7 +172,7 @@ public:
 		{
 			std::cerr << "Could not initialise MPI with MPI_THREAD_MULTIPLE, MPI_Init_thread() returned " << p << std::endl;
 		}
-		HAM_DEBUG( std::cout << "communicator::communicator(): initialising MPI ..." << std::endl; )
+		HAM_DEBUG( HAM_LOG << "communicator::communicator(): initialising MPI ..." << std::endl; )
 
 		int t;
 		MPI_Comm_rank(MPI_COMM_WORLD, &t);
@@ -181,7 +181,7 @@ public:
 		nodes_ = t;
 		host_node_ = 0; // TODO(improvement): make configureable, like for SCIF
 
-		HAM_DEBUG( std::cout << "communicator::communicator(): initialising MPI done" << std::endl; )
+		HAM_DEBUG( HAM_LOG << "communicator::communicator(): initialising MPI done" << std::endl; )
 
 		peers = new mpi_peer[nodes_];
 		
@@ -269,7 +269,7 @@ public:
                 }
 
                 // debug msg
-                HAM_DEBUG( std::cout << "Rank: " << this_node_ << " in loop run " << i << " created REAL windows..." << std::endl; )
+                HAM_DEBUG( HAM_LOG << "Rank: " << this_node_ << " in loop run " << i << " created REAL windows..." << std::endl; )
 
 
             } else { // create remote windows without memory (join the collective call and retreive the window handle)
@@ -277,7 +277,7 @@ public:
                 MPI_Win_create(nullptr, 0, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[i].msg_flag_win));
                 // MPI_Win_create(nullptr, 0, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &(peers[i].flag_win));
                 // debug msg
-                HAM_DEBUG( std::cout << "Rank: " << this_node_ << " in loop run " << i << " creating EMPTY windows..." << std::endl; )
+                HAM_DEBUG( HAM_LOG << "Rank: " << this_node_ << " in loop run " << i << " creating EMPTY windows..." << std::endl; )
                 //MPI_Win_allocate(0, 1, MPI_INFO_NULL, MPI_COMM_WORLD, peers[i].msg_win_data, &(peers[i].rma_msg_win));
                 //MPI_Win_allocate(0, 1, MPI_INFO_NULL, MPI_COMM_WORLD, peers[i].flag_win_data, &(peers[i].rma_flag_win));
             }

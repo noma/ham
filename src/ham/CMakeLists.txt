@@ -8,7 +8,7 @@ cmake_minimum_required(VERSION 3.2 FATAL_ERROR) # TODO verfify
 
 # interface target for ham
 add_library(ham_interface INTERFACE)
-target_compile_features(ham_interface INTERFACE cxx_auto_type cxx_range_for cxx_variadic_templates)
+target_compile_features(ham_interface INTERFACE )
 target_link_libraries(ham_interface INTERFACE noma_bmt boost_library)
 target_include_directories(ham_interface INTERFACE ${CMAKE_CURRENT_LIST_DIR}/../../include)
 
@@ -19,6 +19,22 @@ set(HAM_LIB_SRC
 	offload/runtime.cpp
 	offload/offload.cpp
 	util/cpu_affinity.cpp)
+
+# TCP
+add_library(ham_offload_tcp # SHARED if BUILD_SHARED_LIBS = TRUE
+		net/communicator.cpp
+		net/communicator_tcp.cpp
+		offload/runtime.cpp
+		offload/offload.cpp
+		offload/main.cpp
+		util/cpu_affinity.cpp)
+target_compile_definitions(ham_offload_tcp PUBLIC -DHAM_COMM_TCP=1)
+target_link_libraries(ham_offload_tcp PUBLIC ham_interface boost_library)
+
+set_target_properties(ham_offload_tcp PROPERTIES
+		CXX_STANDARD 11
+		CXX_STANDARD_REQUIRED YES
+		CXX_EXTENSIONS NO)
 
 if (MPI_FOUND)
 	add_library(ham_offload_mpi # SHARED if BUILD_SHARED_LIBS = TRUE

@@ -223,7 +223,7 @@ future<void> put(T* local_source, buffer_ptr<T>& remote_dest, size_t n)
 	// TODO(improvement): create a data transfer thread for one-sided
 	comm.send_data(local_source, remote_dest, n); // sync
 	return future<void>(true); // return dummy future
-#elif defined HAM_COMM_MPI
+#elif defined(HAM_COMM_MPI) || defined(HAM_COMM_TCP)
 	// allocate a request and construct a future
 	future<void> result(comm.allocate_request(remote_dest.node()));
 	// generate an offload message
@@ -261,7 +261,7 @@ future<void> get(buffer_ptr<T> remote_source, T* local_dest, size_t n)
 	// TODO(improvement): create a data transfer thread for one-sided
 	comm.recv_data(remote_source, local_dest, n); // sync
 	return future<void>(true); // return dummy future
-#elif defined HAM_COMM_MPI
+#elif defined(HAM_COMM_MPI) || defined(HAM_COMM_TCP)
 	// allocate a request and construct a future
 	future<void> result(comm.allocate_request(remote_source.node()));
 	// generate an offload message
@@ -271,7 +271,6 @@ future<void> get(buffer_ptr<T> remote_source, T* local_dest, size_t n)
 	comm.recv_data_async(result.get_request(), remote_source, local_dest, n);
 	comm.recv_result(result.get_request()); // trigger receiving the result
 	// TODO(improvement): the recv_result() is not needed, could remove and remove send_result() from offload_read_msg to reduce synchronization overhead
-
 	return result;
 #elif defined HAM_COMM_MPI_RMA_DYNAMIC
 	future<void> result(comm.allocate_data_request(remote_source.node()));

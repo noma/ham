@@ -236,7 +236,7 @@ public:
 			tcp::acceptor acc(io_context, endpoint);
 
 			node_t req_ranks[nodes_]; // store requested ranks in order of connection
-			tcp::socket* temp_socks = new socket[node_](io_context); // store sockets temporarily in connection order
+			tcp::socket* temp_socks = new tcp::socket[node_](io_context); // store sockets temporarily in connection order
 			bool taken_ranks[nodes_] {false};
 			taken_ranks[0] = true; // host rank has to be correctly provided and is therefore already taken (by the executing process)
 

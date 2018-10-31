@@ -153,7 +153,7 @@ public:
 		this_port_ = 0;		// tcp port used for this node
 		host_node_ = 0;		// host node
 		host_address_ = "empty";		// host IP address or resolvable name
-		host_port_ = 0;		// host port
+		host_port_ = "empty";		// host port
 
 
 		// command line options
@@ -215,9 +215,9 @@ public:
             tcp::socket sock(io_context); // socket is always stored with index = target node, so no "if_host" switching is necessary for functions executed on host and target
             peers[host_node_].tcp_socket = &sock;
             tcp::resolver resolver(io_context);
-            tcp::resolver::query query(tcp::v4(), host_address_, host_port_);
-            tcp::resolver::iterator iter = resolver.resolve(query);
-			boost::asio::connect(*peers[host_node_].tcp_socket, iter);
+            //tcp::resolver::query query(tcp::v4(), host_address_, host_port_);
+            //tcp::resolver::iterator iter = resolver.resolve(query);
+			boost::asio::connect(*peers[host_node_].tcp_socket, resolver.resolve(&host_address_, &host_port_));
 
 			// send requested rank to host
 			HAM_DEBUG( HAM_LOG << "communicator::communicator(): requesting ham-address " << this_node_ << "from host" << std::endl; )
@@ -472,7 +472,7 @@ private:
 	int this_port_;
 	node_t host_node_;
 	std::string host_address_;
-	int host_port_;
+	std::string host_port_;
     node_descriptor node_desc_dummy;
 	boost::asio::io_service io_context;
 		

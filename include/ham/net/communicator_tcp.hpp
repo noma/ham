@@ -217,7 +217,7 @@ public:
             tcp::resolver resolver(io_context);
             //tcp::resolver::query query(tcp::v4(), host_address_, host_port_);
             //tcp::resolver::iterator iter = resolver.resolve(query);
-			boost::asio::connect(*peers[host_node_].tcp_socket, resolver.resolve(&host_address_, &host_port_));
+			boost::asio::connect(*peers[host_node_].tcp_socket, resolver.resolve(host_address_, host_port_));
 
 			// send requested rank to host
 			HAM_DEBUG( HAM_LOG << "communicator::communicator(): requesting ham-address " << this_node_ << "from host" << std::endl; )

@@ -224,7 +224,7 @@ public:
 			boost::asio::write(*peers[host_node_].tcp_socket, boost::asio::buffer((void*)&this_node_, sizeof(this_node_)));
 			// recv rank from host
 			boost::asio::read(*peers[host_node_].tcp_socket, boost::asio::buffer((void*)&this_node_, sizeof(this_node_)));
-			HAM_DEBUG( HAM_LOG << "communicator::communicator(): received ham-address " << this_node_ << "from host" << std::endl; )
+			HAM_DEBUG( HAM_LOG << "communicator::communicator(): received ham-address " << this_node_ << " from host" << std::endl; )
 		}
 
 		// host accepts tcp connection from targets
@@ -254,7 +254,7 @@ public:
 
 			// rearrange sockets and inform targets of resulting rank
 			for (int j = 1; j < nodes_; ++j) {
-				if((req_ranks[j] > (nodes_-1))) { // check if rank invalid
+				if((req_ranks[j] > (nodes_-1))) { // check if rank invalid // TODO: fix -1 wildcard, currently not possible because req_ranks is unsigned node_t=size_t
 					std::cout << "communicator::communicator(): illegal ham-address requested: " << req_ranks[j] << std::endl;
 					exit(-1);
 				}else if(req_ranks[j] == -1) { // skip wildcard ranks, handled later to avoid conflicting ranks with following connects
@@ -305,9 +305,13 @@ public:
 				}
 			}
 
+            HAM_DEBUG( HAM_LOG << "communicator::communicator(): initializing buffers done" << std::endl; )
+
 			// host runs io_context in separate thread (asynchronous progress thread) for async operations
 			boost::asio::io_service::work work(io_context);
 			std::thread thread([this](){ io_context.run(); });
+
+            HAM_DEBUG( HAM_LOG << "communicator::communicator(): async thread started" << std::endl; )
 		}
 
 

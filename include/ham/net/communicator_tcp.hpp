@@ -212,7 +212,7 @@ public:
 
 		// targets init tcp connection to host
 		if(!is_host()) {
-            tcp::socket sock = new tcp::socket(io_context); // socket is always stored with index = target node, so no "if_host" switching is necessary for functions executed on host and target
+            tcp::socket* sock = new tcp::socket(io_context); // socket is always stored with index = target node, so no "if_host" switching is necessary for functions executed on host and target
             peers[host_node_].tcp_socket = sock;
             tcp::resolver resolver(io_context);
             //tcp::resolver::query query(tcp::v4(), host_address_, host_port_);
@@ -241,7 +241,7 @@ public:
 			taken_ranks[0] = true; // host rank has to be correctly provided and is therefore already taken (by the executing process)
 
 			for(int i=1; i < nodes_; i++) {
-				 acc.accept(temp_socks[i]); // accept connection
+				 acc.accept(*temp_socks[i]); // accept connection
 
 				// recv rank
 				boost::asio::read(temp_socks[i], boost::asio::buffer((void *) &req_ranks[i], sizeof(node_t)));

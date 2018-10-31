@@ -241,6 +241,7 @@ public:
 			taken_ranks[0] = true; // host rank has to be correctly provided and is therefore already taken (by the executing process)
 
 			for(int i=1; i < nodes_; i++) {
+                 temp_socks->close();
 				 acc.accept(*temp_socks[i]); // accept connection
 
 				// recv rank

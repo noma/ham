@@ -29,7 +29,7 @@ add_library(ham_offload_tcp # SHARED if BUILD_SHARED_LIBS = TRUE
 		offload/main.cpp
 		util/cpu_affinity.cpp)
 target_compile_definitions(ham_offload_tcp PUBLIC -DHAM_COMM_TCP=1)
-target_link_libraries(ham_offload_tcp PUBLIC ham_interface boost_library)
+target_link_libraries(ham_offload_tcp PUBLIC ham_interface boost_library pthread)
 
 set_target_properties(ham_offload_tcp PROPERTIES
 		CXX_STANDARD 11

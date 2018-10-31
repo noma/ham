@@ -220,7 +220,7 @@ public:
 			boost::asio::connect(*peers[host_node_].tcp_socket, resolver.resolve(host_address_, host_port_));
 
 			// send requested rank to host
-			HAM_DEBUG( HAM_LOG << "communicator::communicator(): requesting ham-address " << this_node_ << "from host" << std::endl; )
+			HAM_DEBUG( HAM_LOG << "communicator::communicator(): requesting ham-address " << this_node_ << " from host" << std::endl; )
 			boost::asio::write(*peers[host_node_].tcp_socket, boost::asio::buffer((void*)&this_node_, sizeof(this_node_)));
 			// recv rank from host
 			boost::asio::read(*peers[host_node_].tcp_socket, boost::asio::buffer((void*)&this_node_, sizeof(this_node_)));
@@ -254,8 +254,8 @@ public:
 
 			// rearrange sockets and inform targets of resulting rank
 			for (int j = 1; j < nodes_; ++j) {
-				if(req_ranks[j] < -1 || req_ranks[j] > nodes_-1) { // check if rank invalid
-					std::cout << "communicator::communicator(): illegal ham-address requested:" << req_ranks[j] << std::endl;
+				if((req_ranks[j] < -1) || (req_ranks[j] > nodes_-1)) { // check if rank invalid
+					std::cout << "communicator::communicator(): illegal ham-address requested: " << req_ranks[j] << std::endl;
 					exit(-1);
 				}else if(req_ranks[j] == -1) { // skip wildcard ranks, handled later to avoid conflicting ranks with following connects
 					HAM_DEBUG( HAM_LOG << "communicator::communicator(): connection " << j << " requested wildcard ham-address" << std::endl; )

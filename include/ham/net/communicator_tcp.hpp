@@ -419,7 +419,7 @@ public:
 	void recv_data(buffer_ptr<T> remote_source, T* local_dest, size_t size)
 	{
 		// tcp recv
-        boost::asio::read(peers[remote_source.node()].tcp_socket, boost::asio::buffer((void*)local_dest, size * sizeof(T)));
+        boost::asio::read(*peers[remote_source.node()].tcp_socket, boost::asio::buffer((void*)local_dest, size * sizeof(T)));
 		// MPI_Recv((void*)local_dest, size * sizeof(T), MPI_BYTE, remote_source.node(), constants::DATA_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	}
 	
@@ -428,7 +428,7 @@ public:
 	void recv_data_async(request_reference_type req, buffer_ptr<T> remote_source, T* local_dest, size_t size)
 	{
         auto self(shared_from_this());
-		boost::asio::async_read(peers[remote_source.node()].tpc_socket, boost::asio::buffer(static_cast<void*>(local_dest), size*sizeof(T)),
+		boost::asio::async_read(*peers[remote_source.node()].tcp_socket, boost::asio::buffer(static_cast<void*>(local_dest), size*sizeof(T)),
 								[this, self, &req](boost::system::error_code ec, size_t length) {
 									req.received_ = true;
 								}

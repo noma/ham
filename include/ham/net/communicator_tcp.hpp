@@ -212,8 +212,8 @@ public:
 
 		// targets init tcp connection to host
 		if(!is_host()) {
-            tcp::socket sock(io_context); // socket is always stored with index = target node, so no "if_host" switching is necessary for functions executed on host and target
-            peers[host_node_].tcp_socket = &sock;
+            tcp::socket sock = new tcp::socket(io_context); // socket is always stored with index = target node, so no "if_host" switching is necessary for functions executed on host and target
+            peers[host_node_].tcp_socket = sock;
             tcp::resolver resolver(io_context);
             //tcp::resolver::query query(tcp::v4(), host_address_, host_port_);
             //tcp::resolver::iterator iter = resolver.resolve(query);
@@ -266,7 +266,7 @@ public:
 					taken_ranks[rrank] = true; // mark the requested rank as taken
 					HAM_DEBUG( HAM_LOG << "communicator::communicator(): associated ham-address: " << rrank << " with connection " << j << std::endl; )
 					// send assigned rank to target
-					boost::asio::write(peers[rrank].tcp_socket, boost::asio::buffer((void*)&rrank, sizeof(rrank)));
+					boost::asio::write(*peers[rrank].tcp_socket, boost::asio::buffer((void*)&rrank, sizeof(rrank)));
 				}
 			}
 
@@ -279,7 +279,7 @@ public:
 							HAM_DEBUG( HAM_LOG << "communicator::communicator(): associating wildcard connection: " << k << " with ham-address " << i << std::endl; )
 							peers[i].tcp_socket = temp_socks[k];
 							taken_ranks[i] = true;
-							boost::asio::write(peers[i].tcp_socket, boost::asio::buffer((void*)&i, sizeof(i)));
+							boost::asio::write(*peers[i].tcp_socket, boost::asio::buffer((void*)&i, sizeof(i)));
 							break; // stop if free rank is assigned, go back to k-loop for next wildcard connection
 						}
 					}
@@ -484,7 +484,7 @@ private:
 		detail::resource_pool<size_t> buffer_pool;
 
 		// tcp socket
-		tcp::socket* tcp_socket;
+		tcp::socket tcp_socket;
 	};
 	
 	tcp_peer* peers;

@@ -237,11 +237,15 @@ public:
 
 			node_t req_ranks[nodes_]; // store requested ranks in order of connection
 			tcp::socket* temp_socks[nodes_]; // store sockets temporarily in connection order
+            for (int l = 1; l < nodes_; ++l) {
+                temp_socks[l] = new tcp::socket(io_context);
+            }
+
 			bool taken_ranks[nodes_] {false};
 			taken_ranks[0] = true; // host rank has to be correctly provided and is therefore already taken (by the executing process)
 
 			for(int i=1; i < nodes_; i++) {
-                 temp_socks[i]->close();
+                 // temp_socks[i]->close();
 				 acc.accept(*temp_socks[i]); // accept connection
 
 				// recv rank

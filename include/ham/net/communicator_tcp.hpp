@@ -254,7 +254,7 @@ public:
 
 			// rearrange sockets and inform targets of resulting rank
 			for (int j = 1; j < nodes_; ++j) {
-				if((req_ranks[j] < -1) || (req_ranks[j] > nodes_-1)) { // check if rank invalid
+				if((req_ranks[j] < -1) || (req_ranks[j] > (nodes_-1))) { // check if rank invalid
 					std::cout << "communicator::communicator(): illegal ham-address requested: " << req_ranks[j] << std::endl;
 					exit(-1);
 				}else if(req_ranks[j] == -1) { // skip wildcard ranks, handled later to avoid conflicting ranks with following connects

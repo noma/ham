@@ -212,10 +212,12 @@ public:
 
 		// targets init tcp connection to host
 		if(!is_host()) {
-			tcp::socket sock(io_context); // socket is always stored with index = target node, so no "if_host" switching is necessary for functions executed on host and target
-			peers[host_node_].tcp_socket = &sock;
+            tcp::socket sock(io_context); // socket is always stored with index = target node, so no "if_host" switching is necessary for functions executed on host and target
+            peers[host_node_].tcp_socket = &sock;
             tcp::resolver resolver(io_context);
-			boost::asio::connect(*peers[host_node_].tcp_socket, resolver.resolve({host_address_, host_port_}));
+            tcp::resolver::query query(tcp::v4(), host_address_, host_port_);
+            tcp::resolver::iterator iter = resolver.resolve(query);
+			boost::asio::connect(*peers[host_node_].tcp_socket, iter);
 
 			// send requested rank to host
 			HAM_DEBUG( HAM_LOG << "communicator::communicator(): requesting ham-address " << this_node_ << "from host" << std::endl; )

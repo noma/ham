@@ -236,12 +236,12 @@ public:
 			tcp::acceptor acc(io_context, endpoint);
 
 			node_t req_ranks[nodes_]; // store requested ranks in order of connection
-			tcp::socket* temp_socks = new tcp::socket[nodes_](io_context); // store sockets temporarily in connection order
+			tcp::socket* temp_socks[nodes_]; // store sockets temporarily in connection order
 			bool taken_ranks[nodes_] {false};
 			taken_ranks[0] = true; // host rank has to be correctly provided and is therefore already taken (by the executing process)
 
 			for(int i=1; i < nodes_; i++) {
-				temp_socks[i] = acc.accept(); // accept connection
+				 acc.accept(temp_socks[i]); // accept connection
 
 				// recv rank
 				boost::asio::read(temp_socks[i], boost::asio::buffer((void *) &req_ranks[i], sizeof(node_t)));
@@ -484,7 +484,7 @@ private:
 		detail::resource_pool<size_t> buffer_pool;
 
 		// tcp socket
-		tcp::socket tcp_socket;
+		tcp::socket* tcp_socket;
 	};
 	
 	tcp_peer* peers;

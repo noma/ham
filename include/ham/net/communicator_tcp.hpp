@@ -415,8 +415,13 @@ public:
 
         boost::asio::async_read(*peers[req.target_node].tcp_socket, boost::asio::buffer(static_cast<void*>(&peers[req.target_node].msg_buffers[req.recv_buffer_index]), constants::MSG_SIZE),
 				[this, &req](boost::system::error_code ec, size_t length) {
-					req.received_ = true;
-                    HAM_DEBUG( HAM_LOG << "THREAD: Async completion handler executed, recv_result() completed " << req.target_node << std::endl; )
+                    if (!ec)
+                    {
+                        req.received_ = true;
+                        HAM_DEBUG( HAM_LOG << "THREAD: Async completion handler executed, recv_result() completed " << req.target_node << std::endl; )
+                    } else {
+                        HAM_DEBUG( HAM_LOG << "THREAD: Async completion handler executed, failed to recv_result() from " << req.target_node << " Error: " << ec.message() << std::endl; )
+                    }
 				}
 		);
 		// MPI_Irecv(static_cast<void*>(&peers[req.target_node].msg_buffers[req.recv_buffer_index]), constants::MSG_SIZE, MPI_BYTE, req.target_node, constants::RESULT_TAG, MPI_COMM_WORLD, &req.next_mpi_request());

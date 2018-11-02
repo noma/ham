@@ -10,6 +10,7 @@
 #include <cstring> // memcpy
 #include <stdlib.h> // posix_memalign
 #include <thread> // async thread
+// #include <memory> // std::shared_ptr
 
 #include <boost/asio.hpp>
 #include <boost/program_options.hpp>
@@ -60,7 +61,7 @@ private:
 	friend class net::communicator;
 };
 
-class communicator : public std::enable_shared_from_this<communicator> {
+class communicator { // : public std::enable_shared_from_this<communicator>
 public:
 	// externally used interface of request must be shared across all communicator-implementations
 	class request {
@@ -361,9 +362,9 @@ public:
 		memcpy(msg_buffer, msg, size);
 
 		// tcp write
-		auto self(shared_from_this());
+		// auto self(shared_from_this());
 		boost::asio::async_write(*peers[req.target_node].tcp_socket, boost::asio::buffer(msg_buffer, size),
-								[this, self, &req](boost::system::error_code ec, size_t length) {
+								[&req](boost::system::error_code ec, size_t length) {
 									req.sent_ = true;
 								}
 		);
@@ -380,6 +381,7 @@ public:
         return static_cast<void*>(&buffer);
 	}
 
+    // target only -> sync
     // send result through communicator
     // only to be used by request.send_result()
     template<class T>
@@ -388,13 +390,14 @@ public:
         boost::asio::write(*peers[target_node].tcp_socket, boost::asio::buffer((void*)message, size));
     }
 
+    // host only -> async
 	// trigger receiving the result of an active message on the host
 	void recv_result(request_reference_type req)
 	{
 		// tcp receive
-        auto self(shared_from_this());
+        // auto self(shared_from_this());
         boost::asio::async_read(*peers[req.target_node].tcp_socket, boost::asio::buffer(static_cast<void*>(&peers[req.target_node].msg_buffers[req.recv_buffer_index]), constants::MSG_SIZE),
-				[this, self, &req](boost::system::error_code ec, size_t length) {
+				[&req](boost::system::error_code ec, size_t length) {
 					req.received_ = true;
 				}
 		);
@@ -402,29 +405,30 @@ public:
 		return;
 	}
 
+    // target only, host never uses sync variant
 	template<typename T>
 	void send_data(T* local_source, buffer_ptr<T> remote_dest, size_t size)
 	{
 		// tcp send
-
         boost::asio::write(*peers[remote_dest.node()].tcp_socket, boost::asio::buffer((void*)local_source, size * sizeof(T)));
+
 		// MPI_Send((void*)local_source, size * sizeof(T), MPI_BYTE, remote_dest.node(), constants::DATA_TAG, MPI_COMM_WORLD);
 	}
 
-	// to be used by the host
+	// host only
 	template<typename T>
 	void send_data_async(request_reference_type req, T* local_source, buffer_ptr<T> remote_dest, size_t size)
 	{
-		auto self(shared_from_this());
+		// auto self(shared_from_this());
 		boost::asio::async_write(*peers[remote_dest.node()].tcp_socket, boost::asio::buffer((void*)local_source, size*sizeof(T)),
-								 [this, self, &req](boost::system::error_code ec, size_t length) {
+								 [&req](boost::system::error_code ec, size_t length) {
 									 req.sent_ = true;
 								 }
 		);
 		// MPI_Isend((void*)local_source, size * sizeof(T), MPI_BYTE, remote_dest.node(), constants::DATA_TAG, MPI_COMM_WORLD, &req.next_mpi_request());
 	}
 
-
+    // target only
 	template<typename T>
 	void recv_data(buffer_ptr<T> remote_source, T* local_dest, size_t size)
 	{
@@ -437,9 +441,9 @@ public:
 	template<typename T>
 	void recv_data_async(request_reference_type req, buffer_ptr<T> remote_source, T* local_dest, size_t size)
 	{
-        auto self(shared_from_this());
+        // auto self(shared_from_this());
 		boost::asio::async_read(*peers[remote_source.node()].tcp_socket, boost::asio::buffer(static_cast<void*>(local_dest), size*sizeof(T)),
-								[this, self, &req](boost::system::error_code ec, size_t length) {
+								[&req](boost::system::error_code ec, size_t length) {
 									req.received_ = true;
 								}
 		);

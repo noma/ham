@@ -165,7 +165,11 @@ int main(int argc, char * argv[])
 	#else
 		std::cout << "# COMM_MPI_RMA_DYNAMIC         disabled" << std::endl;
 	#endif
-
+	#ifdef HAM_COMM_TCP
+		std::cout << "# COMM_TCP         enabled" << std::endl;
+	#else
+		std::cout << "# COMM_TCP         disabled" << std::endl;
+#endif
 #ifdef HAM_COMM_SCIF
 		std::cout << "# HAM_COMM_SCIF                enabled" << std::endl;
 	#ifdef HAM_SCIF_RMA_CPU

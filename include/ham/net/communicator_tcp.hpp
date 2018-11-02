@@ -393,7 +393,7 @@ public:
 		static msg_buffer buffer; // NOTE !
 		// MPI_Recv(&buffer, size, MPI_BYTE, host_node_, constants::DEFAULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         HAM_DEBUG( HAM_LOG << "communicator::recv_msg_host(): node " << this_node_ << " awaiting AM from host"  << std::endl; )
-		boost::asio::read_until(*peers[host_node_].tcp_socket, &buffer, delim);
+		boost::asio::read_until(*peers[host_node_].tcp_socket, buffer, delim);
         return static_cast<void*>(&buffer);
 	}
 

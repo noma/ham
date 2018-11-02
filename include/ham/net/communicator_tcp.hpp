@@ -373,8 +373,13 @@ public:
 
 		boost::asio::async_write(*peers[req.target_node].tcp_socket, boost::asio::buffer(msg_buffer, size),
 								[this, &req](boost::system::error_code ec, size_t length) {
-									req.sent_ = true;
-                                    HAM_DEBUG( HAM_LOG << "THREAD: Async completion handler executed, send_msg() to " << req.target_node << " completed" << std::endl; )
+                                    if (!ec)
+                                    {
+                                        req.sent_ = true;
+                                        HAM_DEBUG( HAM_LOG << "THREAD: Async completion handler executed, send_msg() to " << req.target_node << " completed" << std::endl; )
+                                    } else {
+                                        HAM_DEBUG( HAM_LOG << "THREAD: Async completion handler executed, failed to send_msg() to " << req.target_node << " Error: " << ec.message() << std::endl; )
+                                    }
 								}
 		);
 		// MPI_Isend(msg_buffer, size, MPI_BYTE, req.target_node, constants::DEFAULT_TAG, MPI_COMM_WORLD, &req.next_mpi_request());

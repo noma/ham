@@ -310,7 +310,12 @@ public:
 
 			// host runs io_context in separate thread (asynchronous progress thread) for async operations
 			boost::asio::io_service::work work(io_context);
-			std::thread thread([this, &io_context](){ io_context.run(); });
+			std::thread thread([this](){
+                HAM_DEBUG( HAM_LOG << "ASYNC THREAD: Heyooo, I live." << std::endl; )
+                io_context.run();
+                HAM_DEBUG( HAM_LOG << "ASYNC THREAD: Oh noes, I'm dead!" << std::endl; )
+                }
+            );
             thread.detach();
 
             HAM_DEBUG( HAM_LOG << "communicator::communicator(): async thread started" << std::endl; )

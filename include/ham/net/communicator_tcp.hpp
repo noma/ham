@@ -142,7 +142,7 @@ public:
 	typedef request& request_reference_type;
 	typedef const request& request_const_reference_type;
 
-	communicator(int argc, char* argv[]) : node_desc_dummy(), delim(HAM_TCP_DELIM)
+	communicator(int argc, char* argv[]) : node_desc_dummy()
 	{
 		HAM_DEBUG( HAM_LOG << "communicator::communicator(): initialising configuration" << std::endl; )
 
@@ -366,13 +366,12 @@ public:
 		// copy message from caller into transfer buffer
 		void* msg_buffer = static_cast<void*>(&peers[req.target_node].msg_buffers[req.send_buffer_index]);
 		memcpy(msg_buffer, msg, size);
-        memcpy(msg_buffer+size, delim.c_str(), delim.size()); // add tcp delimiter to message is defined in
 
 		// tcp write
 		// auto self(shared_from_this());
         HAM_DEBUG( HAM_LOG << "communicator::send_msg(): sending msg to: " << req.target_node << std::endl; )
-
-		boost::asio::async_write(*peers[req.target_node].tcp_socket, boost::asio::buffer(msg_buffer, size+delim.size()),
+        //always write full message size TODO(improvement): improve with delimiter and read_until @ target
+		boost::asio::async_write(*peers[req.target_node].tcp_socket, boost::asio::buffer(msg_buffer, constants::MSG_SIZE),
 								[this, &req](boost::system::error_code ec, size_t length) {
                                     if (!ec)
                                     {
@@ -393,7 +392,7 @@ public:
 		static msg_buffer buffer; // NOTE !
 		// MPI_Recv(&buffer, size, MPI_BYTE, host_node_, constants::DEFAULT_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         HAM_DEBUG( HAM_LOG << "communicator::recv_msg_host(): node " << this_node_ << " awaiting AM from host"  << std::endl; )
-		boost::asio::read_until(*peers[host_node_].tcp_socket, buffer, delim);
+		boost::asio::read(*peers[host_node_].tcp_socket, boost::asio::buffer(&buffer, size)); // will always read full MSG_SIZE
         return static_cast<void*>(&buffer);
 	}
 
@@ -508,8 +507,7 @@ private:
 	std::string host_port_;
     node_descriptor node_desc_dummy;
 	boost::asio::io_service io_context;
-    const std::string delim;
-		
+
 	struct tcp_peer {
 		buffer_ptr<msg_buffer> msg_buffers; // buffers used for MPI_ISend and IRecv by the sender
 

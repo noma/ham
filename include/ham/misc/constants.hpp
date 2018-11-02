@@ -10,9 +10,6 @@
 #ifndef HAM_MESSAGE_SIZE
 #define HAM_MESSAGE_SIZE 4096
 #endif
-#ifndef HAM_TCP_DELIM
-#define HAM_TCP_DELIM "\r\n\r\n"
-#endif
 
 namespace ham {
 namespace constants {

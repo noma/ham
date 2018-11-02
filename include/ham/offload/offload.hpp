@@ -329,17 +329,17 @@ future<void> copy(buffer_ptr<T> source, buffer_ptr<T> dest, size_t n)
 }
 #endif
 
-#ifndef HAM_COMM_ONE_SIDED // TODO(feature, high priority): implement
+#if !defined(HAM_COMM_ONE_SIDED) || !defined(HAM_COMM_TCP)// TODO(feature, high priority): implement
         template<typename T>
 void copy_sync(buffer_ptr<T> source, buffer_ptr<T> dest, size_t n)
 {
 	net::communicator& comm = runtime::instance().communicator();
-#ifdef HAM_COMM_ONE_SIDED
+#if  defined(HAM_COMM_ONE_SIDED) || defined(HAM_COMM_TCP)
 // TODO(feature, high priority): implement
 // fix 1st arg:
 //	comm.send_data(src_node, local_source, remote_dest, n);
 //	static_assert(false, "copy is not implemented yet for the SCIF back-end");
-#elif defined(HAM_COMM_MPI) || defined(HAM_COMM_TCP)
+#elif defined HAM_COMM_MPI
 	// send corresponding write and read messages to the sender and the receiver
 
 	// issues a send operation on the source node, that sends the memory at source to the destination node

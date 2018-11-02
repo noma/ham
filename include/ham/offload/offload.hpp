@@ -339,7 +339,7 @@ void copy_sync(buffer_ptr<T> source, buffer_ptr<T> dest, size_t n)
 // fix 1st arg:
 //	comm.send_data(src_node, local_source, remote_dest, n);
 //	static_assert(false, "copy is not implemented yet for the SCIF back-end");
-#elif defined HAM_COMM_MPI
+#elif defined(HAM_COMM_MPI) || defined(HAM_COMM_TCP)
 	// send corresponding write and read messages to the sender and the receiver
 
 	// issues a send operation on the source node, that sends the memory at source to the destination node

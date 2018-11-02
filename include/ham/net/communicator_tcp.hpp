@@ -142,7 +142,7 @@ public:
 	typedef request& request_reference_type;
 	typedef const request& request_const_reference_type;
 
-	communicator(int argc, char* argv[]) : node_desc_dummy(), delim(constants::TCP_DELIM)
+	communicator(int argc, char* argv[]) : node_desc_dummy(), delim(HAM_TCP_DELIM)
 	{
 		HAM_DEBUG( HAM_LOG << "communicator::communicator(): initialising configuration" << std::endl; )
 

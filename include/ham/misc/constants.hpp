@@ -10,6 +10,9 @@
 #ifndef HAM_MESSAGE_SIZE
 #define HAM_MESSAGE_SIZE 4096
 #endif
+#ifndef HAM_TCP_DELIM
+#define HAM_TCP_DELIM "\r\n\r\n"
+#endif
 
 namespace ham {
 namespace constants {
@@ -19,7 +22,6 @@ enum net {
 	MSG_BUFFERS = 256,
 	DATA_PUT_CODE = 1,
 	DATA_GET_CODE = 2,
-	TCP_DELIM = "\r\n\r\n",
 };
 
 enum arch {

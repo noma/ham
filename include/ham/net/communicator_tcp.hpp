@@ -376,7 +376,7 @@ public:
                                     if (!ec)
                                     {
                                         req.sent_ = true;
-                                        HAM_DEBUG( HAM_LOG << "THREAD: Async completion handler executed, send_msg() to " << req.target_node << " completed" << std::endl; )
+                                        HAM_DEBUG( HAM_LOG << "THREAD: Async completion handler executed, send_msg() to " << req.target_node << " completed. Wrote " << length << " Bytes." << std::endl; )
                                     } else {
                                         HAM_DEBUG( HAM_LOG << "THREAD: Async completion handler executed, failed to send_msg() to " << req.target_node << " Error: " << ec.message() << std::endl; )
                                     }

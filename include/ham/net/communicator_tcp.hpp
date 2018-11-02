@@ -104,7 +104,7 @@ public:
 			// TODO(improvement, low priority): better go through communicator, such that no MPI calls are anywhere else
 			// MPI_Send(result_msg, size, MPI_BYTE, source_node, constants::RESULT_TAG, MPI_COMM_WORLD);
 
-			communicator::instance().send_result(target_node, result_msg, size);
+			communicator::instance().send_result(source_node, result_msg, size);
             // don't need size * sizeof(T) because req.send_result is called as send_result((void*)&a, sizeof(a)) in offload_msg.hpp
 		}
 
@@ -402,7 +402,7 @@ public:
     template<class T>
     void send_result(node_t target_node, T* message, size_t size) {
         HAM_DEBUG( HAM_LOG << "communicator::send_result(): node " << target_node << " sending result to host"  << std::endl; )
-        boost::asio::write(*peers[host_node_].tcp_socket, boost::asio::buffer((void*)message, size));
+        boost::asio::write(*peers[target_node].tcp_socket, boost::asio::buffer((void*)message, size));
     }
 
     // host only -> async

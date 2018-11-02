@@ -370,8 +370,9 @@ public:
 		// tcp write
 		// auto self(shared_from_this());
 		boost::asio::async_write(*peers[req.target_node].tcp_socket, boost::asio::buffer(msg_buffer, size),
-								[&req](boost::system::error_code ec, size_t length) {
+								[this, &req](boost::system::error_code ec, size_t length) {
 									req.sent_ = true;
+                                    HAM_DEBUG( HAM_LOG << "THREAD: Async completion handler executed" << std::endl; )
 								}
 		);
 		// MPI_Isend(msg_buffer, size, MPI_BYTE, req.target_node, constants::DEFAULT_TAG, MPI_COMM_WORLD, &req.next_mpi_request());
@@ -403,7 +404,7 @@ public:
 		// tcp receive
         // auto self(shared_from_this());
         boost::asio::async_read(*peers[req.target_node].tcp_socket, boost::asio::buffer(static_cast<void*>(&peers[req.target_node].msg_buffers[req.recv_buffer_index]), constants::MSG_SIZE),
-				[&req](boost::system::error_code ec, size_t length) {
+				[this, &req](boost::system::error_code ec, size_t length) {
 					req.received_ = true;
 				}
 		);

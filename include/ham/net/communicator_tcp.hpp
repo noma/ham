@@ -401,7 +401,7 @@ public:
     // only to be used by request.send_result()
     template<class T>
     void send_result(node_t target_node, T* message, size_t size) {
-
+        HAM_DEBUG( HAM_LOG << "communicator::send_result(): sending result to host"  << std::endl; )
         boost::asio::write(*peers[target_node].tcp_socket, boost::asio::buffer((void*)message, size));
     }
 

@@ -365,10 +365,10 @@ void copy_sync(buffer_ptr<T> source, buffer_ptr<T> dest, size_t n)
     // use async copy + sync
     copy(source, dest, n).get();
 #elif defined HAM_COMM_TCP
-	void* ptr;
-	posix_memalign(&ptr, constants::CACHE_LINE_SIZE, n * sizeof(T));
-	get_sync(source, ptr, n*sizeof(T));
-	put_sync(ptr, dest,n*sizeof(T));
+	T* ptr;
+	posix_memalign((void**)&ptr, constants::CACHE_LINE_SIZE, n * sizeof(T));
+	get_sync(source, ptr, n);
+	put_sync(ptr, dest,n);
 #endif
 }
 

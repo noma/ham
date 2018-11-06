@@ -528,7 +528,6 @@ private:
     node_descriptor node_desc_dummy;
 	boost::asio::io_service io_context;
     std::thread thread_;
-    boost::asio::io_service::work work_;
 
     struct tcp_peer {
 		buffer_ptr<msg_buffer> msg_buffers; // buffers used for MPI_ISend and IRecv by the sender

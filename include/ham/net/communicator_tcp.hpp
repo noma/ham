@@ -316,7 +316,7 @@ public:
 
 			// host runs io_context in separate thread (asynchronous progress thread) for async operations
             boost::asio::io_service::work work(io_context);
-            thread_ = std::thread([this](){
+            thread_ = std::thread([this, &work](){
                 HAM_DEBUG( HAM_LOG << "ASYNC THREAD: Heyooo, I live." << std::endl; )
                 // TODO(bug fix): need to figure out how to reset work from main thread so the background thread can return from run() before the host killst the io_context
                 io_context.run();

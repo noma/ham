@@ -126,8 +126,8 @@ public:
         node_t target_node;
 		node_t source_node;
 		bool valid_;
-		bool received_; // used for the async receive handler to set to true, checked for completion
-		bool sent_; // used for the async send handler to set to true... unused, but the handler likes to do something
+		volatile bool received_; // used for the async receive handler to set to true, checked for completion
+		volatile bool sent_; // used for the async send handler to set to true... unused, but the handler likes to do something
 
 		// only needed by the sender
 		enum { NUM_REQUESTS = 3 };
@@ -403,7 +403,7 @@ public:
     // only to be used by request.send_result()
     template<class T>
     void send_result(node_t target_node, T* message, size_t size) {
-        HAM_DEBUG( HAM_LOG << "communicator::send_result(): node " << target_node << " sending result to host"  << std::endl; )
+        HAM_DEBUG( HAM_LOG << "communicator::send_result(): node " << this_node_ << " sending result to node: " << target_node  << std::endl; )
         void* ptr; // ugly stuff to wrap result into MSG_SIZE buffer TODO(improvement): change to transfering only actual result size by using delimiter and read_until in recv_result()
         posix_memalign((void**)&ptr, constants::CACHE_LINE_SIZE, constants::MSG_SIZE);
         memcpy(ptr, message, size);

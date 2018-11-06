@@ -311,9 +311,9 @@ public:
             HAM_DEBUG( HAM_LOG << "communicator::communicator(): initializing buffers done" << std::endl; )
 
 			// host runs io_context in separate thread (asynchronous progress thread) for async operations
-            work_ = boost::asio::io_service::work(io_context);
 			thread_ = std::thread([this](){
                 HAM_DEBUG( HAM_LOG << "ASYNC THREAD: Heyooo, I live." << std::endl; )
+                work_ = boost::asio::io_service::work(io_context);
                 io_context.run();
                 HAM_DEBUG( HAM_LOG << "ASYNC THREAD: Oh noes, I'm dead!" << std::endl; )
                 }

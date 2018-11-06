@@ -518,7 +518,7 @@ private:
 	std::string host_port_;
     node_descriptor node_desc_dummy;
 	boost::asio::io_service io_context;
-    std::thread_ thread;
+    std::thread thread_;
     //boost::asio::io_service::work work; //1.65 syntax
     boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work_;
 	struct tcp_peer {

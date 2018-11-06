@@ -124,7 +124,7 @@ public:
 		}
 
         void wait_sent() const {
-            while(!sent_);
+            while(!sent_) {};
         }
 
         node_t target_node;
@@ -315,9 +315,10 @@ public:
             HAM_DEBUG( HAM_LOG << "communicator::communicator(): initializing buffers done" << std::endl; )
 
 			// host runs io_context in separate thread (asynchronous progress thread) for async operations
-			thread_ = std::thread([this](){
+            boost::asio::io_service::work work(io_context);
+            thread_ = std::thread([this](){
                 HAM_DEBUG( HAM_LOG << "ASYNC THREAD: Heyooo, I live." << std::endl; )
-                boost::asio::io_service::work work(io_context);
+                // TODO(bug fix): need to figure out how to reset work from main thread so the background thread can return from run() before the host killst the io_context
                 io_context.run();
                 HAM_DEBUG( HAM_LOG << "ASYNC THREAD: Oh noes, I'm dead!" << std::endl; )
                 }
@@ -333,7 +334,12 @@ public:
 
 	~communicator()
 	{
-		// finalize
+		// TODO(bug fix): what we actually want:
+        // stop the work guard, so the thread will return from io_context.run() when all outstanding ops completed
+        // join the thread so the host waits until above is done
+        // stop the context
+        // currently: have to kill the context first because otherwise the thread wont complete to be joined
+        // but this causes thread to abandon any outstanding ops
         io_context.stop();
         if(is_host()) {
             thread_.join();

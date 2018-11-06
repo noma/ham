@@ -198,7 +198,7 @@ void ping(node_t node, Functor&& func)
 	net::communicator::request req = comm.allocate_request(node); // TODO(improvement): resource deallocation of this request (currently only used for terminating)
 	comm.send_msg(req, (void*)&msg, sizeof msg);
 #if defined(HAM_COMM_TCP)
-    while(!req.sent())		// ugly workaround to prevent target from crashing because of connection teardown before the terminate functor is executed
+    while(!req.sent())	{}	// ugly workaround to prevent target from crashing because of connection teardown before the terminate functor is executed
 #endif
 	HAM_DEBUG( HAM_LOG << "runtime::ping(): sending msg done." << std::endl; )
 }

@@ -123,6 +123,10 @@ public:
 			return sent_;
 		}
 
+        void wait_sent() const {
+            while(!sent_);
+        }
+
         node_t target_node;
 		node_t source_node;
 		bool valid_;

@@ -332,12 +332,12 @@ future<void> copy(buffer_ptr<T> source, buffer_ptr<T> dest, size_t n)
 }
 #endif
 
-#if !defined(HAM_COMM_ONE_SIDED) || !defined(HAM_COMM_TCP)// TODO(feature, high priority): implement
+#if !defined(HAM_COMM_ONE_SIDED)// TODO(feature, high priority): implement
         template<typename T>
 void copy_sync(buffer_ptr<T> source, buffer_ptr<T> dest, size_t n)
 {
 	net::communicator& comm = runtime::instance().communicator();
-#if  defined(HAM_COMM_ONE_SIDED) || defined(HAM_COMM_TCP)
+#if  defined(HAM_COMM_ONE_SIDED)
 // TODO(feature, high priority): implement
 // fix 1st arg:
 //	comm.send_data(src_node, local_source, remote_dest, n);
@@ -364,6 +364,11 @@ void copy_sync(buffer_ptr<T> source, buffer_ptr<T> dest, size_t n)
 #elif defined HAM_COMM_MPI_RMA_DYNAMIC
     // use async copy + sync
     copy(source, dest, n).get();
+#elif defined HAM_COMM_TCP
+	void* ptr;
+	posix_memalign(&ptr, constants::CACHE_LINE_SIZE, n * sizeof(T));
+	get_sync(source, ptr, n*sizeof(T));
+	put_sync(ptr, dest,n*sizeof(T));
 #endif
 }
 

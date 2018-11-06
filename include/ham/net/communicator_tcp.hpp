@@ -318,7 +318,7 @@ public:
                 HAM_DEBUG( HAM_LOG << "ASYNC THREAD: Oh noes, I'm dead!" << std::endl; )
                 }
             );
-            // thread.detach(); no longer needed with member thread
+            // thread_.detach(); no longer needed with member thread
 
             HAM_DEBUG( HAM_LOG << "communicator::communicator(): async thread started" << std::endl; )
 		}
@@ -332,7 +332,7 @@ public:
 		// finalize
 		if(is_host()) {
 			work.reset();
-            thread.join();
+            thread_.join();
 		}
         io_context.stop();
 		HAM_DEBUG( HAM_LOG << "~communicator" << std::endl; )

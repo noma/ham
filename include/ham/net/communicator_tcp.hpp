@@ -311,15 +311,14 @@ public:
             HAM_DEBUG( HAM_LOG << "communicator::communicator(): initializing buffers done" << std::endl; )
 
 			// host runs io_context in separate thread (asynchronous progress thread) for async operations
-
-			std::thread thread([this](){
+            work = boost::asio::make_work_guard(io_context);
+			thread = std::thread([this](){
                 HAM_DEBUG( HAM_LOG << "ASYNC THREAD: Heyooo, I live." << std::endl; )
-                boost::asio::io_service::work work(io_context);
                 io_context.run();
                 HAM_DEBUG( HAM_LOG << "ASYNC THREAD: Oh noes, I'm dead!" << std::endl; )
                 }
             );
-            thread.detach();
+            // thread.detach(); no longer needed with member thread
 
             HAM_DEBUG( HAM_LOG << "communicator::communicator(): async thread started" << std::endl; )
 		}
@@ -332,8 +331,10 @@ public:
 	{
 		// finalize
 		if(is_host()) {
-			io_context.stop();
+			work.reset();
+            thread.join();
 		}
+        io_context.stop();
 		HAM_DEBUG( HAM_LOG << "~communicator" << std::endl; )
 	}
 
@@ -517,7 +518,9 @@ private:
 	std::string host_port_;
     node_descriptor node_desc_dummy;
 	boost::asio::io_service io_context;
-
+    std::thread_ thread;
+    //boost::asio::io_service::work work; //1.65 syntax
+    boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work;
 	struct tcp_peer {
 		buffer_ptr<msg_buffer> msg_buffers; // buffers used for MPI_ISend and IRecv by the sender
 

@@ -331,7 +331,7 @@ public:
 	{
 		// finalize
 		if(is_host()) {
-			work.reset();
+			work_.reset();
             thread_.join();
 		}
         io_context.stop();

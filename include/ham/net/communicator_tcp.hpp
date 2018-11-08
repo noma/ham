@@ -248,7 +248,10 @@ public:
                 temp_socks[l] = new tcp::socket(io_context);
             }
 
-			bool taken_ranks[nodes_] {false};
+			bool taken_ranks[nodes_];
+            for (int x = 0; x < nodex_; ++x) {
+                taken_ranks[x]= false;
+            }
 			taken_ranks[0] = true; // host rank has to be correctly provided and is therefore already taken (by the executing process)
 
 			for(int i=1; i < nodes_; i++) {

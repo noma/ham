@@ -249,7 +249,7 @@ public:
             }
 
 			bool taken_ranks[nodes_];
-            for (int x = 0; x < nodex_; ++x) {
+            for (int x = 0; x < nodes_; ++x) {
                 taken_ranks[x]= false;
             }
 			taken_ranks[0] = true; // host rank has to be correctly provided and is therefore already taken (by the executing process)

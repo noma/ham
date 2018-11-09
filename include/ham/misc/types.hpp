@@ -13,6 +13,7 @@ namespace ham {
 
 typedef size_t node_t; // node type, e.g. MPI rank, identifies remote target process
 typedef size_t flag_t; // MPI RMA completion flag / buffer index
+typedef char byte_t;
 typedef char*  msg_buffer_t; // buffer type for messages
 
 namespace net {

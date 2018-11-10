@@ -18,25 +18,25 @@ set(HAM_LIB_SRC
 	net/communicator_mpi_rma_dynamic.cpp
 	offload/runtime.cpp
 	offload/offload.cpp
-	offload/stream.cpp
+#	offload/stream.cpp
 	util/cpu_affinity.cpp)
 
 # TCP
-add_library(ham_offload_tcp # SHARED if BUILD_SHARED_LIBS = TRUE
-		net/communicator.cpp
-		net/communicator_tcp.cpp
-		offload/runtime.cpp
-		offload/offload.cpp
-		offload/stream.cpp
-		offload/main.cpp
-		util/cpu_affinity.cpp)
-target_compile_definitions(ham_offload_tcp PUBLIC -DHAM_COMM_TCP=1)
-target_link_libraries(ham_offload_tcp PUBLIC ham_interface boost_library pthread)
+#add_library(ham_offload_tcp # SHARED if BUILD_SHARED_LIBS = TRUE
+#		net/communicator.cpp
+#		net/communicator_tcp.cpp
+#		offload/runtime.cpp
+#		offload/offload.cpp
+#		offload/stream.cpp
+#		offload/main.cpp
+#		util/cpu_affinity.cpp)
+#target_compile_definitions(ham_offload_tcp PUBLIC -DHAM_COMM_TCP=1)
+#target_link_libraries(ham_offload_tcp PUBLIC ham_interface boost_library pthread)
 
-set_target_properties(ham_offload_tcp PROPERTIES
-		CXX_STANDARD 11
-		CXX_STANDARD_REQUIRED YES
-		CXX_EXTENSIONS NO)
+#set_target_properties(ham_offload_tcp PROPERTIES
+#		CXX_STANDARD 11
+#		CXX_STANDARD_REQUIRED YES
+#		CXX_EXTENSIONS NO)
 
 if (MPI_FOUND)
 	add_library(ham_offload_mpi # SHARED if BUILD_SHARED_LIBS = TRUE

@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <cstddef>
 
+#include "ham/misc/migratable.hpp"
+
 namespace ham {
 
 using node_t = int; // node type, e.g. MPI rank, identifies remote target process
@@ -29,7 +31,7 @@ public:
 	T get() { return T(std::move(res)); }
 
 private:
-	T res;
+	migratable<T> res;
 };
 
 template<>

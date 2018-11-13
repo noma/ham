@@ -40,7 +40,7 @@ BASHRC_FILE=$HOME/dev/null # set to /dev/null to disable, or to any other file t
 
 BOOST_BUILD_OPTIONS="-j8" # concurrent build with up to 8 commands
 BOOST_NAME=boost
-BOOST_VERSION=1_65_1
+BOOST_VERSION=1_66_0
 BOOST_MIC_SUFFIX=mic
 BOOST_ARCHIVE=${BOOST_NAME}_${BOOST_VERSION} # NOTE: without tar.bz2
 

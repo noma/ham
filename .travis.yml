@@ -94,7 +94,7 @@ jobs:
             # << : [ *common_sources, llvm-toolchain-trusty-3.9 ]
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-3.9
-            - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
+  #          - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
           packages:
             - *common_packages
             - clang-3.9
@@ -107,7 +107,7 @@ jobs:
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-4.0
-            - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
+ #           - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
           packages:
             - *common_packages
             - clang-4.0
@@ -120,7 +120,7 @@ jobs:
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-5.0
-            - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
+#            - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
           packages:
             - *common_packages
             - clang-5.0
@@ -133,7 +133,7 @@ jobs:
           sources:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-6.0
-            - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
+#            - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
           packages:
             - *common_packages
             - clang-6.0

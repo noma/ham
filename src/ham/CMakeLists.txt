@@ -18,7 +18,7 @@ set(HAM_LIB_SRC
 	net/communicator_mpi_rma_dynamic.cpp
 	offload/runtime.cpp
 	offload/offload.cpp
-#	offload/stream.cpp
+	offload/stream.cpp
 	util/cpu_affinity.cpp)
 
 # TCP

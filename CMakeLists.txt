@@ -41,7 +41,7 @@ else ()
 endif ()
 
 # tell the compiler to be strict
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -hstd=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DHAM_DEBUG_ON")
 
 add_subdirectory(thirdparty/bmt ${CMAKE_CURRENT_BINARY_DIR}/build.noma_bmt)

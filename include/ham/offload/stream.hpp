@@ -100,17 +100,17 @@ public:
 			HAM_DEBUG( HAM_LOG << "host executing ostream::sync()" << std::endl; )
 			size_ = temp.size();
 			buffer_ = offload::allocate<byte_t>(target_, size_);
-			HAM_DEBUG( HAM_LOG << "ostream::sync() allocated buffer @" << target_ << std::endl; )
+			HAM_DEBUG( HAM_LOG << "ostream::sync() allocated buffer @" << target_ << " size: " << size_ << std::endl; )
 			offload::put_sync((byte_t *) temp.c_str(), buffer_, size_);
-			HAM_DEBUG( HAM_LOG << "ostream::sync() sent data to " << target_ << std::endl; )
+			HAM_DEBUG( HAM_LOG << "ostream::sync() sent data to " << target_ << " size: " << size_ << std::endl; )
 			return stream_proxy(this);
 		} else { // on target
 			HAM_DEBUG( HAM_LOG << "target executing ostream::sync()" << std::endl; )
 			ham::net::communicator &comm = ham::offload::runtime::instance().communicator();
 			size_ = temp.size();
 			buffer_ = comm.allocate_buffer<byte_t>(size_, ham::offload::this_node());
-			HAM_DEBUG( HAM_LOG << "ostream::sync() allocated local buffer" << std::endl; )
-			strcpy((char *) buffer_.get(), temp.c_str()); // COPY ... no other option, depending on backend we need the mem to be allocated by new_buffer
+			HAM_DEBUG( HAM_LOG << "ostream::sync() allocated local buffer size: " << size_ << std::endl; )
+			memcpy((char *) buffer_.get(), temp.c_str(), size_); // COPY ... no other option, depending on backend we need the mem to be allocated by new_buffer
 			return stream_proxy(this);
 		}
 	}
@@ -133,15 +133,15 @@ class istream : public stream_base, public std::istringstream {
 public:
 	istream(const stream_proxy proxy) : stream_base(proxy.target_, proxy.buffer_, proxy.size_),
 	                                    std::istringstream() {
-		HAM_DEBUG( HAM_LOG << "istream::ctor() called with stream_proxy" << target_ << std::endl; )
+		HAM_DEBUG( HAM_LOG << "istream::ctor() called with stream_proxy from: " << target_ << std::endl; )
 		if (ham::offload::is_host()) {
 			posix_memalign((void **) &local_ptr_, constants::CACHE_LINE_SIZE, size_);
 			offload::get_sync(buffer_, local_ptr_, size_);
-			HAM_DEBUG( HAM_LOG << "istream::sync() host retrieved data from " << buffer_.node() << std::endl; )
+			HAM_DEBUG( HAM_LOG << "istream::ctor() host retrieved data from " << buffer_.node() << " size: " << size_ << std::endl; )
 			this->rdbuf()->pubsetbuf(local_ptr_, size_);
 		} else {
 			rdbuf()->pubsetbuf(buffer_.get(), size_); // avoid a copy that would be necessary when using str(string) to set the content
-			HAM_DEBUG( HAM_LOG << "istream::sync() target set streambuffer to remote buffer" << target_ << std::endl; )
+			HAM_DEBUG( HAM_LOG << "istream::ctor() target set streambuffer to remote buffer" << target_ << " size: " << size_ << std::endl; )
 		}
 	}
 	// fail on underflow, set flags/state whatever, check std::istream interface

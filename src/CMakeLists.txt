@@ -71,8 +71,8 @@ if (MPI_FOUND)
 	add_executable(test_argument_transfer_mpi test_argument_transfer.cpp)
 	target_link_libraries(test_argument_transfer_mpi ham_offload_mpi)
 
-#	add_executable(test_streams_mpi test_streams.cpp)
-#	target_link_libraries(test_streams_mpi ham_offload_mpi)
+	add_executable(test_streams_mpi test_streams.cpp)
+	target_link_libraries(test_streams_mpi ham_offload_mpi)
 
 # RMA MPI
 

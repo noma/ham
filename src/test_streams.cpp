@@ -19,7 +19,7 @@ struct MyData {
 	template<class Archive>
 	void serialize(Archive & archive)
 	{
-		archive( one, two );
+		archive( cereal::binary_data( one, sizeof(char)*1024), cereal::binary_data( two, sizeof(char)*1024));
 	}
 };
 
@@ -28,7 +28,7 @@ struct MyData {
 ham::offload::stream::stream_proxy offloaded_fun(ham::offload::stream::stream_proxy osp)
 {
 	ham::offload::stream::istream his(osp); // NOTE: data is already on the target
-
+	
     MyData m1, m2, m3;
     {
         cereal::BinaryInputArchive iarchive(his); // Create an input archive
@@ -36,17 +36,31 @@ ham::offload::stream::stream_proxy offloaded_fun(ham::offload::stream::stream_pr
 		iarchive(m1, m2, m3); // Read the data from the archive
 	}
 
+	printf("tin: 1.1 %.10s\n", m1.one);
+	printf("tin: 1.2 %.10s\n", m1.two);
+	printf("tin: 2.1 %.10s\n", m2.one);
+	printf("tin: 2.2 %.10s\n", m2.two);
+	printf("tin: 3.1 %.10s\n", m3.one);
+	printf("tin: 3.2 %.10s\n", m3.two);
+
 	char* bla = "0123456789";
 	strcpy(m1.one, bla);
 	strcpy(m1.two, bla);
 	char* blub = "ABCDEFGHI";
 	strcpy(m2.one, blub);
 	strcpy(m2.two, blub);
-	strcpy(m2.one, bla);
-	strcpy(m2.two, blub);
+	strcpy(m3.one, bla);
+	strcpy(m3.two, blub);
 
+	printf("tout: 1.1 %.10s\n", m1.one);
+	printf("tout: 1.2 %.10s\n", m1.two);
+	printf("tout: 2.1 %.10s\n", m2.one);
+	printf("tout: 2.2 %.10s\n", m2.two);
+	printf("tout: 3.1 %.10s\n", m3.one);
+	printf("tout: 3.2 %.10s\n", m3.two);
 
 	ham::offload::stream::ostream hos(0);
+	
 
     {
         cereal::BinaryOutputArchive oarchive(hos);
@@ -63,8 +77,25 @@ int main(int argc, char* argv[])
 	ham::offload::node_t target = 1;
 
 	ham::offload::stream::ostream hos(target);
+	
 
 	MyData m1, m2, m3; // could be out of scope, data to be transferred
+
+	char* bla = "9876543210";
+	strcpy(m1.one, bla);
+	strcpy(m1.two, bla);
+	char* blub = "IHGFEDCBA";
+	strcpy(m2.one, blub);
+	strcpy(m2.two, blub);
+	strcpy(m3.one, bla);
+	strcpy(m3.two, blub);
+	
+	printf("hout: 1.1 %.10s\n", m1.one);
+	printf("hout: 1.2 %.10s\n", m1.two);
+	printf("hout: 2.1 %.10s\n", m2.one);
+	printf("hout: 2.2 %.10s\n", m2.two);
+	printf("hout: 3.1 %.10s\n", m3.one);
+	printf("hout: 3.2 %.10s\n", m3.two);
 
 	{
 		cereal::BinaryOutputArchive oarchive(hos); // Create an output archive
@@ -76,19 +107,19 @@ int main(int argc, char* argv[])
 
 	auto in_proxy = ham::offload::sync(target, f2f(&offloaded_fun, out_proxy));
 
-    ham::offload::stream::istream his(in_proxy);
+    	ham::offload::stream::istream his(in_proxy);
+	
 
 	{
 		cereal::BinaryInputArchive iarchive(his);
 		iarchive(m1, m2, m3);
 	}
-
-	printf("%.10s\n", m1.one);
-	printf("%.10s\n", m1.two);
-	printf("%.10s\n", m2.one);
-	printf("%.10s\n", m2.two);
-	printf("%.10s\n", m3.one);
-	printf("%.10s\n", m3.two);
+	printf("hin: 1.1 %.10s\n", m1.one);
+	printf("hin: 1.2 %.10s\n", m1.two);
+	printf("hin: 2.1 %.10s\n", m2.one);
+	printf("hin: 2.2 %.10s\n", m2.two);
+	printf("hin: 3.1 %.10s\n", m3.one);
+	printf("hin: 3.2 %.10s\n", m3.two);
 	return 0;	
 }
 

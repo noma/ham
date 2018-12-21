@@ -1,11 +1,11 @@
-// Copyright (c) 2013-2014 Matthias Noack (ma.noack.pr@gmail.com)
+// Copyright (c) 2013-2018 Matthias Noack (ma.noack.pr@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "ham/offload.hpp"
 
-#include <boost/program_options.hpp>
+#include <CLI/CLI11.hpp>
 #include <noma/bmt/bmt.hpp>
 
 #include <iostream>
@@ -111,35 +111,27 @@ int main(int argc, char * argv[])
 	unsigned int runs = 1000;
 	string filename = "benchmark/offload_intel_";
 	size_t data_size = 1024*1024; // 1 MiB
+	bool allocate = false;
+	bool copy_in = false;
+	bool copy_out = false;
+	bool call = false;
+	bool call_mul = false;
+	bool async = false;
 
 	// command line options
-	boost::program_options::options_description desc("Supported options");
-	desc.add_options()
-		("help,h", "Shows this message")
-		("filename,f", boost::program_options::value(&filename), "filename(-prefix) for results")
-		("runs,r", boost::program_options::value(&runs)->default_value(runs), "number of identical inner runs for which the average time will be computed")
-		("warmup-runs", boost::program_options::value(&warmup_runs)->default_value(warmup_runs), "number of number of additional warmup runs before times are measured")
-		("size,s", boost::program_options::value(&data_size)->default_value(data_size), "size of transferred data in byte (multiple of 4)")
-		("allocate,a", boost::program_options::value<bool>()->zero_tokens(), "benchmark memory allocation/deallocation on target")
-		("copy-in,i", boost::program_options::value<bool>()->zero_tokens(), "benchmark data copy to target")
-		("copy-out,o", boost::program_options::value<bool>()->zero_tokens(), "benchmark data copy from target")
-		("call,c", boost::program_options::value<bool>()->zero_tokens(), "benchmark function call on target")
-		("call-mul,m", boost::program_options::value<bool>()->zero_tokens(), "benchmark function call (multiplication) on target")
-		("async,y", boost::program_options::value<bool>()->zero_tokens(), "perform benchmark function calls asynchronously")
-	;
+	CLI::App app("Supported options");
+	app.add_option("--filename,-f", filename, "filename(-prefix) for results");
+	app.add_option("--runs,-r", runs, "number of identical inner runs for which the average time will be computed");
+	app.add_option("--warmup-runs", warmup_runs, "number of number of additional warmup runs before times are measured");
+	app.add_option("--size,-s", data_size, "size of transferred data in byte (multiple of 4)");
+	app.add_flag("--allocate,-a", allocate, "benchmark memory allocation/deallocation on target");
+	app.add_flag("--copy-in,-i", copy_in, "benchmark data copy to target");
+	app.add_flag("--copy-out,-o", copy_out, "benchmark data copy from target");
+	app.add_flag("--call,-c", call, "benchmark function call on target");
+	app.add_flag("--call-mul,-m", call_mul, "benchmark function call (multiplication) on target");
+	app.add_flag("--async,-y", async, "perform benchmark function calls asynchronously");
 
-	boost::program_options::variables_map vm;
-
-	// NOTE: no try-catch here to avoid exceptions, that cause offload-dependencies to boost exception in the MIC code
-	//boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
-	boost::program_options::store(boost::program_options::command_line_parser(argc, argv).options(desc).allow_unregistered().run(), vm);
-	boost::program_options::notify(vm);
-
-	if(vm.count("help"))
-	{
-		std::cout << desc << std::endl;
-		return 1;
-	}
+	CLI11_PARSE(app, argc, argv);
 
 	///////////////// output compile configuration and run data ////////////
 	#ifdef BOOST_NO_EXCEPTIONS
@@ -183,7 +175,7 @@ int main(int argc, char * argv[])
 	std::string header_string = statistics::header_string(true);
 	std::string header_string_data = statistics::header_string(true) + "\tdata_size";
 
-	if (vm.count("allocate"))
+	if (allocate)
 	{
 		statistics allocate_time(runs, warmup_runs);
 		statistics free_time(runs, warmup_runs);
@@ -215,7 +207,7 @@ int main(int argc, char * argv[])
 		free_time.to_file(filename + "free_time");
 	}
 
-	if (vm.count("copy-in"))
+	if (copy_in)
 	{
 		// first allocate memory
 		offload::buffer_ptr<char> remote_data = offload_allocate(data_size);
@@ -236,7 +228,7 @@ int main(int argc, char * argv[])
 		copy_in_time.to_file(filename + "copy_in_time");
 	}
 
-	if (vm.count("copy-out"))
+	if (copy_out)
 	{
 		// first allocate memory
 		offload::buffer_ptr<char> remote_data = offload_allocate(data_size);
@@ -257,14 +249,14 @@ int main(int argc, char * argv[])
 		copy_out_time.to_file(filename + "copy_out_time");
 	}
 
-	if (vm.count("call"))
+	if (call)
 	{
 		statistics call_time(runs, warmup_runs);
 		auto func = f2f(&fun);
 
 		for (size_t i = 0; i < (runs + warmup_runs); ++i)
 		{
-			if(vm.count("async"))
+			if (async)
 			{
 				timer clock;
 				auto f = offload::async(mic_node, func);
@@ -286,7 +278,7 @@ int main(int argc, char * argv[])
 		call_time.to_file(filename + "call_time");
 	}
 
-	if (vm.count("call-mul"))
+	if (call_mul)
 	{
 		statistics call_mul_time(runs, warmup_runs);
 
@@ -298,7 +290,7 @@ int main(int argc, char * argv[])
 
 		for (size_t i = 0; i < (runs + warmup_runs); ++i)
 		{
-			if(vm.count("async"))
+			if (async)
 			{
 				timer clock;
 				auto f = offload::async(mic_node, func);

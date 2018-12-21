@@ -12,11 +12,13 @@ message(STATUS "CMAKE_BINARY_DIR: " ${CMAKE_BINARY_DIR})
 
 ### thirdparty dependencies
 
-# Boost
-find_package(Boost 1.40 COMPONENTS program_options REQUIRED)
+# CLI11-1.6.2 (header only)
+add_library(cli11_library INTERFACE)
+target_include_directories (cli11_library INTERFACE "thirdparty/CLI11-1.6.2/include")
+
+# Boost Preprocessor (header only)
 add_library(boost_library INTERFACE)
-target_include_directories (boost_library INTERFACE ${Boost_INCLUDE_DIRS})
-target_link_libraries (boost_library INTERFACE ${Boost_LIBRARIES})
+target_include_directories (boost_library INTERFACE "thirdparty/boost-1.69.0/include")
 
 # MPI
 find_package(MPI) # not required

@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.2 FATAL_ERROR) # TODO verfify
 # interface target for ham
 add_library(ham_interface INTERFACE)
 target_compile_features(ham_interface INTERFACE cxx_auto_type cxx_range_for cxx_variadic_templates)
-target_link_libraries(ham_interface INTERFACE noma_bmt boost_library)
+target_link_libraries(ham_interface INTERFACE noma_bmt boost_library cli11_library)
 target_include_directories(ham_interface INTERFACE ${CMAKE_CURRENT_LIST_DIR}/../../include)
 
 set(HAM_LIB_SRC

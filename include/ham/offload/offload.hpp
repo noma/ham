@@ -8,7 +8,6 @@
 
 #include "ham/net/communicator.hpp" // must be first for Intel MPI
 
-#include <atomic>
 #include <cassert>
 #include <functional>
 

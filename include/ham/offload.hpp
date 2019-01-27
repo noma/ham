@@ -9,7 +9,7 @@
 // configure everything for offloading
 #define HAM_OFFLOAD
 // prepend node to log output
-#define HAM_LOG_NODE_PREFIX 
+//#define HAM_LOG_NODE_PREFIX 
 
 #ifdef HAM_COMM_MPI
 #include <mpi.h> // must be included before stdio.h for Intel MPI

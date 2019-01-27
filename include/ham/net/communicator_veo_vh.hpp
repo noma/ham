@@ -110,6 +110,7 @@ public:
 		errno_handler(gethostname(peers[ham_address].node_description.name_, peers[ham_address].node_description.name_length_), "gethostname");
 
 		// (ham_process count - 1) iterations, i.e. targets
+		int ve_list_index = 0;
 		for (int i = 0; i < ham_process_count; ++i) {
 			if(i != ham_host_address) { // ommit the host address
 				veo_peer& peer = peers[i];
@@ -117,9 +118,9 @@ public:
 
 				// create VE process
 #ifdef HAM_COMM_VEO_STATIC
-				peer.veo_proc = veo_proc_create_static(ve_node_list[i], veo_library_path.c_str()); // TODO: set target_id or something
+				peer.veo_proc = veo_proc_create_static(ve_node_list[ve_list_index], veo_library_path.c_str()); // TODO: set target_id or something
 				if (peer.veo_proc == NULL) {
-					HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: error: veo_proc_create_static() returned 0" << std:: endl; );
+					HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: error: veo_proc_create_static(" << ve_node_list[i] << ") returned 0" << std:: endl; );
 					exit(1); // TODO: check how we terminate elsewhere to be consistent
 				}
 
@@ -234,7 +235,7 @@ std::cerr << "comm ctor host 1" << std::endl;
 
 				// set local node name
 				std::stringstream ss; // hostname of VH
-				ss << "VE" << ve_node_list[i] << '@' << peers[ham_address].node_description.name_; 
+				ss << "VE" << ve_node_list[ve_list_index] << '@' << peers[ham_address].node_description.name_; 
 				strncpy(peers[ham_address].node_description.name_, ss.str().c_str(), node_descriptor::name_length_);
 				
 
@@ -304,6 +305,7 @@ std::cerr << "got node desc" << std::endl;
 
 				// NOTE: target main is running now and can receive messages
 
+				++ve_list_index;
 			} // if
 		} // for i
 

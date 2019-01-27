@@ -68,3 +68,45 @@ if (SCIF_FOUND)
 	add_executable(test_argument_transfer_scif test_argument_transfer.cpp)
 	target_link_libraries(test_argument_transfer_scif ham_offload_scif)
 endif()
+
+if (VEO_FOUND)
+	# Vector Host Executables
+	add_executable(ham_offload_test_veo_vh ham_offload.cpp)
+	target_link_libraries(ham_offload_test_veo_vh ham_offload_veo_vh)
+
+	add_executable(ham_offload_test_explicit_veo_vh ham_offload_explicit.cpp)
+	target_link_libraries(ham_offload_test_explicit_veo_vh ham_offload_veo_vh_explicit)
+
+	add_executable(inner_product_veo_vh inner_product.cpp)
+	target_link_libraries(inner_product_veo_vh ham_offload_veo_vh)
+
+	add_executable(test_data_transfer_veo_vh test_data_transfer.cpp)
+	target_link_libraries(test_data_transfer_veo_vh ham_offload_veo_vh)
+
+	add_executable(test_argument_transfer_veo_vh test_argument_transfer.cpp)
+	target_link_libraries(test_argument_transfer_veo_vh ham_offload_veo_vh)
+	
+	# Vector Engine Libraries
+	add_library(ham_offload_test_veo_ve ham_offload.cpp)
+	target_link_libraries(ham_offload_test_veo_ve ham_offload_veo_ve)
+
+	add_library(ham_offload_test_explicit_veo_ve ham_offload_explicit.cpp)
+	target_link_libraries(ham_offload_test_explicit_veo_ve ham_offload_veo_ve_explicit)
+
+	# https://stackoverflow.com/questions/5693405/specifying-link-flags-for-only-one-static-lib-while-linking-executable
+	# hams static lib contains symbols needed for VEO calls
+	SET (HAMLIB -Wl,--whole-archive ham_offload_veo_ve -Wl,--no-whole-archive)
+# NOTE: static vs. shared
+#	add_library(inner_product_veo_ve SHARED inner_product.cpp) # for shared VEO lib
+	add_library(inner_product_veo_ve inner_product.cpp) # for static VEO lib
+	#target_link_libraries(inner_product_veo_ve ham_offload_veo_ve)
+	target_link_libraries(inner_product_veo_ve ${HAMLIB})
+	set_property(TARGET inner_product_veo_ve PROPERTY POSITION_INDEPENDENT_CODE ON)
+
+	add_library(test_data_transfer_veo_ve test_data_transfer.cpp)
+	target_link_libraries(test_data_transfer_veo_ve ham_offload_veo_ve)
+
+	add_library(test_argument_transfer_veo_ve test_argument_transfer.cpp)
+	target_link_libraries(test_argument_transfer_veo_ve ham_offload_veo_ve)
+	
+endif()

@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Matthias Noack (ma.noack.pr@gmail.com)
+// Copyright (c) 2013-2019 Matthias Noack (ma.noack.pr@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -38,19 +38,27 @@ namespace net {
 		char data[constants::MSG_SIZE];
 	};
 	
-	
 	node_t this_node();
 } // namespace net
 } // namespace ham
 
 // NOTE: include new communication backends here, define HAM_COMM_ONE_SIDED accordingly
 #ifdef HAM_COMM_MPI
-#include "ham/net/communicator_mpi.hpp"
+	#include "ham/net/communicator_mpi.hpp"
 #elif defined HAM_COMM_SCIF
-#define HAM_COMM_ONE_SIDED
-#include "ham/net/communicator_scif.hpp"
-#else
-static_assert(false, "Please define either HAM_COMM_MPI, or HAM_COMM_SCIF.");
+	#define HAM_COMM_ONE_SIDED
+	#include "ham/net/communicator_scif.hpp"
+#elif defined HAM_COMM_VEO
+	#define HAM_COMM_ONE_SIDED
+	#if (HAM_COMM_VEO == 0) // vector host
+		#include "ham/net/communicator_veo_vh.hpp"
+	#elif (HAM_COMM_VEO == 1) // vector engine
+		#include "ham/net/communicator_veo_ve.hpp"
+	#else
+		static_assert(false, "HAM_COMM_VEO must be set to 0 (vector host build) or 1 (vector engine build).");
+	#endif
+#else	
+	static_assert(false, "Please define either HAM_COMM_MPI, or HAM_COMM_SCIF.");
 #endif
 
 #endif // ham_net_communicator_hpp

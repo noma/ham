@@ -23,10 +23,10 @@ target_include_directories (boost_library INTERFACE "thirdparty/boost-1.69.0/inc
 # MPI
 find_package(MPI) # not required
 if (MPI_FOUND)
-	add_library (mpi_library INTERFACE)
-	target_include_directories (mpi_library INTERFACE ${MPI_CXX_INCLUDE_PATH})
-	target_compile_options (mpi_library INTERFACE ${MPI_CXX_COMPILE_FLAGS})
-	target_link_libraries (mpi_library INTERFACE ${MPI_CXX_LIBRARIES})
+	add_library(mpi_library INTERFACE)
+	target_include_directories(mpi_library INTERFACE ${MPI_CXX_INCLUDE_PATH})
+	target_compile_options(mpi_library INTERFACE ${MPI_CXX_COMPILE_FLAGS})
+	target_link_libraries(mpi_library INTERFACE ${MPI_CXX_LIBRARIES})
 endif ()
 
 # Intel SCIF (for Xeon Phi accelerators with KNC architecture)
@@ -36,10 +36,23 @@ if (SCIF_HEADER_FILE)
 	get_filename_component(SCIF_INCLUDE_DIR "${SCIF_HEADER_FILE}" DIRECTORY)
 	message(STATUS "Found SCIF: ${SCIF_HEADER_FILE}")
 
-	add_library (scif_library INTERFACE)
-	target_include_directories (scif_library INTERFACE ${SCIF_INCLUDE_DIR})
+	add_library(scif_library INTERFACE)
+	target_include_directories(scif_library INTERFACE ${SCIF_INCLUDE_DIR})
 else ()
 	message(STATUS "Could NOT find SCIF (missing: scif.h)")
+endif ()
+
+find_file(VEO_HEADER_FILE "ve_offload.h" "/opt/nec/ve/veos/include/")
+if (VEO_HEADER_FILE)
+	set(VEO_FOUND ON)
+	get_filename_component(VEO_INCLUDE_DIR "${VEO_HEADER_FILE}" DIRECTORY)
+	message(STATUS "Found VEO: ${VEO_HEADER_FILE}")
+
+	add_library(veo_library INTERFACE)
+	target_include_directories(veo_library INTERFACE ${VEO_INCLUDE_DIR})
+	target_link_libraries(veo_library INTERFACE "-L/opt/nec/ve/veos/lib64 -Wl,-rpath=/opt/nec/ve/veos/lib64 -lveo")
+else ()
+	message(STATUS "Could NOT find VEO (missing: ve_offload.h)")
 endif ()
 
 # tell the compiler to be strict

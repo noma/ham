@@ -179,7 +179,7 @@ std::cerr << "comm ctor host 1" << std::endl;
 					err = veo_call_wait_result(peer.veo_main_context, id, &res_addr); // sync on call
 					errno_handler(err, "veo_call_wait_result()");
 					assert(res_addr == 0); // NOTE: if function is used as setter the expected return is 0
-					veo_args_clear(argp);
+					veo_args_free(argp);
 				};
 
 				//uint64_t ham_comm_veo_ve_local_buffers_addr(uint64_t addr);
@@ -223,7 +223,7 @@ std::cerr << "comm ctor host 1" << std::endl;
 					err = veo_call_wait_result(peer.veo_main_context, id, &res_addr); // sync on call
 					errno_handler(err, "veo_call_wait_result()");
 					assert(res_addr == 0); // NOTE: if function is used as setter the expected return is 0
-					veo_args_clear(argp);
+					veo_args_free(argp);
 				};
 
 				// uint64_t ham_comm_veo_ve_address(uint64_t address, uint64_t set);

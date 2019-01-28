@@ -16,7 +16,7 @@ runtime* runtime::instance_ = nullptr;
 
 runtime::runtime(int argc, char* argv[]) : abort_flag(false), comm(argc, argv)
 {
-	HAM_DEBUG( HAM_LOG << "runtime()" << std::endl; )
+	HAM_DEBUG( HAM_LOG << "runtime::runtime()" << std::endl; )
 	ham::detail::options ham_options(argc, argv);
 	if (ham_options.cpu_affinity() >= 0)
 		ham::util::set_cpu_affinity(ham_options.cpu_affinity());
@@ -26,7 +26,7 @@ runtime::runtime(int argc, char* argv[]) : abort_flag(false), comm(argc, argv)
 
 runtime::~runtime()
 {
-	HAM_DEBUG( HAM_LOG << "~runtime" << std::endl; )
+	HAM_DEBUG( HAM_LOG << "runtime::~runtime" << std::endl; )
 }
 
 // not needed if HAM_EXPLICIT is defined

@@ -192,23 +192,23 @@ int main(int argc, char * argv[])
 
 	// create VE process
 #ifdef HAM_COMM_VEO_STATIC
-	veo_proc = veo_proc_create_static(veo_ve_node, veo_library_path.c_str()); // TODO: set target_id or something
+	veo_proc = veo_proc_create_static(veo_ve_node, veo_library_path.c_str());
 	if (veo_proc == 0) {
-		std::cerr << "communicator(VH)::communicator: error: veo_proc_create_static(" << veo_ve_node << ") returned 0" << std::endl;
-		exit(1); // TODO: check how we terminate elsewhere to be consistent
+		std::cerr << "error: veo_proc_create_static(" << veo_ve_node << ") returned 0" << std::endl;
+		exit(1);
 	}
 #else
 	veo_proc = veo_proc_create(veo_ve_node);
 	if (veo_proc == 0) {
-		HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: error: veo_proc_create() returned 0" << std::endl;
-		exit(1); // TODO: check how we terminate elsewhere to be consistent
+		std::cerr << "error: veo_proc_create() returned 0" << std::endl;
+		exit(1);
 	}
 
 #endif
 	// TODO: nicify and unify error handling
 	if (veo_proc == 0) {
-		std::cerr << "communicator(VH)::communicator: error: veo_proc_create() returned 0" << std::endl;
-		exit(1); // TODO: check how we terminate elsewhere to be consistent
+		std::cerr << "error: veo_proc_create() returned 0" << std::endl;
+		exit(1);
 	}
 
 	// load VE library image 
@@ -216,12 +216,12 @@ int main(int argc, char * argv[])
 	veo_lib_handle = 0;
 #else
 	veo_lib_handle = veo_load_library(veo_proc, veo_library_path.c_str());
-	std::cerr << "communicator(VH)::communicator: veo_load_library() returned handle: " << (void*)veo_proc << std::endl;
+	std::cerr << "veo_load_library() returned handle: " << (void*)veo_proc << std::endl;
 #endif
 
 	// VEO context
 	veo_ctx = veo_context_open(veo_proc);
-	std::cerr << "communicator(VH)::communicator: veo_context_open() returned ctx: " << veo_ctx << std::endl;
+	std::cerr << "veo_context_open() returned ctx: " << veo_ctx << std::endl;
 
 	// allocate host data of given size
 	char* data = local_allocate(data_size);

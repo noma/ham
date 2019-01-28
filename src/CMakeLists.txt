@@ -164,7 +164,7 @@ if (VEO_FOUND)
 	endif ()
 
 	add_library(test_data_transfer_veo_ve test_data_transfer.cpp)
-	target_link_libraries(test_data_transfer_veo_ve ham_offload_veo_ve)
+	target_link_libraries(test_data_transfer_veo_ve ${HAMLIB_VE})
 	set_property(TARGET test_data_transfer_veo_ve PROPERTY POSITION_INDEPENDENT_CODE ON)
 	if (HAM_NEC_COMPILER_DETECTED)
 		add_custom_command(TARGET test_data_transfer_veo_ve

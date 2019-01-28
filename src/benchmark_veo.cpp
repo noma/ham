@@ -157,7 +157,6 @@ int main(int argc, char * argv[])
 
 	// command line options
 	CLI::App app("Supported options");
-	app.allow_extras(); // ignore options for HAM
 	app.add_option("--filename,-f", filename, "filename(-prefix) for results");
 	app.add_option("--runs,-r", runs, "number of identical inner runs for which the average time will be computed");
 	app.add_option("--warmup-runs", warmup_runs, "number of number of additional warmup runs before times are measured");
@@ -168,7 +167,7 @@ int main(int argc, char * argv[])
 	app.add_flag("--call,-c", call, "benchmark function call on target");
 	app.add_flag("--call-mul,-m", call_mul, "benchmark function call (multiplication) on target");
 	app.add_flag("--async,-y", async, "perform benchmark function calls asynchronously");
-	app.add_option("--veo-lib", veo_library_path, "path to VEO library");
+	app.add_option("--veo-ve-lib", veo_library_path, "path to VEO library");
 	app.add_option("--veo-ve-node", veo_ve_node, "VE node to use for offloading");
 
 	CLI11_PARSE(app, argc, argv);
@@ -320,13 +319,13 @@ int main(int argc, char * argv[])
 			if (async)
 			{
 				timer clock;
-				offload_call_mul(sym, args);
+				offload_call(sym, args);
 				call_time.add(clock);
 			}
 			else // sync: NOTE: there is no sync version currently
 			{
 				timer clock;
-				offload_call_mul(sym, args);
+				offload_call(sym, args);
 				call_time.add(clock);
 			}
 		}

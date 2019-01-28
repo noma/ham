@@ -22,33 +22,34 @@ public:
 	options(int argc, char* argv[])
 	 : cpu_affinity_(-1)
 	{
-		// command line options
-		CLI::App app("HAM Options");
-		app.allow_extras(); // ignore other options
-		app.add_option("--ham-cpu-affinity", cpu_affinity_, "Per process value for the CPU affinity.");
+	// TODO: fix argc/argv values to run this on the VE side
+//		// command line options
+//		CLI::App app("HAM Options");
+//		app.allow_extras(); // ignore other options
+//		app.add_option("--ham-cpu-affinity", cpu_affinity_, "Per process value for the CPU affinity.");
 
-		// NOTE: no try-catch here to avoid exceptions, that cause offload-dependencies to boost exception in the MIC code
-		const char* options_env = std::getenv("HAM_OPTIONS");
-		if(options_env)
-		{
-			char split_character = ' ';
-			if (std::getenv("HAM_OPTIONS_NO_SPACES")) // value does not matter
-				split_character = '_';
-			// parse from environment
-			// NOTE: get a vector strings from the environment options
-			auto args = split(std::string(options_env), split_character);
-			app.parse(args);
-		}
-		else
-		{
-			// parse from command line
-			try {
-				app.parse(argc, argv);
-			} catch(const CLI::ParseError &e) {
-				app.exit(e);
-			}
-			//app.parse(argc, argv);
-		}
+//		// NOTE: no try-catch here to avoid exceptions, that cause offload-dependencies to boost exception in the MIC code
+//		const char* options_env = std::getenv("HAM_OPTIONS");
+//		if(options_env)
+//		{
+//			char split_character = ' ';
+//			if (std::getenv("HAM_OPTIONS_NO_SPACES")) // value does not matter
+//				split_character = '_';
+//			// parse from environment
+//			// NOTE: get a vector strings from the environment options
+//			auto args = split(std::string(options_env), split_character);
+//			app.parse(args);
+//		}
+//		else
+//		{
+//			// parse from command line
+//			try {
+//				app.parse(argc, argv);
+//			} catch(const CLI::ParseError &e) {
+//				app.exit(e);
+//			}
+//			//app.parse(argc, argv);
+//		}
 	}
 
 	int cpu_affinity() const { return cpu_affinity_; }

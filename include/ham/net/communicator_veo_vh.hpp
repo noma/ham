@@ -119,7 +119,7 @@ public:
 
 				// create VE process
 #ifdef HAM_COMM_VEO_STATIC
-				peer.veo_proc = veo_proc_create_static(ve_node_list[ve_list_index], veo_library_path.c_str()); // TODO: set target_id or something
+				peer.veo_proc = veo_proc_create_static(ve_node_list[ve_list_index], veo_library_path.c_str());
 				if (peer.veo_proc == 0) {
 					HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: error: veo_proc_create_static(" << ve_node_list[ve_list_index] << ") returned 0" << std::endl; );
 					exit(1); // TODO: check how we terminate elsewhere to be consistent

@@ -244,7 +244,7 @@ public:
 	void recv_data(buffer_ptr<T>& remote_source, T* local_dest, size_t size)
 	{
 		// NOTE: not supported on target
-		HAM_DEBUG( HAM_LOG << "communicator(VE)::recv_data(): reading " << size << " byte from " << remote_source.offset() << " to " << local_dest << std::endl; )
+		HAM_DEBUG( HAM_LOG << "communicator(VE)::recv_data(): reading " << size << " byte from " << remote_source.get() << " to " << local_dest << std::endl; )
 	}
 
 	static const node_descriptor& get_node_description(node_t node)
@@ -258,10 +258,10 @@ public:
 	bool is_host(node_t node) { return node == ham_host_address; }
 
 private:
-	// NOTE:: set in ctor via VEO C-interface
+	// NOTE:: set before ctor via VEO C-interface
 	const uint64_t ham_process_count; // number of participating processes
-	const node_t ham_address; // this processes' address
 	const node_t ham_host_address; // the address of the host process
+	const node_t ham_address; // this processes' address
 
 	struct veo_peer {
 		veo_peer() : next_flag(0) //, remote_buffer_pool(constants::MSG_BUFFERS), remote_flag_pool(constants::MSG_BUFFERS)
@@ -288,7 +288,7 @@ private:
 	};
 
 	// pointers to arrays of buffers, index is peer address
-	veo_peer* peers;
+	veo_peer* peers = nullptr;
 
 public:
 

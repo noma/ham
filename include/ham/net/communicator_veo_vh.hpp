@@ -72,6 +72,7 @@ public:
 
 		// command line options
 		CLI::App app("HAM VEO VH Options");
+		app.allow_extras(); // allow other options
 		app.add_option("--ham-process-count", ham_process_count, "Number of processes the job consists of (number of targets + 1).");
 		app.add_option("--ham-host-address", ham_host_address, "The address of the host process (0 by default).");
 		app.add_option("--ham-veo-ve-lib", veo_library_path, "Path to the VEO VE library of the application.");
@@ -111,7 +112,7 @@ public:
 
 		// (ham_process count - 1) iterations, i.e. targets
 		int ve_list_index = 0;
-		for (int i = 0; i < ham_process_count; ++i) {
+		for (node_t i = 0; i < static_cast<node_t>(ham_process_count); ++i) {
 			if(i != ham_host_address) { // ommit the host address
 				veo_peer& peer = peers[i];
 				int err = 0;
@@ -119,37 +120,35 @@ public:
 				// create VE process
 #ifdef HAM_COMM_VEO_STATIC
 				peer.veo_proc = veo_proc_create_static(ve_node_list[ve_list_index], veo_library_path.c_str()); // TODO: set target_id or something
-				if (peer.veo_proc == NULL) {
-					HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: error: veo_proc_create_static(" << ve_node_list[i] << ") returned 0" << std:: endl; );
+				if (peer.veo_proc == 0) {
+					HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: error: veo_proc_create_static(" << ve_node_list[ve_list_index] << ") returned 0" << std::endl; );
 					exit(1); // TODO: check how we terminate elsewhere to be consistent
 				}
 
 #else
-				peer.veo_proc = veo_proc_create(0); // TODO: set target_id or something
-				if (peer.veo_proc == NULL) {
-					HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: error: veo_proc_create() returned 0" << std:: endl; );
+				peer.veo_proc = veo_proc_create(ve_node_list[ve_list_index]);
+				if (peer.veo_proc == 0) {
+					HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: error: veo_proc_create() returned 0" << std::endl; );
 					exit(1); // TODO: check how we terminate elsewhere to be consistent
 				}
 
 #endif
 				// TODO: nicify and unify error handling
-				if (peer.veo_proc == NULL) {
-					HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: error: veo_proc_create() returned 0" << std:: endl; );
+				if (peer.veo_proc == 0) {
+					HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: error: veo_proc_create() returned 0" << std::endl; );
 					exit(1); // TODO: check how we terminate elsewhere to be consistent
 				}
-std::cerr << "comm ctor host 00" << std::endl;
+
 				// load VE library image 
 #ifdef HAM_COMM_VEO_STATIC
-				peer.veo_lib_handle = NULL;
+				peer.veo_lib_handle = 0;
 #else
 				peer.veo_lib_handle = veo_load_library(peer.veo_proc, veo_library_path.c_str());
-				HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: veo_load_library() returned handle: " << (void*)peer.veo_proc << std:: endl; );
-std::cerr << "comm ctor host 000" << std::endl;
+				HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: veo_load_library() returned handle: " << (void*)peer.veo_proc << std::endl; );
 #endif
 				// VEO context
 				peer.veo_main_context = veo_context_open(peer.veo_proc);
-				HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: veo_context_open() returned ctx: " << peer.veo_main_context << std:: endl; );
-std::cerr << "comm ctor host 0000" << std::endl;
+				HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: veo_context_open() returned ctx: " << peer.veo_main_context << std::endl; );
 				
 				// allocate local communication buffers
 				peer.recv_buffers = allocate_buffer<msg_buffer>(constants::MSG_BUFFERS, ham_address); // local host memory
@@ -164,7 +163,6 @@ std::cerr << "comm ctor host 0000" << std::endl;
 				errno_handler(err, "veo_alloc_mem(remote_buffers_addr)");
 				err = veo_alloc_mem(peer.veo_proc, &peer.remote_flags_addr, sizeof(cache_line_buffer) * constants::MSG_BUFFERS);
 				errno_handler(err, "veo_alloc_mem(remote_flags_addr)");
-std::cerr << "comm ctor host 1" << std::endl;				
 
 				// lambda to set allocated addresses at target
 				auto set_target_address = [&](const char* func_name, uint64_t addr) {
@@ -282,15 +280,15 @@ std::cerr << "getting node desc" << std::endl;
 			
 
 // TODO: error checks and output
-//		HAM_DEBUG( HAM_LOG << "info: veo_get_sym() returned sym: " << (void*)veo_main_sym_ << std:: endl; );
-		HAM_DEBUG( HAM_LOG << "info: got target node_descriptor " << sizeof(node_descriptor) << ": '" << target_nd.name() << "'" << std:: endl; );
+//		HAM_DEBUG( HAM_LOG << "info: veo_get_sym() returned sym: " << (void*)veo_main_sym_ << std::endl; );
+		HAM_DEBUG( HAM_LOG << "info: got target node_descriptor " << sizeof(node_descriptor) << ": '" << target_nd.name() << "'" << std::endl; );
 		}
 std::cerr << "got node desc" << std::endl;
 */		
 
 				// start the target runtime
 				uint64_t veo_main_sym = veo_get_sym(peer.veo_proc, peer.veo_lib_handle, "_Z8lib_mainiPPc"); // TODO: fix mangled name issue
-				HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: info: veo_get_sym() returned sym: " << (void*)veo_main_sym << std:: endl; );
+				HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: info: veo_get_sym() returned sym: " << (void*)veo_main_sym << std::endl; );
 
 				// TODO: set up arguments (if needed) and do an async call
 				peer.veo_main_args = veo_args_alloc();
@@ -301,7 +299,7 @@ std::cerr << "got node desc" << std::endl;
 				
 				// call target main asynchronously
 				peer.veo_main_id = veo_call_async(peer.veo_main_context, veo_main_sym, peer.veo_main_args);
-				HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: info: veo_call_async() returned ID: " << peer.veo_main_id << std:: endl; );
+				HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: info: veo_call_async() returned ID: " << peer.veo_main_id << std::endl; );
 
 				// NOTE: target main is running now and can receive messages
 
@@ -317,7 +315,7 @@ std::cerr << "got node desc" << std::endl;
 	{
 		HAM_DEBUG( HAM_LOG << "communicator(VH)::~communicator()" << std::endl; )
 
-		for (int i = 0; i < ham_process_count; ++i) {
+		for (node_t i = 0; i < static_cast<node_t>(ham_process_count); ++i) {
 			if(i != ham_host_address) // ommit the host
 			{
 				veo_peer& peer = peers[i];
@@ -327,7 +325,7 @@ std::cerr << "got node desc" << std::endl;
 				int ret;
 				uint64_t retval;
 				ret = veo_call_wait_result(peer.veo_main_context, peer.veo_main_id, &retval);
-				HAM_DEBUG( HAM_LOG << "info: veo_call_wait_result() returned : " << ret << ", target main returned " << retval << std:: endl; );
+				HAM_DEBUG( HAM_LOG << "info: veo_call_wait_result() returned : " << ret << ", target main returned " << retval << std::endl; );
 			
 				// free VEO resources
 				veo_args_free(peer.veo_main_args);
@@ -598,7 +596,7 @@ public:
 	void recv_data(buffer_ptr<T>& remote_source, T* local_dest, size_t size)
 	{
 //		//scif_recv(peers[node].endpoint, local_dest, size, SCIF_RECV_BLOCK);
-		HAM_DEBUG( HAM_LOG << "communicator(VH)::recv_data(): reading " << size * sizeof(T) << " byte from " << remote_source.offset() << " to " << local_dest << std::endl; )
+		HAM_DEBUG( HAM_LOG << "communicator(VH)::recv_data(): reading " << size * sizeof(T) << " byte from " << remote_source.get() << " to " << local_dest << std::endl; )
 //		int err =
 //		scif_vreadfrom(peers[remote_source.node()].endpoint, (void*)local_dest, size * sizeof(T), remote_source.offset(), SCIF_RMA_SYNC |
 //#ifdef HAM_SCIF_RMA_CPU
@@ -630,10 +628,10 @@ private:
 	std::string veo_ve_nodes;
 	size_t num_targets_ = 1;
 
-	// TODO: use command line options in ctor for these
-	uint64_t ham_process_count = 2; // number of participating processes
-	node_t ham_address = 0; // this processes' address
-	node_t ham_host_address = 0; // the address of the host process
+	// set by command line parsing in ctor
+	uint64_t ham_process_count; // number of participating processes
+	node_t ham_host_address; // the address of the host process
+	node_t ham_address; // this processes' address
 
 	// pointers to arrays of buffers, index is peer address
 	struct veo_peer {
@@ -671,7 +669,7 @@ private:
 		node_descriptor node_description;
 	};
 
-	veo_peer* peers;
+	veo_peer* peers = nullptr;
 };
 
 } // namespace net

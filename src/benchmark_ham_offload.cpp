@@ -120,6 +120,7 @@ int main(int argc, char * argv[])
 
 	// command line options
 	CLI::App app("Supported options");
+	app.allow_extras(); // ignore options for HAM
 	app.add_option("--filename,-f", filename, "filename(-prefix) for results");
 	app.add_option("--runs,-r", runs, "number of identical inner runs for which the average time will be computed");
 	app.add_option("--warmup-runs", warmup_runs, "number of number of additional warmup runs before times are measured");

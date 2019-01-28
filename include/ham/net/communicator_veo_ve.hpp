@@ -40,6 +40,9 @@ public:
    	    ham_address(ham_comm_veo_ve_address(0, false))
 	{
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::communicator: begin." << std::endl; )
+		HAM_DEBUG( HAM_LOG << "communicator(VE)::communicator: ham_process_count = " << ham_process_count << std::endl; )
+		HAM_DEBUG( HAM_LOG << "communicator(VE)::communicator: ham_host_address = " << ham_host_address << std::endl; )
+		HAM_DEBUG( HAM_LOG << "communicator(VE)::communicator: ham_address = " << ham_address << std::endl; )
 
 		// allocate peer data structures
 		peers = new veo_peer[ham_process_count]; // TODO: this seems to cause crash in the dynamically linked VEO build
@@ -61,11 +64,6 @@ public:
 		//       actually send messages into the buffers and set the flags
 		//       before the VE-side communicator is even initialised.
 
-		HAM_DEBUG( HAM_LOG << "communicator(VE)::communicator: host_peer.local_buffers.get() = "  << host_peer.local_buffers.get()  << std::endl; )
-		HAM_DEBUG( HAM_LOG << "communicator(VE)::communicator: host_peer.local_flags.get() = "    << host_peer.local_flags.get()    << std::endl; )
-		HAM_DEBUG( HAM_LOG << "communicator(VE)::communicator: host_peer.remote_buffers.get() = " << host_peer.remote_buffers.get() << std::endl; )
-		HAM_DEBUG( HAM_LOG << "communicator(VE)::communicator: host_peer.remote_flags.get() = "   << host_peer.remote_flags.get()   << std::endl; )
-
 		// allocate actual receive buffers
 		host_peer.local_buffers = buffer_ptr<msg_buffer>       (reinterpret_cast<msg_buffer*>       (ham_comm_veo_ve_local_buffers_addr(0)), ham_address);
 		host_peer.local_flags   = buffer_ptr<cache_line_buffer>(reinterpret_cast<cache_line_buffer*>(ham_comm_veo_ve_local_flags_addr(0)),   ham_address);
@@ -73,6 +71,11 @@ public:
 		// allocate "remote_buffers" used to store results
 		host_peer.remote_buffers = buffer_ptr<msg_buffer>       (reinterpret_cast<msg_buffer*>       (ham_comm_veo_ve_remote_buffers_addr(0)), ham_address);
 		host_peer.remote_flags   = buffer_ptr<cache_line_buffer>(reinterpret_cast<cache_line_buffer*>(ham_comm_veo_ve_remote_flags_addr(0)),   ham_address);
+
+		HAM_DEBUG( HAM_LOG << "communicator(VE)::communicator: host_peer.local_buffers.get() = "  << (uint64_t)host_peer.local_buffers.get()  << std::endl; )
+		HAM_DEBUG( HAM_LOG << "communicator(VE)::communicator: host_peer.local_flags.get() = "    << (uint64_t)host_peer.local_flags.get()    << std::endl; )
+		HAM_DEBUG( HAM_LOG << "communicator(VE)::communicator: host_peer.remote_buffers.get() = " << (uint64_t)host_peer.remote_buffers.get() << std::endl; )
+		HAM_DEBUG( HAM_LOG << "communicator(VE)::communicator: host_peer.remote_flags.get() = "   << (uint64_t)host_peer.remote_flags.get()   << std::endl; )
 
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::communicator: end." << std::endl; )
 	}

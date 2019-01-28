@@ -629,9 +629,9 @@ private:
 	size_t num_targets_ = 1;
 
 	// set by command line parsing in ctor
-	uint64_t ham_process_count; // number of participating processes
-	node_t ham_host_address; // the address of the host process
-	node_t ham_address; // this processes' address
+	uint64_t ham_process_count = 2; // number of participating processes
+	node_t ham_host_address = 0; // the address of the host process
+	node_t ham_address = 0; // this processes' address
 
 	// pointers to arrays of buffers, index is peer address
 	struct veo_peer {

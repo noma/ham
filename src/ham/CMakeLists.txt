@@ -6,9 +6,6 @@
 project(ham_lib LANGUAGES CXX)
 cmake_minimum_required(VERSION 3.2 FATAL_ERROR) # TODO verfify
 
-# TODO do this more idiomatic
-#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DHAM_DEBUG_ON")
-
 # interface target for ham
 add_library(ham_interface INTERFACE)
 target_compile_features(ham_interface INTERFACE cxx_auto_type cxx_range_for cxx_variadic_templates)
@@ -70,19 +67,26 @@ if (VEO_FOUND)
 #	SET(HAM_LIB_COMMON_CFLAGS $<$<CONFIG:DEBUG>:HAM_DEBUG_ON> -DHAM_LOG_NODE_PREFIX) # for shared VEO lib
 
 	# Vector Host libraries
-	add_library(ham_offload_veo_vh # SHARED if BUILD_SHARED_LIBS = TRUE
-	            ${HAM_LIB_SRC}
-	            offload/main.cpp
-	            net/communicator_veo.cpp net/communicator_veo_vh.cpp)
-	target_compile_definitions(ham_offload_veo_vh PUBLIC ${HAM_LIB_COMMON_CFLAGS} -DHAM_COMM_VEO=0) # NOTE: 0 is for vector host
-	target_link_libraries(ham_offload_veo_vh PUBLIC ham_interface veo_library)
+	if (NOT HAM_NEC_COMPILER_DETECTED)	
+		add_library(ham_offload_veo_vh # SHARED if BUILD_SHARED_LIBS = TRUE
+			        ${HAM_LIB_SRC}
+			        offload/main.cpp
+			        net/communicator_veo.cpp net/communicator_veo_vh.cpp)
+		target_compile_definitions(ham_offload_veo_vh PUBLIC ${HAM_LIB_COMMON_CFLAGS} -DHAM_COMM_VEO=0) # NOTE: 0 is for vector host
+		target_link_libraries(ham_offload_veo_vh PUBLIC ham_interface veo_library)
 
-	add_library(ham_offload_veo_vh_explicit # SHARED if BUILD_SHARED_LIBS = TRUE
-	            ${HAM_LIB_SRC}
-	            offload/main_explicit.cpp
-	            net/communicator_veo.cpp net/communicator_veo_vh.cpp)
-	target_compile_definitions(ham_offload_veo_vh_explicit PUBLIC ${HAM_LIB_COMMON_CFLAGS} -DHAM_COMM_VEO=0 -DHAM_EXPLICIT=1) # NOTE = 0 is for vector host
-	target_link_libraries(ham_offload_veo_vh_explicit PUBLIC ham_interface veo_library)
+		add_library(ham_offload_veo_vh_explicit # SHARED if BUILD_SHARED_LIBS = TRUE
+			        ${HAM_LIB_SRC}
+			        offload/main_explicit.cpp
+			        net/communicator_veo.cpp net/communicator_veo_vh.cpp)
+		target_compile_definitions(ham_offload_veo_vh_explicit PUBLIC ${HAM_LIB_COMMON_CFLAGS} -DHAM_COMM_VEO=0 -DHAM_EXPLICIT=1) # NOTE = 0 is for vector host
+		target_link_libraries(ham_offload_veo_vh_explicit PUBLIC ham_interface veo_library)
+
+		set_target_properties(ham_offload_veo_vh ham_offload_veo_vh_explicit PROPERTIES
+			CXX_STANDARD 11
+			CXX_STANDARD_REQUIRED YES
+			CXX_EXTENSIONS NO)
+	endif ()
 
 	# Vector Engine libraries
 	add_library(ham_offload_veo_ve # SHARED if BUILD_SHARED_LIBS = TRUE
@@ -104,7 +108,7 @@ if (VEO_FOUND)
 
 	set_target_properties(ham_offload_veo_ve ham_offload_veo_ve_explicit PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
-	set_target_properties(ham_offload_veo_vh ham_offload_veo_vh_explicit ham_offload_veo_ve ham_offload_veo_ve_explicit PROPERTIES
+	set_target_properties(ham_offload_veo_ve ham_offload_veo_ve_explicit PROPERTIES
 		CXX_STANDARD 11
 		CXX_STANDARD_REQUIRED YES
 		CXX_EXTENSIONS NO)

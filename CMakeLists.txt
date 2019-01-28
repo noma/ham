@@ -10,6 +10,15 @@ cmake_minimum_required(VERSION 3.2 FATAL_ERROR) # TODO verfify
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 message(STATUS "CMAKE_BINARY_DIR: " ${CMAKE_BINARY_DIR})
 
+# special compiler detect NEC compiler for VEO backend
+get_filename_component(HAM_CXX_COMPILER_EXE ${CMAKE_CXX_COMPILER} NAME)
+message("C++ compiler ID: ${CMAKE_CXX_COMPILER_ID}")
+message("C++ compiler exe: ${HAM_CXX_COMPILER_EXE}")
+if (HAM_CXX_COMPILER_EXE STREQUAL "nc++")
+	set(HAM_NEC_COMPILER_DETECTED ON)
+endif ()
+message("HAM_NEC_COMPILER_DETECTED: ${HAM_NEC_COMPILER_DETECTED}")
+
 ### thirdparty dependencies
 
 # CLI11-1.6.2 (header only)

@@ -86,6 +86,9 @@ if (MPI_FOUND)
 	add_executable(ham_offload_test_explicit_mpi ham_offload_explicit.cpp)
 	target_link_libraries(ham_offload_test_explicit_mpi ham_offload_mpi_explicit)
 
+	add_executable(hello_world_mpi hello_world.cpp)
+	target_link_libraries(hello_world_mpi ham_offload_mpi)
+
 	add_executable(inner_product_mpi inner_product.cpp)
 	target_link_libraries(inner_product_mpi ham_offload_mpi)
 
@@ -102,6 +105,9 @@ if (SCIF_FOUND)
 
 	add_executable(ham_offload_test_explicit_scif ham_offload_explicit.cpp)
 	target_link_libraries(ham_offload_test_explicit_scif ham_offload_scif_explicit)
+
+	add_executable(hello_world_scif hello_world.cpp)
+	target_link_libraries(hello_world_scif ham_offload_scif)
 
 	add_executable(inner_product_scif inner_product.cpp)
 	target_link_libraries(inner_product_scif ham_offload_scif)
@@ -122,6 +128,9 @@ if (VEO_FOUND)
 
 		add_executable(ham_offload_test_explicit_veo_vh ham_offload_explicit.cpp)
 		target_link_libraries(ham_offload_test_explicit_veo_vh ham_offload_veo_vh_explicit)
+
+		add_executable(hello_world_veo_vh hello_world.cpp)
+		target_link_libraries(hello_world_veo_vh ham_offload_veo_vh)
 
 		add_executable(inner_product_veo_vh inner_product.cpp)
 		target_link_libraries(inner_product_veo_vh ham_offload_veo_vh)
@@ -151,6 +160,15 @@ if (VEO_FOUND)
 #	add_custom_command(TARGET benchmark_ham_offload_veo_ve
 #	                   POST_BUILD
 #	                   COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_ham_offload_test_explicit ./libham_offload_test_explicit_veo_ve.a ./ham/libham_offload_veo_ve.a)
+
+	add_library(hello_world_veo_ve hello_world.cpp) # for static VEO lib
+	target_link_libraries(hello_world_veo_ve ${HAMLIB_VE})
+	set_property(TARGET hello_world_veo_ve PROPERTY POSITION_INDEPENDENT_CODE ON)
+	if (HAM_NEC_COMPILER_DETECTED)
+		add_custom_command(TARGET hello_world_veo_ve
+			               POST_BUILD
+			               COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_inner_product ./libhello_world_veo_ve.a ./ham/libham_offload_veo_ve.a)
+	endif ()
 
 # NOTE: static vs. shared
 #	add_library(inner_product_veo_ve SHARED inner_product.cpp) # for shared VEO lib

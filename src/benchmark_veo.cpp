@@ -19,7 +19,7 @@ using namespace std;
 using namespace noma::bmt;
 
 struct veo_proc_handle* veo_proc = nullptr;
-uint64_t veo_lib_handle = NULL;
+uint64_t veo_lib_handle = 0;
 struct veo_thr_ctxt* veo_ctx = nullptr;
 
 #ifdef BOOST_NO_EXCEPTIONS
@@ -105,7 +105,7 @@ float offload_call_mul(uint64_t sym, veo_args* args)
 //	errno_handler(err, "veo_call_wait_result()");
 
 	// return the result
-	return *(reinterpret_cast<float*>(res_addr));
+	return *(reinterpret_cast<float*>(&res_addr));
 }
 
 
@@ -216,12 +216,16 @@ int main(int argc, char * argv[])
 	veo_lib_handle = 0;
 #else
 	veo_lib_handle = veo_load_library(veo_proc, veo_library_path.c_str());
-	std::cerr << "veo_load_library() returned handle: " << (void*)veo_proc << std::endl;
+	if (veo_lib_handle == 0) {
+		std::cerr << "veo_load_library() returned handle: " << (void*)veo_proc << std::endl;
+	}
 #endif
 
 	// VEO context
 	veo_ctx = veo_context_open(veo_proc);
-	std::cerr << "veo_context_open() returned ctx: " << veo_ctx << std::endl;
+	if (veo_ctx == nullptr) {
+		std::cerr << "veo_context_open() returned ctx: " << veo_ctx << std::endl;
+	}
 
 	// allocate host data of given size
 	char* data = local_allocate(data_size);

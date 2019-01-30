@@ -129,6 +129,9 @@ if (VEO_FOUND)
 		add_executable(ham_offload_test_explicit_veo_vh ham_offload_explicit.cpp)
 		target_link_libraries(ham_offload_test_explicit_veo_vh ham_offload_veo_vh_explicit)
 
+		add_executable(hello_nec_dma_veo_vh hello_nec_dma.cpp)
+		target_link_libraries(hello_nec_dma_veo_vh ham_offload_veo_vh)
+
 		add_executable(hello_world_veo_vh hello_world.cpp)
 		target_link_libraries(hello_world_veo_vh ham_offload_veo_vh)
 
@@ -161,13 +164,25 @@ if (VEO_FOUND)
 #	                   POST_BUILD
 #	                   COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_ham_offload_test_explicit ./libham_offload_test_explicit_veo_ve.a ./ham/libham_offload_veo_ve.a)
 
+	# will not build on host
+	if (HAM_NEC_COMPILER_DETECTED)
+		add_library(hello_nec_dma_veo_ve hello_nec_dma.cpp) # for static VEO lib
+		target_link_libraries(hello_nec_dma_veo_ve ${HAMLIB_VE} veos_musl_library)
+		set_property(TARGET hello_nec_dma_veo_ve PROPERTY POSITION_INDEPENDENT_CODE ON)
+		if (HAM_NEC_COMPILER_DETECTED)
+			add_custom_command(TARGET hello_nec_dma_veo_ve
+					           POST_BUILD
+					           COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_hello_dma ./libhello_nec_dma_veo_ve.a ./ham/libham_offload_veo_ve.a) # /opt/nec/ve/musl/lib/libsysve.a)
+		endif ()
+	endif ()
+
 	add_library(hello_world_veo_ve hello_world.cpp) # for static VEO lib
 	target_link_libraries(hello_world_veo_ve ${HAMLIB_VE})
 	set_property(TARGET hello_world_veo_ve PROPERTY POSITION_INDEPENDENT_CODE ON)
 	if (HAM_NEC_COMPILER_DETECTED)
 		add_custom_command(TARGET hello_world_veo_ve
 			               POST_BUILD
-			               COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_inner_product ./libhello_world_veo_ve.a ./ham/libham_offload_veo_ve.a)
+			               COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_hello_world ./libhello_world_veo_ve.a ./ham/libham_offload_veo_ve.a)
 	endif ()
 
 # NOTE: static vs. shared

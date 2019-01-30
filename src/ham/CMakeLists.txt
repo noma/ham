@@ -105,7 +105,6 @@ if (VEO_FOUND)
 
 #	set_property(TARGET ham_offload_veo_ve PROPERTY POSITION_INDEPENDENT_CODE ON)
 
-
 	set_target_properties(ham_offload_veo_ve ham_offload_veo_ve_explicit PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 	set_target_properties(ham_offload_veo_ve ham_offload_veo_ve_explicit PROPERTIES

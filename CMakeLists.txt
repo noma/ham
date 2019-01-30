@@ -60,6 +60,11 @@ if (VEO_HEADER_FILE)
 	add_library(veo_library INTERFACE)
 	target_include_directories(veo_library INTERFACE ${VEO_INCLUDE_DIR})
 	target_link_libraries(veo_library INTERFACE "-L/opt/nec/ve/veos/lib64 -Wl,-rpath=/opt/nec/ve/veos/lib64 -lveo")
+
+	add_library(veos_musl_library INTERFACE)
+	#target_include_directories(veos_musl_library INTERFACE "/opt/nec/ve/musl/include")
+	#target_link_libraries(veos_musl_library INTERFACE "/opt/nec/ve/musl/lib/libsysve.a") # -L/opt/nec/ve/musl/lib -Wl,-rpath=/opt/nec/ve/musl/lib -llibc
+	target_link_libraries(veos_musl_library INTERFACE "-L/opt/nec/ve/musl/lib -Wl,-rpath=/opt/nec/ve/musl/lib -lsysve")
 else ()
 	message(STATUS "Could NOT find VEO (missing: ve_offload.h)")
 endif ()

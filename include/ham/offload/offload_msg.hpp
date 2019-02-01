@@ -57,7 +57,7 @@ public:
 	void operator()() //const
 	{
 		result_container<Result> result = helper<Functor, Result>::execute(*static_cast<Functor*>(this)); // this helper stuff is needed to handle void without too much code redundancy
-//		HAM_DEBUG( HAM_LOG << "offload_result_msg::operator()(): sending result via req(" << req.target_node << ", " << req.target_buffer_index << ", " << req.source_node << ", " << req.source_buffer_index << ")" << std::endl; )
+		HAM_DEBUG( HAM_LOG << "offload_result_msg::operator()(): this = " << (void*)this << " sending result via req(" << req.target_node << ", " << req.target_buffer_index << ", " << req.source_node << ", " << req.source_buffer_index << ")" << std::endl; )
 		req.send_result((void*)&result, sizeof result);
 	}
 private:

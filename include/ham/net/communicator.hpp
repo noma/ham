@@ -51,11 +51,24 @@ namespace net {
 #elif defined HAM_COMM_VEO
 	#define HAM_COMM_ONE_SIDED
 	#if (HAM_COMM_VEO == 0) // vector host
+		#define HAM_COMM_VH
 		#include "ham/net/communicator_veo_vh.hpp"
 	#elif (HAM_COMM_VEO == 1) // vector engine
+		#define HAM_COMM_VE
 		#include "ham/net/communicator_veo_ve.hpp"
 	#else
 		static_assert(false, "HAM_COMM_VEO must be set to 0 (vector host build) or 1 (vector engine build).");
+	#endif
+#elif defined HAM_COMM_VEDMA
+	#define HAM_COMM_ONE_SIDED
+	#if (HAM_COMM_VEDMA == 0) // vector host
+		#define HAM_COMM_VH
+		#include "ham/net/communicator_vedma_vh.hpp"
+	#elif (HAM_COMM_VEDMA == 1) // vector engine
+		#define HAM_COMM_VE
+		#include "ham/net/communicator_vedma_ve.hpp"
+	#else
+		static_assert(false, "HAM_COMM_VEDMA must be set to 0 (vector host build) or 1 (vector engine build).");
 	#endif
 #else	
 	static_assert(false, "Please define either HAM_COMM_MPI, or HAM_COMM_SCIF.");

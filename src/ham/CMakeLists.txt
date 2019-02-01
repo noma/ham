@@ -61,6 +61,7 @@ if (SCIF_FOUND)
 		CXX_EXTENSIONS NO)
 endif ()
 
+# NEC VEO backend
 if (VEO_FOUND)
 # TODO: remove -msched=none, set to reduce compile time with NCC
 	SET(HAM_LIB_COMMON_CFLAGS $<$<CONFIG:DEBUG>:HAM_DEBUG_ON> -DHAM_LOG_NODE_PREFIX -DHAM_COMM_VEO_STATIC) # for static VEO lib
@@ -112,3 +113,60 @@ if (VEO_FOUND)
 		CXX_STANDARD_REQUIRED YES
 		CXX_EXTENSIONS NO)
 endif ()
+
+
+# NEC VEO + DMA Backend
+if (VEO_FOUND)
+# TODO: remove -msched=none, set to reduce compile time with NCC
+	SET(HAM_LIB_COMMON_CFLAGS $<$<CONFIG:DEBUG>:HAM_DEBUG_ON> -DHAM_LOG_NODE_PREFIX -DHAM_COMM_VEO_STATIC) # for static VEO lib
+#	SET(HAM_LIB_COMMON_CFLAGS $<$<CONFIG:DEBUG>:HAM_DEBUG_ON> -DHAM_LOG_NODE_PREFIX) # for shared VEO lib
+
+	# Vector Host libraries
+	if (NOT HAM_NEC_COMPILER_DETECTED)
+		add_library(ham_offload_vedma_vh # SHARED if BUILD_SHARED_LIBS = TRUE
+			        ${HAM_LIB_SRC}
+			        offload/main.cpp
+			        net/communicator_vedma.cpp net/communicator_vedma_vh.cpp)
+		target_compile_definitions(ham_offload_vedma_vh PUBLIC ${HAM_LIB_COMMON_CFLAGS} -DHAM_COMM_VEDMA=0) # NOTE: 0 is for vector host
+		target_link_libraries(ham_offload_vedma_vh PUBLIC ham_interface veo_library)
+
+		add_library(ham_offload_vedma_vh_explicit # SHARED if BUILD_SHARED_LIBS = TRUE
+			        ${HAM_LIB_SRC}
+			        offload/main_explicit.cpp
+			        net/communicator_vedma.cpp net/communicator_vedma_vh.cpp)
+		target_compile_definitions(ham_offload_vedma_vh_explicit PUBLIC ${HAM_LIB_COMMON_CFLAGS} -DHAM_COMM_VEDMA=0 -DHAM_EXPLICIT=1) # NOTE = 0 is for vector host
+		target_link_libraries(ham_offload_vedma_vh_explicit PUBLIC ham_interface veo_library)
+
+		set_target_properties(ham_offload_vedma_vh ham_offload_vedma_vh_explicit PROPERTIES
+			CXX_STANDARD 11
+			CXX_STANDARD_REQUIRED YES
+			CXX_EXTENSIONS NO)
+	endif ()
+
+	# Vector Engine libraries
+	if (HAM_NEC_COMPILER_DETECTED)
+		add_library(ham_offload_vedma_ve # SHARED if BUILD_SHARED_LIBS = TRUE
+			        ${HAM_LIB_SRC}
+			        offload/main.cpp
+			        net/communicator_vedma.cpp net/communicator_vedma_ve.cpp)
+		target_compile_definitions(ham_offload_vedma_ve PUBLIC ${HAM_LIB_COMMON_CFLAGS} -DHAM_COMM_VEDMA=1) # NOTE: 1 is for vector engine
+		target_link_libraries(ham_offload_vedma_ve PUBLIC ham_interface) # NOTE: no VEO dependency
+
+		add_library(ham_offload_vedma_ve_explicit # SHARED if BUILD_SHARED_LIBS = TRUE
+			        ${HAM_LIB_SRC}
+			        offload/main_explicit.cpp
+			        net/communicator_vedma.cpp net/communicator_vedma_ve.cpp)
+		target_compile_definitions(ham_offload_vedma_ve_explicit PUBLIC ${HAM_LIB_COMMON_CFLAGS} -DHAM_COMM_VEDMA=1 -DHAM_EXPLICIT=1) # NOTE = 1 is for vector engine
+		target_link_libraries(ham_offload_vedma_ve_explicit PUBLIC ham_interface) # NOTE: no VEO dependency
+
+	#	set_property(TARGET ham_offload_vedma_ve PROPERTY POSITION_INDEPENDENT_CODE ON)
+
+		set_target_properties(ham_offload_vedma_ve ham_offload_vedma_ve_explicit PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+		set_target_properties(ham_offload_vedma_ve ham_offload_vedma_ve_explicit PROPERTIES
+			CXX_STANDARD 11
+			CXX_STANDARD_REQUIRED YES
+			CXX_EXTENSIONS YES) # wen need --std=gnu++11 for inline assembly
+	endif ()
+endif ()
+

@@ -313,7 +313,7 @@ private:
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::send_msg(): remote recv buffer SHM offset is: " << (remote_recv_buffer_vehva - peers[node].shm_remote_vehva) << std::endl; )
 		
 		// BEGIN: VERSION A
-/*
+
 		// DMA message to VH
 		// construct message in local buffer: size + msg
 		memcpy((char*)local_send_buffer_addr, (void*)&size, sizeof(size_t)); // size = header
@@ -328,7 +328,7 @@ private:
 		// END: VERSION A
 
 		// BEGIN: VERSION B
-
+/*
 		// write msg size
 		ve_inst_shm((void *)remote_recv_buffer_vehva, size);
 		// write msg in chunks

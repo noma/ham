@@ -298,8 +298,10 @@ public:
 private:
 	void send_msg(node_t node, size_t buffer_index, size_t next_buffer_index, void* msg, size_t size)
 	{
+//size = 1024; // TODO: remove: for quick and dirty testing of larger message sizes
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::send_msg(): node =  " << node << std::endl; )
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::send_msg(): remote buffer index = " << buffer_index << std::endl; )
+		HAM_DEBUG( HAM_LOG << "communicator(VE)::send_msg(): msg size is: " << size << std::endl; )
 
 		// TODO: compute
 		uint64_t remote_recv_flag_vehva = peers[node].remote_recv_flags_vehva + buffer_index * sizeof(size_t);
@@ -310,16 +312,32 @@ private:
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::send_msg(): remote recv flag SHM offset is: " << (remote_recv_flag_vehva - peers[node].shm_remote_vehva) << std::endl; )
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::send_msg(): remote recv buffer SHM offset is: " << (remote_recv_buffer_vehva - peers[node].shm_remote_vehva) << std::endl; )
 		
+		// BEGIN: VERSION A
+/*
+		// DMA message to VH
 		// construct message in local buffer: size + msg
 		memcpy((char*)local_send_buffer_addr, (void*)&size, sizeof(size_t)); // size = header
 		memcpy((char*)local_send_buffer_addr + sizeof(size_t), msg, size);
-		const size_t msg_buffer = sizeof(size_t) + size;
-		
-		// DMA message to VH
+		const size_t msg_buffer_size = sizeof(size_t) + size;
+
 		int err = 0;
-		err = ve_dma_post_wait(remote_recv_buffer_vehva, local_send_buffer_vehva, msg_buffer);
+		err = ve_dma_post_wait(remote_recv_buffer_vehva, local_send_buffer_vehva, msg_buffer_size);
 		if (err)
 			std::cout << "VE: ve_dma_post_wait has failed!, err = " << err << std::endl;
+//*/
+		// END: VERSION A
+
+		// BEGIN: VERSION B
+
+		// write msg size
+		ve_inst_shm((void *)remote_recv_buffer_vehva, size);
+		// write msg in chunks
+		size_t chunk_size = sizeof(uint64_t);
+		size_t chunks = size % chunk_size == 0 ? (size / chunk_size) : (size / chunk_size + 1);
+		for (size_t i = 0; i < chunks; ++i)
+			ve_inst_shm((void *)(remote_recv_buffer_vehva + sizeof(size_t) + i * chunk_size), *reinterpret_cast<uint64_t*>(msg) + i);
+//*/
+		// END: VERSION B
 
 		// set flag
 		ve_inst_shm((void *)remote_recv_flag_vehva, next_buffer_index);
@@ -348,6 +366,7 @@ private:
 		buffer_index = buffer_index == NO_BUFFER_INDEX ?  peers[node].next_flag : buffer_index;
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::recv_msg(): remote node is: " << node << std::endl; )
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::recv_msg(): using buffer index: " << buffer_index << std::endl; )
+		HAM_DEBUG( HAM_LOG << "communicator(VE)::send_msg(): msg size is: " << size << std::endl; )
 
 		// compute addresses
 		uint64_t remote_send_flag_vehva = peers[node].remote_send_flags_vehva + buffer_index * sizeof(size_t);
@@ -361,6 +380,17 @@ private:
 		do {
 			local_flag = ve_inst_lhm((void *)remote_send_flag_vehva);
 		} while (local_flag == FLAG_FALSE);
+
+		// DMA polling: TODO: debug, and benchmark
+//		void* local_flag_addr = (char*)peers[node].shm_local_addr  + 2 * constants::MSG_BUFFERS * sizeof(msg_buffer);
+//		uint64_t local_flag_vehva = peers[node].shm_local_vehva + 2 * constants::MSG_BUFFERS * sizeof(msg_buffer);
+//		*((size_t*)local_flag_addr) = FLAG_FALSE; // reset flag copy
+//		do {
+//			int err = 0;
+//			err = ve_dma_post_wait(local_flag_vehva, remote_send_flag_vehva, sizeof(uint64_t));
+
+//		} while (*((size_t*)local_flag_addr) == FLAG_FALSE);
+
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::recv_msg(): FLAG after polling: " << local_flag << std::endl; )
 
 		if (local_flag != NO_BUFFER_INDEX) // the flag contains the next buffer index to poll on
@@ -373,13 +403,28 @@ private:
 
 		// get size
 		size = ve_inst_lhm((void *)remote_send_buffer_vehva);
+//size = 1024; // TODO: remove: for quick and dirty testing of larger message sizes
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::recv_msg(): size = " << size << std::endl; )
 		
+		// BEGIN: VERSION A
+
 		// DMA message
 		int err = 0;
 		err = ve_dma_post_wait(local_recv_buffer_vehva, remote_send_buffer_vehva + sizeof(size), size); // NOTE: copy without
 		if (err)
 			std::cout << "VE: ve_dma_post_wait has failed!, err = " << err << std::endl;
+		//*/
+		// END: VERSION A
+
+		// BEGIN: VERSION B
+		/*
+		// read msg in chunks
+		size_t chunk_size = sizeof(uint64_t);
+		size_t chunks = size % chunk_size == 0 ? (size / chunk_size) : (size / chunk_size + 1);
+		for (size_t i = 0; i < chunks; ++i)
+			*(reinterpret_cast<uint64_t*>(local_recv_buffer_addr) + i) = ve_inst_lhm((void *)(remote_send_buffer_vehva + sizeof(size_t) + i * chunk_size));
+		//*/
+		// END: VERSION B
 
 		//return (char*)local_recv_buffer_addr + sizeof(size_t);
 		return (char*)local_recv_buffer_addr; // NOTE: we copied without size header

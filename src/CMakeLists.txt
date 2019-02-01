@@ -88,7 +88,7 @@ if (VEO_FOUND)
 		add_executable(benchmark_ham_offload_vedma_vh benchmark_ham_offload.cpp)
 		target_link_libraries(benchmark_ham_offload_vedma_vh ham_offload_vedma_vh)
 
-		set_target_properties(benchmark_vedma_vh PROPERTIES
+		set_target_properties(benchmark_ham_offload_vedma_vh PROPERTIES
 			CXX_STANDARD 11
 			CXX_STANDARD_REQUIRED YES
 			CXX_EXTENSIONS NO)

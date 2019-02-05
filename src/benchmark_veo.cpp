@@ -43,6 +43,19 @@ void errno_handler(int ret, const char * hint)
 	}
 }
 
+void set_cpu_affinity(int core = 0)
+{
+	std::cout << "Setting CPU affinity to: " << core << std::endl;
+	cpu_set_t mask;
+	CPU_ZERO(&mask);
+	CPU_SET(core, &mask);
+
+	if (sched_setaffinity(0, sizeof(mask), &mask) == -1)
+	{
+		std::cout << "WARNING: Could not set CPU affinity, continuing..." << std::endl;
+	}
+}
+
 uint64_t offload_allocate(size_t data_size)
 {
 	// 
@@ -151,6 +164,7 @@ int main(int argc, char * argv[])
 	bool call = false;
 	bool call_mul = false;
 	bool async = false;
+	int pinning = 0; // for cpu affinity
 
 	string veo_library_path;
 	int veo_ve_node = 0;
@@ -169,8 +183,13 @@ int main(int argc, char * argv[])
 	app.add_flag("--async,-y", async, "perform benchmark function calls asynchronously");
 	app.add_option("--veo-ve-lib", veo_library_path, "path to VEO library");
 	app.add_option("--veo-ve-node", veo_ve_node, "VE node to use for offloading");
+	app.add_option("--pinning,-p", pinning, "pin to cpu core, default is 0, disable with -1");
 
 	CLI11_PARSE(app, argc, argv);
+
+	// pin host process
+	if (pinning >= 0)
+		set_cpu_affinity(pinning);
 
 	///////////////// output compile configuration and run data ////////////
 	#ifdef BOOST_NO_EXCEPTIONS

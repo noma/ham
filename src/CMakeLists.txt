@@ -27,6 +27,50 @@ if (SCIF_FOUND)
 	target_link_libraries(benchmark_ham_offload_scif ham_offload_scif)
 endif ()
 
+# VEO and VEDMA benchmarks:
+if (VEO_FOUND)
+	# Vector Host executables
+	if (NOT HAM_NEC_COMPILER_DETECTED)
+		# VEO benchmark
+		add_executable(benchmark_veo_vh benchmark_veo.cpp)
+		target_link_libraries(benchmark_veo_vh veo_library cli11_library noma_bmt)
+
+		# VEDMA benchmark
+		add_executable(benchmark_vedma_vh benchmark_vedma_vh.cpp)
+		target_link_libraries(benchmark_vedma_vh veo_library cli11_library noma_bmt)
+
+		set_target_properties(benchmark_veo_vh benchmark_vedma_vh PROPERTIES
+			CXX_STANDARD 11
+			CXX_STANDARD_REQUIRED YES
+			CXX_EXTENSIONS NO)
+	endif ()
+
+	# Vector Engine executables
+
+	# VEO benchmark
+	add_library(benchmark_veo_ve benchmark_veo_lib.cpp)
+	set_property(TARGET benchmark_veo_ve PROPERTY POSITION_INDEPENDENT_CODE ON)
+	# for static VE build
+	if (HAM_NEC_COMPILER_DETECTED)
+		add_custom_command(TARGET benchmark_veo_ve
+			               POST_BUILD
+			               COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_benchmark_veo ./libbenchmark_veo_ve.a)
+	endif ()
+
+	# won't build for Vector Host
+	if (HAM_NEC_COMPILER_DETECTED)
+		# VEDMA benchmark
+		add_executable(benchmark_vedma_ve benchmark_vedma_ve.cpp)
+		target_link_libraries(benchmark_vedma_ve cli11_library noma_bmt)
+		
+		set_target_properties(benchmark_vedma_ve PROPERTIES
+			CXX_STANDARD 11
+			CXX_STANDARD_REQUIRED YES
+			CXX_EXTENSIONS YES) # NOTE: inline assembly requires g++11
+	endif ()
+
+endif ()
+
 
 # VEO Backend
 if (VEO_FOUND)
@@ -39,10 +83,6 @@ if (VEO_FOUND)
 		# HAM benchmark
 		add_executable(benchmark_ham_offload_veo_vh benchmark_ham_offload.cpp)
 		target_link_libraries(benchmark_ham_offload_veo_vh ham_offload_veo_vh)
-
-		# VEO benchmark
-		add_executable(benchmark_veo_vh benchmark_veo.cpp)
-		target_link_libraries(benchmark_veo_vh veo_library cli11_library noma_bmt)
 
 		set_target_properties(benchmark_veo_vh PROPERTIES
 			CXX_STANDARD 11
@@ -62,17 +102,7 @@ if (VEO_FOUND)
 			               POST_BUILD
 			               COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_benchmark_ham_offload ./libbenchmark_ham_offload_veo_ve.a ./ham/libham_offload_veo_ve.a)
 	endif ()
-
-	# VEO benchmark
-	add_library(benchmark_veo_ve benchmark_veo_lib.cpp)
-	set_property(TARGET benchmark_veo_ve PROPERTY POSITION_INDEPENDENT_CODE ON)
-	# for static VE build
-	if (HAM_NEC_COMPILER_DETECTED)
-		add_custom_command(TARGET benchmark_veo_ve
-			               POST_BUILD
-			               COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_benchmark_veo ./libbenchmark_veo_ve.a)
-	endif ()
-
+	
 endif ()
 
 

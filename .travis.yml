@@ -1,26 +1,26 @@
 language: cpp
 
 os: linux
-dist: trusty
+dist: xenial
 
 addons:
   apt:
     sources: &common_sources
       - ubuntu-toolchain-r-test
     # - boost-latest
-      - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
+    #  - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
     packages: &common_packages
       - cmake-data
       - cmake
     # - libboost-program-options1.55-dev # boost-latest
-      - libboost-program-options1.60-dev
+      - libboost-program-options-dev
       - mpich
       - libmpich-dev
     # - mpi-default-dev # open-mpi, headers cause some compiler warnings
 
 env:
   global:
-    - LINUX_DIST=trusty
+    - LINUX_DIST=xenial
     - CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror"
     - MAKE_FLAGS="-j2" # VERBOSE=1
 

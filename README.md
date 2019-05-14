@@ -5,6 +5,8 @@ HAM - Heterogeneous Active Messages
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/8451/badge.svg)](https://scan.coverity.com/projects/noma-ham)
 [![Licence](https://img.shields.io/badge/license-BSL-blue.svg?style=flat)](LICENSE_1_0.txt)
 
+**HAM is under continuous development, the current development branches are `devel` and `devel_ve` featuring support for CMake and the NEC Vector Engine**
+
 HAM (Heterogeneous Active Messages) is a research project on efficient active messaging between heterogeneous binary files and architectures. Its original motivation is to efficiently offload computations to accelerators like the **Intel Xeon Phi**, or nodes of a distributed system in general. Efficiently means with a minimal amount of overhead. An additional goal was to implement this functionality in pure C++ without introducing yet another language or compiler extension.
 
 The current outcome of this project are two libraries:

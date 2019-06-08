@@ -237,7 +237,7 @@ future<void> put(T* local_source, buffer_ptr<T>& remote_dest, size_t n)
 	comm.recv_result(result.get_request()); // trigger receiving the msgs result // async
 	
 	return result;
-#elif HAM_COMM_MPI_RMA_DYNAMIC
+#elif defined(HAM_COMM_MPI_RMA_DYNAMIC) || defined(HAM_COMM_MPI_RMA_DYNAMIC_DATA_ONLY)
     future<void> result(comm.allocate_data_request(remote_dest.node()));
 	HAM_DEBUG( HAM_LOG << "offload::put(): initiating RMA put..." << std::endl; )
 	comm.send_data_async(result.get_request(), local_source, remote_dest, n);
@@ -275,7 +275,7 @@ future<void> get(buffer_ptr<T> remote_source, T* local_dest, size_t n)
 	comm.recv_result(result.get_request()); // trigger receiving the result
 	// TODO(improvement): the recv_result() is not needed, could remove and remove send_result() from offload_read_msg to reduce synchronization overhead
 	return result;
-#elif defined HAM_COMM_MPI_RMA_DYNAMIC
+#elif defined(HAM_COMM_MPI_RMA_DYNAMIC) || defined(HAM_COMM_MPI_RMA_DYNAMIC_DATA_ONLY)
 	future<void> result(comm.allocate_data_request(remote_source.node()));
 	HAM_DEBUG( HAM_LOG << "offload::put(): initiating RMA get..." << std::endl; )
 	comm.recv_data_async(result.get_request(), remote_source, local_dest, n);
@@ -312,7 +312,7 @@ void get_sync(buffer_ptr<T> remote_source, T* local_dest, size_t n)
 
 //}
 
-#ifdef HAM_COMM_MPI_RMA_DYNAMIC
+#if defined(HAM_COMM_MPI_RMA_DYNAMIC) || defined(HAM_COMM_MPI_RMA_DYNAMIC_DATA_ONLY)
         template<typename T>
 future<void> copy(buffer_ptr<T> source, buffer_ptr<T> dest, size_t n)
 {
@@ -342,7 +342,7 @@ void copy_sync(buffer_ptr<T> source, buffer_ptr<T> dest, size_t n)
 // fix 1st arg:
 //	comm.send_data(src_node, local_source, remote_dest, n);
 //	static_assert(false, "copy is not implemented yet for the SCIF back-end");
-#elif defined HAM_COMM_MPI
+#elif defined(HAM_COMM_MPI)
 	// send corresponding write and read messages to the sender and the receiver
 
 	// issues a send operation on the source node, that sends the memory at source to the destination node
@@ -361,10 +361,10 @@ void copy_sync(buffer_ptr<T> source, buffer_ptr<T> dest, size_t n)
 	// TODO(improvement): this is oversynchronized, waiting for the target to complete receiving should be sufficient
 	read_result.get();
 	write_result.get();
-#elif defined HAM_COMM_MPI_RMA_DYNAMIC
-    // use async copy + sync
-    copy(source, dest, n).get();
-#elif defined HAM_COMM_TCP
+#elif defined(HAM_COMM_MPI_RMA_DYNAMIC) || defined(HAM_COMM_MPI_RMA_DYNAMIC_DATA_ONLY)
+	// use async copy + sync
+	copy(source, dest, n).get();
+#elif defined(HAM_COMM_TCP)
 	T* ptr;
 	posix_memalign((void**)&ptr, constants::CACHE_LINE_SIZE, n * sizeof(T));
 	get_sync(source, ptr, n);

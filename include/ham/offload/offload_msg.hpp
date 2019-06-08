@@ -6,9 +6,11 @@
 #ifndef ham_offload_offload_msg_hpp
 #define ham_offload_offload_msg_hpp
 
-#ifdef HAM_COMM_MPI_RMA_DYNAMIC
+// for the copy msg we want to store the remote memory address as MPI_Aint
+#if defined(HAM_COMM_MPI_RMA_DYNAMIC) || defined(HAM_COMM_MPI_RMA_DYNAMIC_DATA_ONLY)
 #include <mpi.h>
 #endif
+
 #include "ham/msg/active_msg.hpp"
 #include "ham/msg/execution_policy.hpp"
 #include "ham/misc/constants.hpp"
@@ -43,6 +45,7 @@ struct helper<Functor, void> {
 };
 
 // executes the functor, and send back its result
+// used for all offloads, remote allocation
 template<class Functor, template<class> class ExecutionPolicy = default_execution_policy>
 class offload_result_msg
 	: public active_msg<offload_result_msg<Functor, ExecutionPolicy>, ExecutionPolicy>
@@ -68,6 +71,7 @@ private:
 };
 
 // just execute the functor
+// fire & forget, not used by current HAM-Offload API
 template<class Functor, template<class> class ExecutionPolicy = default_execution_policy>
 class offload_msg
 	: public active_msg<offload_msg<Functor, ExecutionPolicy>, ExecutionPolicy>
@@ -83,7 +87,8 @@ public:
 	}
 };
 
-// should not be used by MPI_RMA_COMMUNICATOR since one-sided put is used
+// data transfer message type, triggers RECEIVING data at the target
+// not used by MPI_RMA_COMMUNICATOR since one-sided put is used
 template<typename T, template<class> class ExecutionPolicy = default_execution_policy>
 class offload_write_msg
 	: public active_msg<offload_write_msg<T, ExecutionPolicy>, ExecutionPolicy>
@@ -97,7 +102,6 @@ public:
 		communicator::instance().recv_data(buffer_ptr<T>(nullptr, remote_node), local_dest, n); // NOTE: Why nullptr? This is for two-sided communicators, so we do not know the remote address, but match a send operation that has the address.
 
 		// send a result to tell the sender, that the transfer is done
-        // TODO(improvement): this may be
 		if (req.valid()) {
 			req.send_result((void*)&n, sizeof n);
 		}
@@ -111,7 +115,8 @@ private:
 	
 };
 
-// should not be used by MPI_RMA_COMMUNICATOR since one-sided put is used
+// data transfer message type, triggers SENDING data at the target
+// not used by MPI_RMA_COMMUNICATOR since one-sided put is used
 template<typename T, template<class> class ExecutionPolicy = default_execution_policy>
 class offload_read_msg
 	: public active_msg<offload_read_msg<T, ExecutionPolicy>, ExecutionPolicy>
@@ -125,7 +130,7 @@ public:
 		communicator::instance().send_data(local_source, buffer_ptr<T>(nullptr, remote_node), n); // NOTE: Why nullptr? This is for two-sided communicators, so we do not know the remote address, but match a receive operation that has the address.
 		
 		// send a result message to tell the sender, that the transfer is done
-        // TODO(improvement): this may be removed along with receiving the result in offload get()
+		// TODO(improvement, potential speedup): this may be removed along with receiving the result in offload get(). For host-target transfer completion of receive is sufficient, for copy the destination informs the host of completion
 		if (req.valid()) {
 			req.send_result((void*)&n, sizeof n);
 		}
@@ -138,62 +143,37 @@ private:
 	size_t n;
 };
 
-#ifdef HAM_COMM_MPI_RMA_DYNAMIC
-    template<typename T, template<class> class ExecutionPolicy = default_execution_policy>
-    class offload_rma_copy_msg
-            : public active_msg<offload_rma_copy_msg<T, ExecutionPolicy>, ExecutionPolicy>
-    {
-    public:
-        offload_rma_copy_msg(communicator::request req, node_t remote_node, MPI_Aint remote_addr, T* local_source, size_t n)
-                : req(req), remote_node(remote_node), remote_addr(remote_addr), local_source(local_source), n(n) { }
+#if defined(HAM_COMM_MPI_RMA_DYNAMIC) || defined(HAM_COMM_MPI_RMA_DYNAMIC_DATA_ONLY)
+	// data transfer message, triggers RMA data transfer to copy target
+	// used only with MPI_RMA communicator
+	// necessary because of the target buffer's address (remote_addr)
+	template<typename T, template<class> class ExecutionPolicy = default_execution_policy>
+	class offload_rma_copy_msg
+			: public active_msg<offload_rma_copy_msg<T, ExecutionPolicy>, ExecutionPolicy>
+	{
+	public:
+		offload_rma_copy_msg(communicator::request req, node_t remote_node, MPI_Aint remote_addr, T* local_source, size_t n)
+				: req(req), remote_node(remote_node), remote_addr(remote_addr), local_source(local_source), n(n) { }
 
-        void operator()() //const
-        {
-        /*   communicator::instance().establish_rma_path(remote_node); // should quickly return if path already exists
-            // attach existing buffers to new target window ?!?
-        */
-            communicator::instance().send_data(local_source, buffer_ptr<T>(nullptr, remote_node, remote_addr), n);
+		void operator()() //const
+		{
+			// MPI_RMA_COMMUNICATOR-only variant of send_data(), because of buffer address (remote_addr)
+			communicator::instance().send_data(local_source, buffer_ptr<T>(nullptr, remote_node, remote_addr), n);
 
-            // send a result message to tell the sender, that the transfer is done
-            if (req.valid()) {
-                req.send_result((void*)&n, sizeof n);
-            }
-        }
-    private:
-        communicator::request req; // TODO(improvement, high priority): use a subset of req here!
+			// send a result message to tell the sender, that the transfer is done
+			if (req.valid()) {
+				req.send_result((void*)&n, sizeof n);
+			}
+		}
+	private:
+		communicator::request req; // TODO(improvement, high priority): use a subset of req here!
 
-        node_t remote_node;
-        MPI_Aint remote_addr;
-        T* local_source;
-        size_t n;
-    };
+		node_t remote_node;
+		MPI_Aint remote_addr; // this is why we imported mpi.h
+		T* local_source;
+		size_t n;
+	};
 #endif
-
-/*
-// allows user to setup an rma link between two targets without a copy transfer
-#ifdef HAM_COMM_MPI_RMA_DYNAMIC
-    template<typename T, template<class> class ExecutionPolicy = default_execution_policy>
-    class setup_rma_path_msg
-            : public active_msg<setup_rma_path_msg<T, ExecutionPolicy>, ExecutionPolicy>
-    {
-    public:
-        setup_rma_path_msg(node_t remote_node)
-                : remote_node(remote_node) { }
-
-        void operator()() //const
-        {
-            communicator::instance().establish_rma_path(remote_node);
-
-            // send a result message to tell the sender that the path is set up
-            if (req.valid()) {
-                req.send_result((void*)&remote_node, sizeof remote_node);
-            }
-        }
-    private:
-        node_t remote_node;
-    };
-#endif
-*/
 
 } // namespace detail
 } // namespace offload

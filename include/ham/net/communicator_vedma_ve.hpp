@@ -29,6 +29,11 @@ static inline void ve_inst_fenceLF(void)
     asm ("fencem 2":::"memory");
 }
 
+static inline void ve_inst_fenceLSF(void)
+{
+    asm ("fencem 3":::"memory");
+}
+
 static inline uint64_t ve_inst_lhm(void *vehva)
 {
     uint64_t ret;
@@ -341,6 +346,7 @@ private:
 
 		// set flag
 		ve_inst_shm((void *)remote_recv_flag_vehva, next_buffer_index);
+                ve_inst_fenceSF();
 
 /*
 		char* remote_buffer = reinterpret_cast<char*>(&peers[node].remote_buffers[buffer_index]);
@@ -377,6 +383,7 @@ private:
 		// poll on flag
 		size_t local_flag = FLAG_FALSE;
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::recv_msg(): FLAG at SHM offset: " << (remote_send_flag_vehva - peers[node].shm_remote_vehva) << " before polling: " << local_flag << std::endl; )
+                ve_inst_fenceLF();
 		do {
 			local_flag = ve_inst_lhm((void *)remote_send_flag_vehva);
 		} while (local_flag == FLAG_FALSE);
@@ -402,6 +409,7 @@ private:
 		// we do B
 
 		// get size
+                ve_inst_fenceLF();
 		size = ve_inst_lhm((void *)remote_send_buffer_vehva);
 //size = 1024; // TODO: remove: for quick and dirty testing of larger message sizes
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::recv_msg(): size = " << size << std::endl; )

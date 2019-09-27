@@ -134,7 +134,7 @@ if (VEO_FOUND)
 		if (HAM_NEC_COMPILER_DETECTED)
 			add_custom_command(TARGET benchmark_ham_offload_vedma_ve
 					           POST_BUILD
-					           COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_benchmark_ham_offload_vedma ./libbenchmark_ham_offload_vedma_ve.a ./ham/libham_offload_vedma_ve.a)
+					           COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_benchmark_ham_offload_vedma ./libbenchmark_ham_offload_vedma_ve.a ./ham/libham_offload_vedma_ve.a ${MK_VEORUN_STATIC_LIBS}
 		endif ()
 	endif ()
 	
@@ -321,7 +321,7 @@ if (VEO_FOUND)
 		if (HAM_NEC_COMPILER_DETECTED)
 			add_custom_command(TARGET ham_offload_test_vedma_ve
 				               POST_BUILD
-				               COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_ham_offload_test_vedma ./libham_offload_test_vedma_ve.a ./ham/libham_offload_vedma_ve.a)
+				               COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_ham_offload_test_vedma ./libham_offload_test_vedma_ve.a ./ham/libham_offload_vedma_ve.a ${MK_VEORUN_STATIC_LIBS}
 		endif ()
 
 	#	add_library(ham_offload_test_explicit_vedma_ve ham_offload_explicit.cpp)
@@ -330,7 +330,7 @@ if (VEO_FOUND)
 	#	# for static VE build
 	#	add_custom_command(TARGET benchmark_ham_offload_vedma_ve
 	#	                   POST_BUILD
-	#	                   COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_ham_offload_test_explicit ./libham_offload_test_explicit_vedma_ve.a ./ham/libham_offload_vedma_ve.a)
+	#	                   COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_ham_offload_test_explicit ./libham_offload_test_explicit_vedma_ve.a ./ham/libham_offload_vedma_ve.a ${MK_VEORUN_STATIC_LIBS}
 
 		# will not build on host
 		add_library(hello_nec_dma_vedma_ve hello_nec_dma.cpp) # for static VEO lib
@@ -339,7 +339,7 @@ if (VEO_FOUND)
 		if (HAM_NEC_COMPILER_DETECTED)
 			add_custom_command(TARGET hello_nec_dma_vedma_ve
 						       POST_BUILD
-						       COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_hello_dma_vedma ./libhello_nec_dma_vedma_ve.a ./ham/libham_offload_vedma_ve.a) # /opt/nec/ve/musl/lib/libsysve.a)
+						       COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_hello_dma_vedma ./libhello_nec_dma_vedma_ve.a ./ham/libham_offload_vedma_ve.a ${MK_VEORUN_STATIC_LIBS} # /opt/nec/ve/musl/lib/libsysve.a)
 		endif ()
 
 		add_library(hello_world_vedma_ve hello_world.cpp) # for static VEO lib
@@ -348,7 +348,7 @@ if (VEO_FOUND)
 		if (HAM_NEC_COMPILER_DETECTED)
 			add_custom_command(TARGET hello_world_vedma_ve
 					           POST_BUILD
-					           COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_hello_world_vedma ./libhello_world_vedma_ve.a ./ham/libham_offload_vedma_ve.a)
+					           COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_hello_world_vedma ./libhello_world_vedma_ve.a ./ham/libham_offload_vedma_ve.a ${MK_VEORUN_STATIC_LIBS}
 		endif ()
 
 	# NOTE: static vs. shared
@@ -359,7 +359,7 @@ if (VEO_FOUND)
 		if (HAM_NEC_COMPILER_DETECTED)
 			add_custom_command(TARGET inner_product_vedma_ve
 					           POST_BUILD
-					           COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_inner_product_vedma ./libinner_product_vedma_ve.a ./ham/libham_offload_vedma_ve.a)
+					           COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_inner_product_vedma ./libinner_product_vedma_ve.a ./ham/libham_offload_vedma_ve.a ${MK_VEORUN_STATIC_LIBS})
 		endif ()
 
 		add_library(test_data_transfer_vedma_ve test_data_transfer.cpp)
@@ -368,7 +368,7 @@ if (VEO_FOUND)
 		if (HAM_NEC_COMPILER_DETECTED)
 			add_custom_command(TARGET test_data_transfer_vedma_ve
 					           POST_BUILD
-					           COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_test_data_transfer_vedma ./libtest_data_transfer_vedma_ve.a ./ham/libham_offload_vedma_ve.a)
+					           COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_test_data_transfer_vedma ./libtest_data_transfer_vedma_ve.a ./ham/libham_offload_vedma_ve.a ${MK_VEORUN_STATIC_LIBS}
 		endif ()
 
 		add_library(test_argument_transfer_vedma_ve test_argument_transfer.cpp)
@@ -377,7 +377,7 @@ if (VEO_FOUND)
 		if (HAM_NEC_COMPILER_DETECTED)
 			add_custom_command(TARGET test_argument_transfer_vedma_ve
 					           POST_BUILD
-					           COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_test_argument_transfer_vedma ./libtest_argument_transfer_vedma_ve.a ./ham/libham_offload_vedma_ve.a)
+					           COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_test_argument_transfer_vedma ./libtest_argument_transfer_vedma_ve.a ./ham/libham_offload_vedma_ve.a ${MK_VEORUN_STATIC_LIBS}
 		endif ()
 	endif ()
 endif ()

@@ -67,6 +67,8 @@ if (VEO_HEADER_FILE)
 	#target_link_libraries(veos_musl_library INTERFACE "-L/opt/nec/ve/musl/lib -Wl,-rpath=/opt/nec/ve/musl/lib -lsysve")
 	add_library(veos_system_libraries INTERFACE)
 	target_link_libraries(veos_system_libraries INTERFACE "-lpthread -lveio")
+
+	set(MK_VEORUN_STATIC_LIBS "-lpthread -lveio")
 else ()
 	message(STATUS "Could NOT find VEO (missing: ve_offload.h)")
 endif ()

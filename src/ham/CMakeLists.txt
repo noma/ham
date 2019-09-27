@@ -150,7 +150,7 @@ if (VEO_FOUND)
 			        offload/main.cpp
 			        net/communicator_vedma.cpp net/communicator_vedma_ve.cpp)
 		target_compile_definitions(ham_offload_vedma_ve PUBLIC ${HAM_LIB_COMMON_CFLAGS} -DHAM_COMM_VEDMA=1) # NOTE: 1 is for vector engine
-		target_link_libraries(ham_offload_vedma_ve PUBLIC ham_interface) # NOTE: no VEO dependency
+		target_link_libraries(ham_offload_vedma_ve PUBLIC ham_interface veos_system_libraries) # NOTE: no VEO dependency
 
 		add_library(ham_offload_vedma_ve_explicit # SHARED if BUILD_SHARED_LIBS = TRUE
 			        ${HAM_LIB_SRC}

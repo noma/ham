@@ -235,7 +235,7 @@ if (VEO_FOUND)
 	# will not build on host
 	if (HAM_NEC_COMPILER_DETECTED)
 		add_library(hello_nec_dma_veo_ve hello_nec_dma.cpp) # for static VEO lib
-		target_link_libraries(hello_nec_dma_veo_ve ${HAMLIB_VE} veos_musl_library)
+		target_link_libraries(hello_nec_dma_veo_ve ${HAMLIB_VE} veos_system_libraries)
 		set_property(TARGET hello_nec_dma_veo_ve PROPERTY POSITION_INDEPENDENT_CODE ON)
 		if (HAM_NEC_COMPILER_DETECTED)
 			add_custom_command(TARGET hello_nec_dma_veo_ve
@@ -334,7 +334,7 @@ if (VEO_FOUND)
 
 		# will not build on host
 		add_library(hello_nec_dma_vedma_ve hello_nec_dma.cpp) # for static VEO lib
-		target_link_libraries(hello_nec_dma_vedma_ve ${HAMLIB_VE} veos_musl_library)
+		target_link_libraries(hello_nec_dma_vedma_ve ${HAMLIB_VE} veos_system_libraries)
 		set_property(TARGET hello_nec_dma_vedma_ve PROPERTY POSITION_INDEPENDENT_CODE ON)
 		if (HAM_NEC_COMPILER_DETECTED)
 			add_custom_command(TARGET hello_nec_dma_vedma_ve

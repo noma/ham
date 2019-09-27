@@ -134,7 +134,7 @@ if (VEO_FOUND)
 		if (HAM_NEC_COMPILER_DETECTED)
 			add_custom_command(TARGET benchmark_ham_offload_vedma_ve
 					           POST_BUILD
-					           COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_benchmark_ham_offload_vedma ./libbenchmark_ham_offload_vedma_ve.a ./ham/libham_offload_vedma_ve.a ${MK_VEORUN_STATIC_LIBS}
+					           COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_benchmark_ham_offload_vedma ./libbenchmark_ham_offload_vedma_ve.a ./ham/libham_offload_vedma_ve.a ${MK_VEORUN_STATIC_LIBS})
 		endif ()
 	endif ()
 	
@@ -359,7 +359,7 @@ if (VEO_FOUND)
 		if (HAM_NEC_COMPILER_DETECTED)
 			add_custom_command(TARGET inner_product_vedma_ve
 					           POST_BUILD
-					           COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_inner_product_vedma ./libinner_product_vedma_ve.a ./ham/libham_offload_vedma_ve.a ${MK_VEORUN_STATIC_LIBS}))
+					           COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_inner_product_vedma ./libinner_product_vedma_ve.a ./ham/libham_offload_vedma_ve.a ${MK_VEORUN_STATIC_LIBS})
 		endif ()
 
 		add_library(test_data_transfer_vedma_ve test_data_transfer.cpp)

@@ -61,7 +61,7 @@ if (VEO_FOUND)
 	if (HAM_NEC_COMPILER_DETECTED)
 		# VEDMA benchmark
 		add_executable(benchmark_vedma_ve benchmark_vedma_ve.cpp)
-		target_link_libraries(benchmark_vedma_ve cli11_library noma_bmt)
+		target_link_libraries(benchmark_vedma_ve cli11_library noma_bmt veos_system_libraries)
 		
 		set_target_properties(benchmark_vedma_ve PROPERTIES
 			CXX_STANDARD 11

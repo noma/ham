@@ -1,5 +1,5 @@
 # Copyright (c) 2018 Marcel Ehrhardt <marcel.ehrhardt@fu-berlin.de>
-# Copyright (c) 2018 Matthias Noack <ma.noack.pr@gmail.com>
+# Copyright (c) 2018-2019 Matthias Noack <ma.noack.pr@gmail.com>
 #
 # See accompanying file LICENSE and README for further information.
 

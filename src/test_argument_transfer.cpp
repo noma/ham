@@ -19,7 +19,7 @@ T type_transfer_function(T arg)
 
 // performs the offload for one type and value
 template<typename T>
-bool test_type_invokation(offload::node_t target, T arg)
+bool test_type_invocation(offload::node_t target, T arg)
 {
 	T result = offload::sync(target, f2f(&type_transfer_function<T>, arg));
 	bool passed = result == arg;
@@ -31,7 +31,7 @@ bool test_type_invokation(offload::node_t target, T arg)
 template<typename... Ts>
 bool test_type_transfer(offload::node_t target, Ts... args)
 {
-	std::array<bool, sizeof...(Ts)> results = { {test_type_invokation(target, args)...} };
+	std::array<bool, sizeof...(Ts)> results = { {test_type_invocation(target, args)...} };
 	return std::all_of(std::begin(results), std::end(results), [](bool v) { return v; });
 }
 

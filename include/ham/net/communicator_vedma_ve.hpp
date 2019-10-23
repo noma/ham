@@ -341,7 +341,7 @@ private:
 		size_t chunks = size % chunk_size == 0 ? (size / chunk_size) : (size / chunk_size + 1);
 		for (size_t i = 0; i < chunks; ++i)
 			ve_inst_shm((void *)(remote_recv_buffer_vehva + sizeof(size_t) + i * chunk_size), *reinterpret_cast<uint64_t*>(msg) + i);
-//*/
+*/
 		// END: VERSION B
 
 		// set flag
@@ -431,7 +431,7 @@ private:
 		size_t chunks = size % chunk_size == 0 ? (size / chunk_size) : (size / chunk_size + 1);
 		for (size_t i = 0; i < chunks; ++i)
 			*(reinterpret_cast<uint64_t*>(local_recv_buffer_addr) + i) = ve_inst_lhm((void *)(remote_send_buffer_vehva + sizeof(size_t) + i * chunk_size));
-		//*/
+		*/
 		// END: VERSION B
 
 		//return (char*)local_recv_buffer_addr + sizeof(size_t);

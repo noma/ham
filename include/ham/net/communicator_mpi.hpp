@@ -66,8 +66,8 @@ public:
 	public:
 		request() : valid_(false) {} // instantiate invalid
 		
-		request(node_t target_node, node_t source_node, size_t send_buffer_index, size_t recv_buffer_index)
-		 : target_node(target_node), source_node(source_node), valid_(true), send_buffer_index(send_buffer_index), recv_buffer_index(recv_buffer_index), req_count(0)
+		request(node_t target_node, node_t source_node, size_t target_buffer_index, size_t source_buffer_index)
+		 : target_node(target_node), source_node(source_node), valid_(true), target_buffer_index(target_buffer_index), source_buffer_index(source_buffer_index), req_count(0)
 		{}
 
 		// return true if request was finished
@@ -83,7 +83,7 @@ public:
 			HAM_DEBUG( HAM_LOG << "request::get(), before MPI_Waitall()" << std::endl; )
 			MPI_Waitall(req_count, mpi_reqs, MPI_STATUS_IGNORE); // must wait for all requests to satisfy the standard
 			HAM_DEBUG( HAM_LOG << "request::get(), after MPI_Waitall()" << std::endl; )
-			return static_cast<void*>(&communicator::instance().peers[target_node].msg_buffers[recv_buffer_index]);
+			return static_cast<void*>(&communicator::instance().peers[target_node].msg_buffers[source_buffer_index]);
 		}
 
 		template<class T>
@@ -115,8 +115,8 @@ public:
 		// only needed by the sender
 		enum { NUM_REQUESTS = 3 };
 		
-		size_t send_buffer_index; // buffer to use for sending the message
-		size_t recv_buffer_index; // buffer to use for receiving the result
+		size_t target_buffer_index; // buffer to use for sending the message, "send_buffer_index"
+		size_t source_buffer_index; // buffer to use for receiving the result, "recv_buffer_index"
 		size_t req_count;
 		
 	private:
@@ -200,10 +200,10 @@ public:
 	{
 		HAM_DEBUG( HAM_LOG << "communicator::allocate_next_request(): remote_node = " << remote_node << std::endl; )
 
-		const size_t send_buffer_index = peers[remote_node].buffer_pool.allocate();
-		const size_t recv_buffer_index = peers[remote_node].buffer_pool.allocate();
+		const size_t target_buffer_index = peers[remote_node].buffer_pool.allocate();
+		const size_t source_buffer_index = peers[remote_node].buffer_pool.allocate();
 
-		return { remote_node, this_node_, send_buffer_index, recv_buffer_index };
+		return { remote_node, this_node_, target_buffer_index, source_buffer_index };
 	}
 
 	void free_request(request& req)
@@ -213,8 +213,8 @@ public:
 	
 		mpi_peer& peer = peers[req.target_node];
 
-		peer.buffer_pool.free(req.send_buffer_index);
-		peer.buffer_pool.free(req.recv_buffer_index);
+		peer.buffer_pool.free(req.target_buffer_index);
+		peer.buffer_pool.free(req.source_buffer_index);
 		req.valid_ = false;
 	}
 
@@ -222,7 +222,7 @@ public:
 	void send_msg(request_reference_type req, void* msg, size_t size)
 	{
 		// copy message from caller into transfer buffer
-		void* msg_buffer = static_cast<void*>(&peers[req.target_node].msg_buffers[req.send_buffer_index]);
+		void* msg_buffer = static_cast<void*>(&peers[req.target_node].msg_buffers[req.target_buffer_index]);
 		memcpy(msg_buffer, msg, size);
 		MPI_Isend(msg_buffer, size, MPI_BYTE, req.target_node, constants::DEFAULT_TAG, MPI_COMM_WORLD, &req.next_mpi_request());
 	}
@@ -242,7 +242,7 @@ public:
 	{
 		// nothing todo here, since this communicator implementation uses one-sided communication
 		// the data is already where it is expected (in the buffer referenced in req)
-		MPI_Irecv(static_cast<void*>(&peers[req.target_node].msg_buffers[req.recv_buffer_index]), constants::MSG_SIZE, MPI_BYTE, req.target_node, constants::RESULT_TAG, MPI_COMM_WORLD, &req.next_mpi_request());
+		MPI_Irecv(static_cast<void*>(&peers[req.target_node].msg_buffers[req.source_buffer_index]), constants::MSG_SIZE, MPI_BYTE, req.target_node, constants::RESULT_TAG, MPI_COMM_WORLD, &req.next_mpi_request());
 	}
 
 	template<typename T>

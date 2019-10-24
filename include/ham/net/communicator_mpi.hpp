@@ -132,7 +132,9 @@ public:
 		instance_ = this;
 		int p;
 		MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &p);
+		//MPI_Init_thread(&argc, &argv, MPI_THREAD_SERIALIZED, &p);
 		if (p != MPI_THREAD_MULTIPLE)
+		//if (p != MPI_THREAD_SERIALIZED)
 		{
 			std::cerr << "Could not initialise MPI with MPI_THREAD_MULTIPLE, MPI_Init_thread() returned " << p << std::endl;
 		}

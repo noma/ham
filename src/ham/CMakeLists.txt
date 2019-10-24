@@ -25,14 +25,14 @@ if (MPI_FOUND)
 	            ${HAM_LIB_SRC}
 	            offload/main.cpp
 	            net/communicator_mpi.cpp)
-	target_compile_definitions(ham_offload_mpi PUBLIC -DHAM_COMM_MPI=1)
+	target_compile_definitions(ham_offload_mpi PUBLIC HAM_COMM_MPI=1)
 	target_link_libraries(ham_offload_mpi PUBLIC ham_interface mpi_library)
 
 	add_library(ham_offload_mpi_explicit # SHARED if BUILD_SHARED_LIBS = TRUE
 	            ${HAM_LIB_SRC}
 	            offload/main_explicit.cpp
 	            net/communicator_mpi.cpp)
-	target_compile_definitions(ham_offload_mpi_explicit PUBLIC -DHAM_COMM_MPI=1 -DHAM_EXPLICIT=1)
+	target_compile_definitions(ham_offload_mpi_explicit PUBLIC HAM_COMM_MPI=1 HAM_EXPLICIT=1)
 	target_link_libraries(ham_offload_mpi_explicit PUBLIC ham_interface mpi_library)
 
 	set_target_properties(ham_offload_mpi ham_offload_mpi_explicit PROPERTIES
@@ -46,14 +46,14 @@ if (SCIF_FOUND)
 	            ${HAM_LIB_SRC}
 	            offload/main.cpp
 	            net/communicator_scif.cpp)
-	target_compile_definitions(ham_offload_scif PUBLIC -DHAM_COMM_SCIF=1)
+	target_compile_definitions(ham_offload_scif PUBLIC HAM_COMM_SCIF=1)
 	target_link_libraries(ham_offload_scif PUBLIC ham_interface scif_library)
 
 	add_library(ham_offload_scif_explicit # SHARED if BUILD_SHARED_LIBS = TRUE
 	            ${HAM_LIB_SRC}
 	            offload/main_explicit.cpp
 	            net/communicator_scif.cpp)
-	target_compile_definitions(ham_offload_scif_explicit PUBLIC -DHAM_COMM_SCIF=1 -DHAM_EXPLICIT=1)
+	target_compile_definitions(ham_offload_scif_explicit PUBLIC HAM_COMM_SCIF=1 HAM_EXPLICIT=1)
 	target_link_libraries(ham_offload_scif_explicit PUBLIC ham_interface scif_library)
 
 	set_target_properties(ham_offload_scif ham_offload_scif_explicit PROPERTIES
@@ -65,7 +65,7 @@ endif ()
 # NEC VEO backend
 if (VEO_FOUND)
 	SET(HAM_LIB_COMMON_CFLAGS HAM_COMM_VEO_STATIC) # for static VEO lib
-	SET(HAM_LIB_COMMON_CFLAGS "") # for shared VEO lib
+	# SET(HAM_LIB_COMMON_CFLAGS "") # for shared VEO lib (creates libnfort.so dependency for veorun)
 
 	# Vector Host libraries
 	if (NOT HAM_NEC_COMPILER_DETECTED)	
@@ -73,14 +73,14 @@ if (VEO_FOUND)
 			        ${HAM_LIB_SRC}
 			        offload/main.cpp
 			        net/communicator_veo.cpp net/communicator_veo_vh.cpp)
-		target_compile_definitions(ham_offload_veo_vh PUBLIC ${HAM_LIB_COMMON_CFLAGS} -DHAM_COMM_VEO=0) # NOTE: 0 is for vector host
+		target_compile_definitions(ham_offload_veo_vh PUBLIC ${HAM_LIB_COMMON_CFLAGS} HAM_COMM_VEO=0) # NOTE: 0 is for vector host
 		target_link_libraries(ham_offload_veo_vh PUBLIC ham_interface veo_library)
 
 		add_library(ham_offload_veo_vh_explicit # SHARED if BUILD_SHARED_LIBS = TRUE
 			        ${HAM_LIB_SRC}
 			        offload/main_explicit.cpp
 			        net/communicator_veo.cpp net/communicator_veo_vh.cpp)
-		target_compile_definitions(ham_offload_veo_vh_explicit PUBLIC ${HAM_LIB_COMMON_CFLAGS} -DHAM_COMM_VEO=0 -DHAM_EXPLICIT=1) # NOTE = 0 is for vector host
+		target_compile_definitions(ham_offload_veo_vh_explicit PUBLIC ${HAM_LIB_COMMON_CFLAGS} HAM_COMM_VEO=0 HAM_EXPLICIT=1) # NOTE = 0 is for vector host
 		target_link_libraries(ham_offload_veo_vh_explicit PUBLIC ham_interface veo_library)
 
 		set_target_properties(ham_offload_veo_vh ham_offload_veo_vh_explicit PROPERTIES
@@ -94,14 +94,14 @@ if (VEO_FOUND)
 	            ${HAM_LIB_SRC}
 	            offload/main.cpp
 	            net/communicator_veo.cpp net/communicator_veo_ve.cpp)
-	target_compile_definitions(ham_offload_veo_ve PUBLIC ${HAM_LIB_COMMON_CFLAGS} -DHAM_COMM_VEO=1) # NOTE: 1 is for vector engine
+	target_compile_definitions(ham_offload_veo_ve PUBLIC ${HAM_LIB_COMMON_CFLAGS} HAM_COMM_VEO=1) # NOTE: 1 is for vector engine
 	target_link_libraries(ham_offload_veo_ve PUBLIC ham_interface) # NOTE: no VEO dependency
 
 	add_library(ham_offload_veo_ve_explicit # SHARED if BUILD_SHARED_LIBS = TRUE
 	            ${HAM_LIB_SRC}
 	            offload/main_explicit.cpp
 	            net/communicator_veo.cpp net/communicator_veo_ve.cpp)
-	target_compile_definitions(ham_offload_veo_ve_explicit PUBLIC ${HAM_LIB_COMMON_CFLAGS} -DHAM_COMM_VEO=1 -DHAM_EXPLICIT=1) # NOTE = 1 is for vector engine
+	target_compile_definitions(ham_offload_veo_ve_explicit PUBLIC ${HAM_LIB_COMMON_CFLAGS} HAM_COMM_VEO=1 HAM_EXPLICIT=1) # NOTE = 1 is for vector engine
 	target_link_libraries(ham_offload_veo_ve_explicit PUBLIC ham_interface) # NOTE: no VEO dependency
 
 #	set_property(TARGET ham_offload_veo_ve PROPERTY POSITION_INDEPENDENT_CODE ON)
@@ -117,7 +117,7 @@ endif ()
 # NEC VEO + DMA Backend
 if (VEO_FOUND)
 	SET(HAM_LIB_COMMON_CFLAGS HAM_COMM_VEO_STATIC) # for static VEO lib
-	SET(HAM_LIB_COMMON_CFLAGS "") # for shared VEO lib
+	# SET(HAM_LIB_COMMON_CFLAGS "") # for shared VEO lib (creates libnfort.so dependency for veorun)
 
 	# Vector Host libraries
 	if (NOT HAM_NEC_COMPILER_DETECTED)
@@ -125,14 +125,14 @@ if (VEO_FOUND)
 			        ${HAM_LIB_SRC}
 			        offload/main.cpp
 			        net/communicator_vedma.cpp net/communicator_vedma_vh.cpp)
-		target_compile_definitions(ham_offload_vedma_vh PUBLIC ${HAM_LIB_COMMON_CFLAGS} -DHAM_COMM_VEDMA=0) # NOTE: 0 is for vector host
+		target_compile_definitions(ham_offload_vedma_vh PUBLIC ${HAM_LIB_COMMON_CFLAGS} HAM_COMM_VEDMA=0) # NOTE: 0 is for vector host
 		target_link_libraries(ham_offload_vedma_vh PUBLIC ham_interface veo_library)
 
 		add_library(ham_offload_vedma_vh_explicit # SHARED if BUILD_SHARED_LIBS = TRUE
 			        ${HAM_LIB_SRC}
 			        offload/main_explicit.cpp
 			        net/communicator_vedma.cpp net/communicator_vedma_vh.cpp)
-		target_compile_definitions(ham_offload_vedma_vh_explicit PUBLIC ${HAM_LIB_COMMON_CFLAGS} -DHAM_COMM_VEDMA=0 -DHAM_EXPLICIT=1) # NOTE = 0 is for vector host
+		target_compile_definitions(ham_offload_vedma_vh_explicit PUBLIC ${HAM_LIB_COMMON_CFLAGS} HAM_COMM_VEDMA=0 HAM_EXPLICIT=1) # NOTE = 0 is for vector host
 		target_link_libraries(ham_offload_vedma_vh_explicit PUBLIC ham_interface veo_library)
 
 		set_target_properties(ham_offload_vedma_vh ham_offload_vedma_vh_explicit PROPERTIES
@@ -147,14 +147,14 @@ if (VEO_FOUND)
 			        ${HAM_LIB_SRC}
 			        offload/main.cpp
 			        net/communicator_vedma.cpp net/communicator_vedma_ve.cpp)
-		target_compile_definitions(ham_offload_vedma_ve PUBLIC ${HAM_LIB_COMMON_CFLAGS} -DHAM_COMM_VEDMA=1) # NOTE: 1 is for vector engine
+		target_compile_definitions(ham_offload_vedma_ve PUBLIC ${HAM_LIB_COMMON_CFLAGS} HAM_COMM_VEDMA=1) # NOTE: 1 is for vector engine
 		target_link_libraries(ham_offload_vedma_ve PUBLIC ham_interface veos_system_libraries) # NOTE: no VEO dependency
 
 		add_library(ham_offload_vedma_ve_explicit # SHARED if BUILD_SHARED_LIBS = TRUE
 			        ${HAM_LIB_SRC}
 			        offload/main_explicit.cpp
 			        net/communicator_vedma.cpp net/communicator_vedma_ve.cpp)
-		target_compile_definitions(ham_offload_vedma_ve_explicit PUBLIC ${HAM_LIB_COMMON_CFLAGS} -DHAM_COMM_VEDMA=1 -DHAM_EXPLICIT=1) # NOTE = 1 is for vector engine
+		target_compile_definitions(ham_offload_vedma_ve_explicit PUBLIC ${HAM_LIB_COMMON_CFLAGS} HAM_COMM_VEDMA=1 HAM_EXPLICIT=1) # NOTE = 1 is for vector engine
 		target_link_libraries(ham_offload_vedma_ve_explicit PUBLIC ham_interface) # NOTE: no VEO dependency
 
 	#	set_property(TARGET ham_offload_vedma_ve PROPERTY POSITION_INDEPENDENT_CODE ON)

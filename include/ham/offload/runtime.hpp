@@ -8,7 +8,7 @@
 
 #include "ham/net/communicator.hpp" // must be included first for Intel MPI
 
-//#include <atomic>
+#include <atomic>
 
 #include "ham/misc/types.hpp"
 #include "ham/msg/active_msg.hpp"
@@ -42,8 +42,7 @@ public:
 	void terminate_workers();
 	int run_receive();
 
-	//bool abort() { return abort_flag.exchange(true); }
-	bool abort() { return abort_flag = true; }
+	bool abort() { return abort_flag.exchange(true); }
 
 	static runtime& instance() { return *instance_; }
 
@@ -55,8 +54,7 @@ public:
 
 private:
 	static runtime* instance_;
-	//std::atomic_bool abort_flag;
-	bool abort_flag; // TODO: check if atomic is realy neccessary here
+	std::atomic_bool abort_flag;
 	net::communicator comm;
 };
 

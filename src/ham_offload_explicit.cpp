@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
 	// MPI-like SPMD programme, main() is run in all processes
 	std::cout << "ham offload test" << std::endl;
 	// explicitly initialise HAM-Offload
-	if (offload::ham_init(argc, argv)) // NOTE: ham_init returns true on the host process
+	if (offload::ham_init(&argc, &argv)) // NOTE: ham_init returns true on the host process
 	{
 		std::cout << "ham offload test" << std::endl;
 		for (size_t i = 0; i < offload::num_nodes(); ++i)

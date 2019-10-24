@@ -14,10 +14,10 @@ namespace offload {
 
 runtime* runtime::instance_ = nullptr;
 
-runtime::runtime(int argc, char* argv[]) : abort_flag(false), comm(argc, argv)
+runtime::runtime(int* argc_ptr, char** argv_ptr[]) : abort_flag(false), comm(argc_ptr, argv_ptr) // NOTE: communicator ctor, might change argc, argv values, e.g. MPI_Init
 {
 	HAM_DEBUG( HAM_LOG << "runtime::runtime()" << std::endl; )
-	ham::detail::options ham_options(argc, argv);
+	ham::detail::options ham_options(argc_ptr, argv_ptr);
 	if (ham_options.cpu_affinity() >= 0)
 		ham::util::set_cpu_affinity(ham_options.cpu_affinity());
 
@@ -30,12 +30,12 @@ runtime::~runtime()
 }
 
 // not needed if HAM_EXPLICIT is defined
-int runtime::run_main(int argc, char* argv[])
+int runtime::run_main(int* argc_ptr, char** argv_ptr[])
 {
 	// execute user main
 	HAM_DEBUG( HAM_LOG << "runtime::run_main: executing user_main" << std::endl; )
 	int result;
-	result = ham_user_main(argc, argv); // result is a reference to a local variable
+	result = ham_user_main(*argc_ptr, *argv_ptr); // result is a reference to a local variable
 	HAM_DEBUG( HAM_LOG << "runtime::run_main: user_main finished" << std::endl; )
 	terminate_workers();
 	return result;

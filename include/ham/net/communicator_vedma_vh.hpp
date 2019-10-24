@@ -26,7 +26,7 @@ namespace net {
 class communicator : public communicator_base<communicator> {
 	friend class communicator_base<communicator>; // allow request in base class to call functions from here
 public:
-	communicator(int argc, char* argv[]) : communicator_base(this)
+	communicator(int* argc_ptr, char** argv_ptr[]) : communicator_base(this)
 	{
 		HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: begin." << std::endl; )
 
@@ -63,7 +63,7 @@ public:
 //		else
 //		{
 //			// parse from command line
-//			boost::program_options::store(boost::program_options::command_line_parser(argc, argv).options(desc).allow_unregistered().run(), vm);
+//			boost::program_options::store(boost::program_options::command_line_parser(*argc_ptr, *argv_ptr).options(desc).allow_unregistered().run(), vm);
 //		}
 
 //		boost::program_options::notify(vm);
@@ -85,7 +85,7 @@ public:
 
 		// parse from command line
 		try {
-			app.parse(argc, argv);
+			app.parse(*argc_ptr, *argv_ptr);
 		} catch(const CLI::ParseError &e) {
 			app.exit(e);
 		}
@@ -159,7 +159,7 @@ public:
 				
 				// generate a key for an shm segment
 				constexpr size_t VE_PAGE_SIZE = 64 * 1024 * 1024; // assume 64 MiB pages on the VE side
-				peer.shm_key = ftok(argv[0], (int)getpid()); // generate unique key from application path and pid
+				peer.shm_key = ftok((*argv_ptr)[0], (int)getpid()); // generate unique key from application path and pid
 				
 				const size_t msg_buffers_size = constants::MSG_BUFFERS * sizeof(msg_buffer); // defaults to 4 KiB per msg 
 				const size_t msg_flags_size = constants::MSG_BUFFERS * sizeof(size_t); // 8 byte per flag
@@ -363,7 +363,7 @@ std::cerr << "got node desc" << std::endl;
 
 				// TODO: set up arguments (if needed) and do an async call
 				peer.veo_main_args = veo_args_alloc();
-				veo_args_set_stack(peer.veo_main_args, VEO_INTENT_IN, 0, (char *)&argc, sizeof(argc));
+				veo_args_set_stack(peer.veo_main_args, VEO_INTENT_IN, 0, (char *)argc_ptr, sizeof(*argc_ptr));
 				nullptr_t target_argv = nullptr;
 				// TODO: we set argv to nullptr until its needed, for deepcopying argv see: https://stackoverflow.com/questions/36804759/how-to-copy-argv-to-a-new-variable
 				veo_args_set_stack(peer.veo_main_args, VEO_INTENT_IN, 1, (char *)&target_argv, sizeof(nullptr_t)); 

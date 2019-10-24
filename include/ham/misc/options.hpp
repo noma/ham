@@ -19,7 +19,7 @@ std::vector<std::string> split(const std::string &s, char delim);
 
 class options {
 public:
-	options(int argc, char* argv[])
+	options(int* argc_ptr, char** argv_ptr[])
 	 : cpu_affinity_(-1)
 	{
 		// command line options
@@ -44,11 +44,11 @@ public:
 		{
 			// parse from command line
 			try {
-				app.parse(argc, argv);
+				app.parse(*argc_ptr, *argv_ptr);
 			} catch(const CLI::ParseError &e) {
 				app.exit(e);
 			}
-			//app.parse(argc, argv);
+			//app.parse(*argc_ptr, *argv_ptr);
 		}
 #endif
 	}

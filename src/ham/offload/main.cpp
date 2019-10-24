@@ -15,7 +15,7 @@
 namespace ham {
 namespace offload {
 
-int ham_main(int argc, char* argv[])
+int ham_main(int* argc_ptr, char** argv_ptr[])
 {
 	// the actual programme starts here
 	// assumption: there is one process per shared-memory-domain (or even numa-domain?)
@@ -27,14 +27,14 @@ int ham_main(int argc, char* argv[])
 
 	// init runtime/comm
 	HAM_DEBUG( std::cout << "HAM: initisalising runtime" << std::endl; )
-	ham::offload::runtime offload_runtime(argc, argv);
+	ham::offload::runtime offload_runtime(argc_ptr, argv_ptr);
 	HAM_DEBUG( std::cout << "HAM: initisalising runtime done" << std::endl; )
 
 	int result = 0; // for rank 0, this value is overwritten by UserMainFunctor::operator()()
 
 	if (offload_runtime.is_host())
 	{
-		result = offload_runtime.run_main(argc, argv);
+		result = offload_runtime.run_main(argc_ptr, argv_ptr);
 	}
 	else
 	{

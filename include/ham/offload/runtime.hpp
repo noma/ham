@@ -34,10 +34,10 @@ public:
 		}
 	};
 
-	runtime(int argc, char* argv[]);
+	runtime(int* argc_ptr, char** argv_ptr[]);
 	~runtime();
 
-	int run_main(int argc, char* argv[]); // not needed if HAM_EXPLICIT is defined
+	int run_main(int* argc_ptr, char** argv_ptr[]); // not needed if HAM_EXPLICIT is defined
 
 	void terminate_workers();
 	int run_receive();

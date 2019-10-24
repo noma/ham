@@ -126,14 +126,14 @@ public:
 	using request_reference_type = request&;
 	using request_const_reference_type = const request&;
 
-	communicator(int argc, char* argv[])
+	communicator(int* argc_ptr, char** argv_ptr[])
 	{
 		HAM_DEBUG( std::cout << "communicator::communicator(): initialising MPI" << std::endl; )
 
 		instance_ = this;
 		int p;
-		MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &p);
-		//MPI_Init_thread(&argc, &argv, MPI_THREAD_SERIALIZED, &p);
+		MPI_Init_thread(argc_ptr, argv_ptr, MPI_THREAD_MULTIPLE, &p);
+		//MPI_Init_thread(argc_ptr, argv_ptr, MPI_THREAD_SERIALIZED, &p);
 		if (p != MPI_THREAD_MULTIPLE)
 		//if (p != MPI_THREAD_SERIALIZED)
 		{

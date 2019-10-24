@@ -1,5 +1,5 @@
 # Copyright (c) 2018 Marcel Ehrhardt <marcel.ehrhardt@fu-berlin.de>
-# Copyright (c) 2018 Matthias Noack <ma.noack.pr@gmail.com>
+# Copyright (c) 2018-2019 Matthias Noack <ma.noack.pr@gmail.com>
 #
 # See accompanying file LICENSE and README for further information.
 
@@ -11,6 +11,7 @@ add_library(ham_interface INTERFACE)
 target_compile_features(ham_interface INTERFACE cxx_auto_type cxx_range_for cxx_variadic_templates)
 target_link_libraries(ham_interface INTERFACE noma_bmt boost_library cli11_library)
 target_include_directories(ham_interface INTERFACE ${CMAKE_CURRENT_LIST_DIR}/../../include)
+target_compile_definitions(ham_interface INTERFACE $<$<CONFIG:DEBUG>:HAM_DEBUG_ON> HAM_LOG_NODE_PREFIX)
 
 set(HAM_LIB_SRC
 	misc/options.cpp
@@ -63,9 +64,8 @@ endif ()
 
 # NEC VEO backend
 if (VEO_FOUND)
-# TODO: remove -msched=none, set to reduce compile time with NCC
-	SET(HAM_LIB_COMMON_CFLAGS $<$<CONFIG:DEBUG>:HAM_DEBUG_ON> -DHAM_LOG_NODE_PREFIX -DHAM_COMM_VEO_STATIC) # for static VEO lib
-#	SET(HAM_LIB_COMMON_CFLAGS $<$<CONFIG:DEBUG>:HAM_DEBUG_ON> -DHAM_LOG_NODE_PREFIX) # for shared VEO lib
+	SET(HAM_LIB_COMMON_CFLAGS HAM_COMM_VEO_STATIC) # for static VEO lib
+	SET(HAM_LIB_COMMON_CFLAGS "") # for shared VEO lib
 
 	# Vector Host libraries
 	if (NOT HAM_NEC_COMPILER_DETECTED)	
@@ -114,12 +114,10 @@ if (VEO_FOUND)
 		CXX_EXTENSIONS NO)
 endif ()
 
-
 # NEC VEO + DMA Backend
 if (VEO_FOUND)
-# TODO: remove -msched=none, set to reduce compile time with NCC
-	SET(HAM_LIB_COMMON_CFLAGS $<$<CONFIG:DEBUG>:HAM_DEBUG_ON> -DHAM_LOG_NODE_PREFIX -DHAM_COMM_VEO_STATIC) # for static VEO lib
-#	SET(HAM_LIB_COMMON_CFLAGS $<$<CONFIG:DEBUG>:HAM_DEBUG_ON> -DHAM_LOG_NODE_PREFIX) # for shared VEO lib
+	SET(HAM_LIB_COMMON_CFLAGS HAM_COMM_VEO_STATIC) # for static VEO lib
+	SET(HAM_LIB_COMMON_CFLAGS "") # for shared VEO lib
 
 	# Vector Host libraries
 	if (NOT HAM_NEC_COMPILER_DETECTED)

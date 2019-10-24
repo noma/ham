@@ -1,5 +1,5 @@
 # Copyright (c) 2018 Marcel Ehrhardt <marcel.ehrhardt@fu-berlin.de>
-# Copyright (c) 2018 Matthias Noack <ma.noack.pr@gmail.com>
+# Copyright (c) 2018-2019 Matthias Noack <ma.noack.pr@gmail.com>
 #
 # See accompanying file LICENSE and README for further information.
 
@@ -9,6 +9,17 @@ cmake_minimum_required(VERSION 3.2 FATAL_ERROR) # TODO verfify
 # set output directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 message(STATUS "CMAKE_BINARY_DIR: " ${CMAKE_BINARY_DIR})
+
+# set default build type to "Release"
+set(HAM_DEFAULT_BUILD_TYPE "Release")
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+	message(STATUS "Setting build type to '${HAM_DEFAULT_BUILD_TYPE}' as none was specified.")
+	set(CMAKE_BUILD_TYPE "${HAM_DEFAULT_BUILD_TYPE}" CACHE
+			STRING "Choose the type of build." FORCE)
+	# set the possible values of build type for CMake-GUI
+	set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+			"Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
 
 # special compiler detect NEC compiler for VEO backend
 get_filename_component(HAM_CXX_COMPILER_EXE ${CMAKE_CXX_COMPILER} NAME)

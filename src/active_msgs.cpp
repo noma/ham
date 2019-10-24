@@ -12,6 +12,17 @@
 
 using namespace std;
 
+namespace ham {
+namespace net {
+
+// dummy, as this example does not use any communication backend
+node_t this_node() {
+	return 0;
+}
+
+} // namespace net
+} // namespace ham
+
 // some message types, for each of which a message handler is generated and registered
 
 class MsgA : public ham::msg::active_msg<MsgA> {

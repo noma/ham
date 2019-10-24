@@ -36,11 +36,11 @@ class buffer_ptr
 {
 public:
 	buffer_ptr();
-	buffer_ptr(T* ptr, node_t node, off_t offset, size_t size) : ptr_(ptr), node_(node), offset_(offset), size_(size) { }
+	buffer_ptr(T* ptr, node_t node, off_t offset, size_t registered_size) : ptr_(ptr), node_(node), offset_(offset), registered_size_(registered_size) { }
 
 	T* get() const { return ptr_; }
 	off_t offset() const { return offset_; }
-	size_t size() const { return size_; }
+	size_t registered_size() const { return registered_size_; }
 	node_t node() const { return node_; }
 
 	// TODO(improvement): too dangerous?
@@ -54,14 +54,14 @@ public:
 	buffer_ptr<T> operator+(size_t off)
 	{
 		size_t byte = off * sizeof(T);
-		return buffer_ptr(ptr_ + off, node_, offset_ + byte, size_ - byte);
+		return buffer_ptr(ptr_ + off, node_, offset_ + byte, registered_size_ - byte);
 	}
 
 private:
 	T* ptr_;
 	node_t node_;
 	off_t offset_; // SCIF offset inside registered window
-	size_t size_; // registered size
+	size_t registered_size_; // SCIF window registered size, >= actual buffer
 };
 
 class node_descriptor
@@ -243,9 +243,9 @@ public:
 				errno_handler(err, "scif_send local_flags");
 
 				// map remote buffers
-				peer.mapped_remote_buffers = static_cast<msg_buffer*>(scif_mmap(0, peer.remote_buffers.size(), SCIF_PROT_WRITE | SCIF_PROT_READ, 0, peer.endpoint, peer.remote_buffers.offset()));
+				peer.mapped_remote_buffers = static_cast<msg_buffer*>(scif_mmap(0, peer.remote_buffers.registered_size(), SCIF_PROT_WRITE | SCIF_PROT_READ, 0, peer.endpoint, peer.remote_buffers.offset()));
 				errno_handler(SCIF_MMAP_FAILED == peer.mapped_remote_buffers ? -1 : 0, "scif_mmap buffers");
-				peer.mapped_remote_flags = static_cast<cache_line_buffer*>(scif_mmap(0, peer.remote_flags.size(), SCIF_PROT_WRITE | SCIF_PROT_READ, 0, peer.endpoint, peer.remote_flags.offset()));
+				peer.mapped_remote_flags = static_cast<cache_line_buffer*>(scif_mmap(0, peer.remote_flags.registered_size(), SCIF_PROT_WRITE | SCIF_PROT_READ, 0, peer.endpoint, peer.remote_flags.offset()));
 				errno_handler(SCIF_MMAP_FAILED == peer.mapped_remote_flags ? -1 : 0, "scif_mmap flags");
 
 				// fill resource pools
@@ -303,9 +303,9 @@ public:
 			errno_handler(err, "scif_recv remote_flags");
 
 			// map remote buffers
-			host_peer.mapped_remote_buffers = static_cast<msg_buffer*>(scif_mmap(0, host_peer.remote_buffers.size(), SCIF_PROT_WRITE | SCIF_PROT_READ, 0, host_peer.endpoint, host_peer.remote_buffers.offset()));
+			host_peer.mapped_remote_buffers = static_cast<msg_buffer*>(scif_mmap(0, host_peer.remote_buffers.registered_size(), SCIF_PROT_WRITE | SCIF_PROT_READ, 0, host_peer.endpoint, host_peer.remote_buffers.offset()));
 			errno_handler(SCIF_MMAP_FAILED == host_peer.mapped_remote_buffers ? -1 : 0, "scif_mmap buffers");
-			host_peer.mapped_remote_flags = static_cast<cache_line_buffer*>(scif_mmap(0, host_peer.remote_flags.size(), SCIF_PROT_WRITE | SCIF_PROT_READ, 0, host_peer.endpoint, host_peer.remote_flags.offset()));
+			host_peer.mapped_remote_flags = static_cast<cache_line_buffer*>(scif_mmap(0, host_peer.remote_flags.registered_size(), SCIF_PROT_WRITE | SCIF_PROT_READ, 0, host_peer.endpoint, host_peer.remote_flags.offset()));
 			errno_handler(SCIF_MMAP_FAILED == host_peer.mapped_remote_flags ? -1 : 0, "scif_mmap flags");
 
 			// send own node_descriptor to host
@@ -335,9 +335,9 @@ public:
 					free_buffer(peer.local_flags);
 					// unmap remote memory
 					int err;
-					err = scif_munmap(peer.mapped_remote_buffers, peer.remote_buffers.size());
+					err = scif_munmap(peer.mapped_remote_buffers, peer.remote_buffers.registered_size());
 					errno_handler(err, "scif_munmap buffers");
-					err = scif_munmap(peer.mapped_remote_flags, peer.remote_flags.size());
+					err = scif_munmap(peer.mapped_remote_flags, peer.remote_flags.registered_size());
 					errno_handler(err, "scif_munmap flags");
 				}
 			}
@@ -350,9 +350,9 @@ public:
 			free_buffer(host_peer.local_flags);
 			// unmap remote memory
 			int err;
-			err = scif_munmap(host_peer.mapped_remote_buffers, host_peer.remote_buffers.size());
+			err = scif_munmap(host_peer.mapped_remote_buffers, host_peer.remote_buffers.registered_size());
 			errno_handler(err, "scif_munmap buffers");
-			err = scif_munmap(host_peer.mapped_remote_flags, host_peer.remote_flags.size());
+			err = scif_munmap(host_peer.mapped_remote_flags, host_peer.remote_flags.registered_size());
 			errno_handler(err, "scif_munmap flags");
 		}
 
@@ -562,7 +562,7 @@ public:
 		assert(ptr.node() == ham_address);
 		// NOTE: no ctor calls (buffer vs. array)
 		//delete [] ptr;
-		scif_unregister(peers[ptr.node()].endpoint, ptr.offset(), ptr.size());
+		scif_unregister(peers[ptr.node()].endpoint, ptr.offset(), ptr.registered_size());
 		free((void*)ptr.get());
 	}
 

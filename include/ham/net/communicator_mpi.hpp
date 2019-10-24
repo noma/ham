@@ -11,6 +11,7 @@
 #include <cassert>
 #include <cstring> // memcpy
 #include <cstdlib> // posix_memalign
+#include <cerrno> // posix_memalign returns
 
 #include "ham/misc/constants.hpp"
 #include "ham/misc/resource_pool.hpp"
@@ -275,9 +276,24 @@ public:
 	buffer_ptr<T> allocate_buffer(const size_t n, node_t source_node)
 	{
 		HAM_UNUSED_VAR(source_node); // NOTE: might be needed in other communicator implementations
-		T* ptr;
-		//int err =
+		T* ptr = nullptr;
+		int err =
 		posix_memalign((void**)&ptr, constants::CACHE_LINE_SIZE, n * sizeof(T));
+
+		if (err != 0) {
+			switch (err) {
+				case EINVAL:
+					HAM_LOG << "allocate_buffer(): The alignment argument was not a power of two, or was not a multiple of sizeof(void *)." << std::endl;
+					break;
+				case ENOMEM:
+					HAM_LOG << "allocate_buffer(): There was insufficient memory to fulfill the allocation request." << std::endl;
+					break;
+				default:
+					HAM_LOG << "allocate_buffer(): Unknown error." << std::endl;
+					break;
+			}
+		}
+
 		// NOTE: no ctor is called
 		return buffer_ptr<T>(ptr, this_node_);
 	}

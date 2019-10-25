@@ -3,10 +3,10 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef ham_net_communicator_veo_vh_hpp
-#define ham_net_communicator_veo_vh_hpp
+#ifndef ham_net_communicator_veo_vedma_vh_hpp
+#define ham_net_communicator_veo_vedma_vh_hpp
 
-#include "ham/net/communicator_veo.hpp"
+#include "ham/net/communicator_veo_base.hpp"
 #include "ham/misc/options.hpp"
 
 #include <algorithm>
@@ -14,6 +14,11 @@
 #include <string.h> // strncpy
 #include <ve_offload.h>
 
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <sys/stat.h>
 
 namespace ham {
 namespace net {
@@ -21,69 +26,22 @@ namespace net {
 class communicator : public communicator_base<communicator> {
 	friend class communicator_base<communicator>; // allow request in base class to call functions from here
 public:
-	communicator(int* argc_ptr, char** argv_ptr[]) : communicator_base(this)
+	communicator(communicator_options& comm_options)
+	: communicator_base(this),
+	  //comm_options(comm_options),
+	  ham_process_count(comm_options.ham_process_count()),
+	  ham_host_address(comm_options.ham_host_address()),
+	  ham_address(0), // this process' address
+	  veo_library_path(comm_options.veo_library_path()),
+	  veo_ve_nodes(comm_options.veo_ve_nodes())
 	{
 		HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: begin." << std::endl; )
 
-// TODO: setup command line configuration if needed
-//		// command line configuration
-//		ham_process_count = num_nodes_; // number of participating processes
-//		ham_address = self; // this processes' address
-//		ham_host_address = 0; // the address of the host process
-//		ham_host_node = 0; // SCIF network node of the host process, default is 0 (which is the host machines)
-
-//		// command line options
-//		boost::program_options::options_description desc("HAM Options");
-//		desc.add_options()
-//			("ham-help", "Shows this message")
-//			("ham-process-count", boost::program_options::value(&ham_process_count)->default_value(ham_process_count), "Number of processes the job consists of.")
-//			("ham-address", boost::program_options::value(&ham_address)->default_value(ham_address), "This processes address, between 0 and host-process-count minus 1.")
-//			("ham-host-node", boost::program_options::value(&ham_host_node)->default_value(ham_host_node), "The SCIF network node on which the host process is started (0, the host machine by default).")
-//			("ham-host-address", boost::program_options::value(&ham_host_address)->default_value(ham_host_address), "The address of the host process (0 by default). NOTE: Not implemented yet.")
-//		;
-
-//		boost::program_options::variables_map vm;
-
-//		// NOTE: no try-catch here to avoid exceptions, that cause offload-dependencies to boost exception in the MIC code
-//		const char* options_env = std::getenv("HAM_OPTIONS");
-//		if (options_env)
-//		{
-//			char split_character = ' ';
-//			if (std::getenv("HAM_OPTIONS_NO_SPACES")) // value does not matter
-//				split_character = '_';
-
-//			// parse from environment
-//			boost::program_options::store(boost::program_options::command_line_parser(detail::options::split(std::string(options_env), split_character)).options(desc).allow_unregistered().run(), vm);
-//		}
-//		else
-//		{
-//			// parse from command line
-//			boost::program_options::store(boost::program_options::command_line_parser(*argc_ptr, *argv_ptr).options(desc).allow_unregistered().run(), vm);
-//		}
-
-//		boost::program_options::notify(vm);
-
-//		if(vm.count("ham-help"))
-//		{
-//			std::cout << desc << std::endl;
-//			exit(0);
-//		}
-
-
-		// command line options
-		CLI::App app("HAM VEO VH Options");
-		app.allow_extras(); // allow other options
-		app.add_option("--ham-process-count", ham_process_count, "Number of processes the job consists of (number of targets + 1).");
-		app.add_option("--ham-host-address", ham_host_address, "The address of the host process (0 by default).");
-		app.add_option("--ham-veo-ve-lib", veo_library_path, "Path to the VEO VE library of the application.");
-		app.add_option("--ham-veo-ve-nodes", veo_ve_nodes, "VE Nodes to be used as offload targets, comma separated list, no spaces.");
-
-		// parse from command line
-		try {
-			app.parse(*argc_ptr, *argv_ptr);
-		} catch(const CLI::ParseError &e) {
-			app.exit(e);
-		}
+		// get everything we need from comm_options
+		ham_host_address
+		ham_process_count
+		veo_library_path = comm_options.
+		veo_ve_nodes = comm_options.veo_ve_nodes()
 
 		ham_address = ham_host_address; // we are the host
 
@@ -149,21 +107,77 @@ public:
 				// VEO context
 				peer.veo_main_context = veo_context_open(peer.veo_proc);
 				HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: veo_context_open() returned ctx: " << peer.veo_main_context << std::endl; );
+
+// ###################### BEGIN TODO ######################
 				
-				// allocate local communication buffers
-				peer.recv_buffers = allocate_buffer<msg_buffer>(constants::MSG_BUFFERS, ham_address); // local host memory
+				// generate a key for an shm segment
+				constexpr size_t VE_PAGE_SIZE = 64 * 1024 * 1024; // assume 64 MiB pages on the VE side
+				peer.shm_key = ftok((*argv_ptr)[0], (int)getpid()); // generate unique key from application path and pid
+				
+				const size_t msg_buffers_size = constants::MSG_BUFFERS * sizeof(msg_buffer); // defaults to 4 KiB per msg 
+				const size_t msg_flags_size = constants::MSG_BUFFERS * sizeof(size_t); // 8 byte per flag
+				
+				// segment size: send/recv buffers + flags
+				size_t size_required = 2 * (msg_buffers_size + msg_flags_size);
+				// rounded to full pages
+				size_t shm_size = round_to_full_pages(size_required, VE_PAGE_SIZE);
 
-				// allocate communication buffers on the target
-				err = veo_alloc_mem(peer.veo_proc, &peer.local_buffers_addr, sizeof(msg_buffer) * constants::MSG_BUFFERS);
-				errno_handler(err, "veo_alloc_mem(local_buffers_addr)");
-				err = veo_alloc_mem(peer.veo_proc, &peer.local_flags_addr, sizeof(cache_line_buffer) * constants::MSG_BUFFERS);
-				errno_handler(err, "veo_alloc_mem(local_flags_addr)");
+				std::cout << "VH: (shm_key = " << peer.shm_key << ", shm_size = " << shm_size << ")" << std::endl;
+				
+				// create an shm segment
+				peer.shm_id = shmget(peer.shm_key, shm_size, IPC_CREAT | SHM_HUGETLB | S_IRWXU); 
+				assert(peer.shm_id != -1);
+					
+				// optional: get shm infomration
+				err = shmctl(peer.shm_id, IPC_STAT, &(peer.shm_ds));
+				assert(err != -1);
+				std::cout << "VH: (shm_ds.shm_perm.__key = " << peer.shm_ds.shm_perm.__key << ")" << std::endl;
+				
+				// attach shared memory to VH address space
+				peer.shm_local_addr = nullptr;
+				peer.shm_local_addr = shmat(peer.shm_id, NULL, 0);
+				std::cout << "VH: shm_local_addr = " << (uint64_t)peer.shm_local_addr << std::endl;
+				// NOTE: local_addr can now be used
+				
+				// TODO: setup buffer data structures below
+				// NOTE: assumed SHM layout
+				// message buffers remote
+				// message buffers local
+				// message flags remote
+				// message flags local
 
-				err = veo_alloc_mem(peer.veo_proc, &peer.remote_buffers_addr, sizeof(msg_buffer) * constants::MSG_BUFFERS);
-				errno_handler(err, "veo_alloc_mem(remote_buffers_addr)");
-				err = veo_alloc_mem(peer.veo_proc, &peer.remote_flags_addr, sizeof(cache_line_buffer) * constants::MSG_BUFFERS);
-				errno_handler(err, "veo_alloc_mem(remote_flags_addr)");
+				// assign remote buffers used to send data inside SHM
+				peer.remote_buffers = buffer_ptr<msg_buffer>(reinterpret_cast<msg_buffer*>(peer.shm_local_addr), ham_address);
+				peer.remote_flags   = buffer_ptr<size_t>(reinterpret_cast<size_t*>(peer.shm_local_addr + (2 * msg_buffers_size)), ham_address);
 
+				// assign local buffers used to recv data inside SHM
+				peer.local_buffers = buffer_ptr<msg_buffer>(reinterpret_cast<msg_buffer*>(peer.shm_local_addr + msg_buffers_size), ham_address);
+				peer.local_flags   = buffer_ptr<size_t>(reinterpret_cast<size_t*>(peer.shm_local_addr + (2 * msg_buffers_size + msg_flags_size)), ham_address);
+				
+				auto reset_flags = [](buffer_ptr<size_t> flags) {
+					size_t fill_value = FLAG_FALSE;
+					// set all flags to fill_value
+					std::fill(flags.get(), flags.get() + constants::MSG_BUFFERS, fill_value);
+				};
+				
+				reset_flags(peer.remote_flags);
+				reset_flags(peer.local_flags);
+
+//				// allocate local communication buffers
+//				peer.recv_buffers = allocate_buffer<msg_buffer>(constants::MSG_BUFFERS, ham_address); // local host memory
+
+//				// allocate communication buffers on the target
+//				err = veo_alloc_mem(peer.veo_proc, &peer.local_buffers_addr, sizeof(msg_buffer) * constants::MSG_BUFFERS);
+//				errno_handler(err, "veo_alloc_mem(local_buffers_addr)");
+//				err = veo_alloc_mem(peer.veo_proc, &peer.local_flags_addr, sizeof(cache_line_buffer) * constants::MSG_BUFFERS);
+//				errno_handler(err, "veo_alloc_mem(local_flags_addr)");
+
+//				err = veo_alloc_mem(peer.veo_proc, &peer.remote_buffers_addr, sizeof(msg_buffer) * constants::MSG_BUFFERS);
+//				errno_handler(err, "veo_alloc_mem(remote_buffers_addr)");
+//				err = veo_alloc_mem(peer.veo_proc, &peer.remote_flags_addr, sizeof(cache_line_buffer) * constants::MSG_BUFFERS);
+//				errno_handler(err, "veo_alloc_mem(remote_flags_addr)");
+
+// TODO: naming etc..
 				// lambda to set allocated addresses at target
 				auto set_target_address = [&](const char* func_name, uint64_t addr) {
 					struct veo_args *argp = veo_args_alloc();
@@ -180,17 +194,27 @@ public:
 					veo_args_free(argp);
 				};
 
-				//uint64_t ham_comm_veo_ve_local_buffers_addr(uint64_t addr);
-				set_target_address("ham_comm_veo_ve_local_buffers_addr", peer.local_buffers_addr);
+				//uint64_t ham_comm_veo_ve_shm_key(uint64_t key);
+				set_target_address("ham_comm_veo_ve_shm_key", peer.shm_key);
 
-				//uint64_t ham_comm_veo_ve_local_flags_addr(uint64_t addr);
-				set_target_address("ham_comm_veo_ve_local_flags_addr", peer.local_flags_addr);
-			
-				//uint64_t ham_comm_veo_ve_remote_buffers_addr(uint64_t addr);
-				set_target_address("ham_comm_veo_ve_remote_buffers_addr", peer.remote_buffers_addr);
-			
-				//uint64_t ham_comm_veo_ve_remote_flags_addr(uint64_t addr);
-				set_target_address("ham_comm_veo_ve_remote_flags_addr", peer.remote_flags_addr);
+				//uint64_t ham_comm_veo_ve_shm_size(uint64_t size);
+				set_target_address("ham_comm_veo_ve_shm_size", shm_size);
+
+//				//uint64_t ham_comm_veo_ve_local_buffers_addr(uint64_t addr);
+//				set_target_address("ham_comm_veo_ve_local_buffers_addr", peer.local_buffers_addr);
+
+//				//uint64_t ham_comm_veo_ve_local_flags_addr(uint64_t addr);
+//				set_target_address("ham_comm_veo_ve_local_flags_addr", peer.local_flags_addr);
+//			
+//				//uint64_t ham_comm_veo_ve_remote_buffers_addr(uint64_t addr);
+//				set_target_address("ham_comm_veo_ve_remote_buffers_addr", peer.remote_buffers_addr);
+//			
+//				//uint64_t ham_comm_veo_ve_remote_flags_addr(uint64_t addr);
+//				set_target_address("ham_comm_veo_ve_remote_flags_addr", peer.remote_flags_addr);
+
+
+
+// ###################### END TODO ######################
 
 				// fill resource pools
 				for (size_t j = constants::MSG_BUFFERS; j > 0; --j) {
@@ -198,10 +222,10 @@ public:
 					peer.local_buffer_pool.add(j-1);
 				}
 
-				HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator(VH): node " << i << " host_peer.local_buffers_addr = "  << peer.local_buffers_addr << std::endl; )
-				HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator(VH): node " << i << " host_peer.local_flags_addr = "    << peer.local_flags_addr << std::endl; )
-				HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator(VH): node " << i << " host_peer.remote_buffers_addr = " << peer.remote_buffers_addr << std::endl; )
-				HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator(VH): node " << i << " host_peer.remote_flags_addr = "   << peer.remote_flags_addr << std::endl; )
+//				HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator(VH): node " << i << " host_peer.local_buffers_addr = "  << peer.local_buffers_addr << std::endl; )
+//				HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator(VH): node " << i << " host_peer.local_flags_addr = "    << peer.local_flags_addr << std::endl; )
+//				HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator(VH): node " << i << " host_peer.remote_buffers_addr = " << peer.remote_buffers_addr << std::endl; )
+//				HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator(VH): node " << i << " host_peer.remote_flags_addr = "   << peer.remote_flags_addr << std::endl; )
 
 				// allocate the first request to be used for the next send
 				allocate_next_request(i);
@@ -320,7 +344,23 @@ std::cerr << "got node desc" << std::endl;
 			{
 				veo_peer& peer = peers[i];
 				int err = 0;
-							
+
+				// wait for VE side to detach
+				do {
+					shmctl(peer.shm_id, IPC_STAT, &peer.shm_ds);
+					if (peer.shm_ds.shm_nattch == 1)
+						break;
+				} while (1);
+
+				
+				// detach SHM 
+				err = shmdt(peer.shm_local_addr);
+				assert(err == 0);
+				// delete SHM
+				err = shmctl(peer.shm_id, IPC_RMID, NULL);
+				if (err < 0)
+					std::cout << "Failed to remove SHM segment ID " << peer.shm_id << std::endl;	
+
 				// sync on offloaded main()
 				int ret;
 				uint64_t retval;
@@ -330,14 +370,14 @@ std::cerr << "got node desc" << std::endl;
 				// free VEO resources
 				veo_args_free(peer.veo_main_args);
 
-				err = veo_free_mem(peer.veo_proc, peer.local_buffers_addr);
-				assert(err == 0);
-				err = veo_free_mem(peer.veo_proc, peer.local_flags_addr);
-				assert(err == 0);
-				err = veo_free_mem(peer.veo_proc, peer.remote_buffers_addr);
-				assert(err == 0);
-				err = veo_free_mem(peer.veo_proc, peer.remote_flags_addr);
-				assert(err == 0);
+//				err = veo_free_mem(peer.veo_proc, peer.local_buffers_addr);
+//				assert(err == 0);
+//				err = veo_free_mem(peer.veo_proc, peer.local_flags_addr);
+//				assert(err == 0);
+//				err = veo_free_mem(peer.veo_proc, peer.remote_buffers_addr);
+//				assert(err == 0);
+//				err = veo_free_mem(peer.veo_proc, peer.remote_flags_addr);
+//				assert(err == 0);
 
 
 				err = veo_context_close(peer.veo_main_context);
@@ -356,8 +396,8 @@ protected:
 	{
 		HAM_DEBUG( HAM_LOG << "communicator(VH)::allocate_next_request(): remote_node = " << remote_node << std::endl; )
 
-		const size_t remote_buffer_index = peers[remote_node].remote_buffer_pool.allocate();
-		const size_t local_buffer_index = peers[remote_node].local_buffer_pool.allocate();
+		const size_t remote_buffer_index = peers[remote_node].remote_buffer_pool.allocate(); // target_buffer_index
+		const size_t local_buffer_index = peers[remote_node].local_buffer_pool.allocate();   // source_buffer_index
 
 		{
 			HAM_DEBUG(
@@ -399,24 +439,31 @@ public:
 		veo_peer& peer = peers[req.target_node];
 
 		// set flags
+		size_t* local_flag  = &peer.local_flags.get()[req.source_buffer_index];
+		size_t* remote_flag = &peer.remote_flags.get()[req.target_buffer_index];
+		*local_flag = FLAG_FALSE;
+		*remote_flag = FLAG_FALSE;
+
+
+		// set flags
 //		volatile size_t* local_flag = reinterpret_cast<size_t*>(&peer.local_flags.get()[req.source_buffer_index]);
 //		volatile size_t* remote_flag = reinterpret_cast<size_t*>(&peer.remote_flags[req.target_buffer_index]);
 //		*local_flag = FLAG_FALSE;
 //		*remote_flag = FLAG_FALSE;
 //		_mm_sfence(); // make preceding stores globally visible
 		// TODO:
-		size_t flag_value = FLAG_FALSE;
-		uint64_t local_flag_addr = peer.local_flags_addr + sizeof(cache_line_buffer) * req.target_buffer_index; // used by send
-		uint64_t remote_flag_addr = peer.remote_flags_addr + sizeof(cache_line_buffer) * req.source_buffer_index; // used by recv
+//		size_t flag_value = FLAG_FALSE;
+//		uint64_t local_flag_addr = peer.local_flags_addr + sizeof(cache_line_buffer) * req.target_buffer_index; // used by send
+//		uint64_t remote_flag_addr = peer.remote_flags_addr + sizeof(cache_line_buffer) * req.source_buffer_index; // used by recv
 
-		errno_handler(
-			veo_write_mem(peer.veo_proc, local_flag_addr, (const void*)&flag_value, sizeof(size_t)), 
-			"veo_write_mem(local_flag) inside free_request()"
-		);
-		errno_handler(
-			veo_write_mem(peer.veo_proc, remote_flag_addr, (const void*)&flag_value, sizeof(size_t)), 
-			"veo_write_mem(remote_flag) inside free_request()"
-		);
+//		errno_handler(
+//			veo_write_mem(peer.veo_proc, local_flag_addr, (const void*)&flag_value, sizeof(size_t)), 
+//			"veo_write_mem(local_flag) inside free_request()"
+//		);
+//		errno_handler(
+//			veo_write_mem(peer.veo_proc, remote_flag_addr, (const void*)&flag_value, sizeof(size_t)), 
+//			"veo_write_mem(remote_flag) inside free_request()"
+//		);
 
 		// pool indices
 		peer.remote_buffer_pool.free(req.target_buffer_index);
@@ -446,6 +493,29 @@ protected:
 	{
 		HAM_DEBUG( HAM_LOG << "communicator(VH)::send_msg(): node =  " << node << std::endl; )
 		HAM_DEBUG( HAM_LOG << "communicator(VH)::send_msg(): remote buffer index = " << buffer_index << std::endl; )
+
+		// write into local SHM memory
+		char* remote_buffer = reinterpret_cast<char*>(&peers[node].remote_buffers[buffer_index]);
+		volatile size_t* remote_flag = reinterpret_cast<size_t*>(&peers[node].remote_flags[buffer_index]);
+		HAM_DEBUG( HAM_LOG << "communicator(VH)::send_msg(): remote buffer is: " << (void*)remote_buffer << std::endl; )
+		HAM_DEBUG( HAM_LOG << "communicator(VH)::send_msg(): remote flag is: " << (void*)remote_flag << std::endl; )
+
+		HAM_DEBUG( HAM_LOG << "communicator(VH)::send_msg(): sending message of size: " << size << std::endl; )
+		// copy to remote memory
+		memcpy((char*)remote_buffer, (void*)&size, sizeof(size_t)); // size = header
+
+		HAM_DEBUG( HAM_LOG << "communicator(VH)::send_msg(): sending message" << std::endl; )
+		memcpy((char*)remote_buffer + sizeof(size_t), msg , size);
+// TODO: do fences help?
+		_mm_sfence(); // NOTE: intel intrinsic: store fence, make changes visible on the remote site to which we wrote
+
+		HAM_DEBUG( HAM_LOG << "communicator(VH)::send_msg(): setting flag at SHM offset: " << ((uint64_t)remote_flag - (uint64_t)peers[node].shm_local_addr) << " to next_buffer_index = " << next_buffer_index << std::endl; )
+		*remote_flag = next_buffer_index; // signal remote side that the message has been written, and transfer the next buffer/flag index in the process
+		_mm_sfence(); // NOTE: intel intrinsic: store fence, make changes visible on the remote site
+
+
+// TODO: remove in cleanup
+/*
 
 //		char* remote_buffer = reinterpret_cast<char*>(&peers[node].remote_buffers[buffer_index]);
 //		volatile size_t* remote_flag = reinterpret_cast<size_t*>(&peers[node].remote_flags[buffer_index]);
@@ -478,7 +548,7 @@ protected:
 			veo_write_mem(peers[node].veo_proc, target_flag_addr, (const void*)&next_buffer_index, sizeof(size_t)), 
 			"veo_write_mem(flag) inside send_msg()"
 		);
-
+*/
 	}
 
 	// NOTE: we read from the target memory here via VEO 
@@ -490,6 +560,29 @@ protected:
 		HAM_DEBUG( HAM_LOG << "communicator(VH)::recv_msg(): remote node is: " << node << std::endl; )
 		HAM_DEBUG( HAM_LOG << "communicator(VH)::recv_msg(): using buffer index: " << buffer_index << std::endl; )
 
+		char* local_buffer = reinterpret_cast<char*>(&peers[node].local_buffers[buffer_index]);
+		volatile size_t* local_flag = reinterpret_cast<size_t*>(&peers[node].local_flags[buffer_index]);
+		HAM_DEBUG( HAM_LOG << "communicator(VH)::recv_msg(): local buffer is: " << (uint64_t)local_buffer << std::endl; )
+
+		HAM_DEBUG( HAM_LOG << "communicator(VH)::recv_msg(): FLAG at SHM offet: " << ((uint64_t)local_flag - (uint64_t)peers[node].shm_local_addr) << " before polling: " << (int)*local_flag << std::endl; )
+		
+		while (*local_flag == FLAG_FALSE); // poll on flag
+		HAM_DEBUG( HAM_LOG << "communicator(VH)::recv_msg(): FLAG after polling: " << (int)*local_flag << std::endl; )
+
+		if (*local_flag != NO_BUFFER_INDEX) // the flag contains the next buffer index to poll on
+			peers[node].next_flag = *local_flag;
+
+		// copy size from recv buffer
+		memcpy((void*)&size, (char*)local_buffer, sizeof(size_t));
+
+		HAM_DEBUG( HAM_LOG << "communicator(VH)::recv_msg(): received msg size: " << size << std::endl; )
+		//HAM_DEBUG( HAM_LOG << "receiving message of size: " << size << std::endl; )
+
+//		_mm_lfence(); // NOTE: intel intrinsic: all prior loads are globally visible
+		return (char*)local_buffer + sizeof(size_t); // we directly return our buffer here, which is safe, since it can only be re-used after being freed by the future which returns the result by value to the user
+
+// TODO: remove in cleanup
+/*
 //		char* local_buffer = reinterpret_cast<char*>(&peers[node].local_buffers.get()[buffer_index]);
 //		volatile size_t* local_flag = reinterpret_cast<size_t*>(&peers[node].local_flags.get()[buffer_index]);
 //		HAM_DEBUG( HAM_LOG << "communicator(VH)::recv_msg(): local buffer is: " << (void*)local_buffer << std::endl; )
@@ -532,24 +625,28 @@ protected:
 
 //		return (char*)local_buffer + sizeof(size_t); // we directly return our buffer here, which is safe, since it can only be re-used after being freed by the future which returns the result by value to the user
 		return recv_buffer; // we directly return our buffer here, which is safe, since it can only be re-used after being freed by the future which returns the result by value to the user, at free_request() here
+*/		
 	}
 
 	// works with same flags and buffers as recv_msg
 	bool test_local_flag(node_t node, size_t buffer_index)
 	{
+		size_t* local_flag = &peers[node].local_flags.get()[buffer_index];
+		return *local_flag != FLAG_FALSE; // NO_BUFFER_INDEX; // set from the other side by send_result below
+
 //		volatile size_t* local_flag = reinterpret_cast<size_t*>(&peers[node].local_flags.get()[buffer_index]);
 //		return *local_flag != FLAG_FALSE; // NO_BUFFER_INDEX; // set from the other side by send_result below
 		
-		uint64_t target_flag_addr = peers[node].remote_flags_addr + sizeof(cache_line_buffer) * buffer_index;
+//		uint64_t target_flag_addr = peers[node].remote_flags_addr + sizeof(cache_line_buffer) * buffer_index;
 
-		size_t flag = FLAG_FALSE;
-		// read flag	
-		errno_handler(
-			veo_read_mem(peers[node].veo_proc, (void*)&flag, target_flag_addr, sizeof(size_t)), 
-			"veo_read_mem(flag) inside test_local_flag()"
-		);
+//		size_t flag = FLAG_FALSE;
+//		// read flag	
+//		errno_handler(
+//			veo_read_mem(peers[node].veo_proc, (void*)&flag, target_flag_addr, sizeof(size_t)), 
+//			"veo_read_mem(flag) inside test_local_flag()"
+//		);
 
-		return flag != FLAG_FALSE;
+//		return flag != FLAG_FALSE;
 	}
 
 public:
@@ -623,15 +720,14 @@ public:
 	bool is_host(node_t node) { return node == ham_host_address; }
 
 private:
-	// command line parsed:
-	std::string veo_library_path;
-	std::string veo_ve_nodes;
-	size_t num_targets_ = 1;
-
-	// set by command line parsing in ctor
+	// command line options
+	//communicator_options& comm_options;
 	uint64_t ham_process_count = 2; // number of participating processes
 	node_t ham_host_address = 0; // the address of the host process
 	node_t ham_address = 0; // this processes' address
+	std::string veo_library_path = "";
+	std::string veo_ve_nodes = "";
+	//size_t num_targets = 1;
 
 	// pointers to arrays of buffers, index is peer address
 	struct veo_peer {
@@ -648,16 +744,20 @@ private:
 		uint64_t veo_main_id; // TODO initialise to invalid ID constant
 		struct veo_args* veo_main_args;
 
-		// addresses of remote communication buffer
-		uint64_t local_buffers_addr = 0; // for sending to target
-		uint64_t local_flags_addr = 0;
-		uint64_t remote_buffers_addr = 0; // for receiving from target
-		uint64_t remote_flags_addr = 0;
+		// SHM data
+		key_t shm_key;
+		int shm_id;
+		struct shmid_ds shm_ds;
+		void* shm_local_addr;
+
+		// send/recv buffers on VH side, inside the SHM data above
+		buffer_ptr<msg_buffer> local_buffers; // local memory, remote peer writes to these buffers
+		buffer_ptr<size_t> local_flags; // local memory, remote peer signals writing is complete via these flags, I poll on this flag
+
+		buffer_ptr<msg_buffer> remote_buffers; // remote memory, I write messages to this peer into these buffers
+		buffer_ptr<size_t> remote_flags; // remote memory, I write these flags to signal a message was sent
 
 		size_t next_flag = 0; // flag
-
-		// buffer to copy received messages from target to
-		buffer_ptr<msg_buffer> recv_buffers; // local memory, recv_msg copies data to these buffers using veo_read_mem()
 
 		// needed by sender to manage which buffers are in use and which are free
 		// just manages indices, that can be used by
@@ -667,6 +767,18 @@ private:
 		detail::resource_pool<size_t> local_buffer_pool;
 
 		node_descriptor node_description;
+
+// TODO: remove stuff below:
+//		// addresses of remote communication buffer
+//		uint64_t local_buffers_addr = 0; // for sending to target
+//		uint64_t local_flags_addr = 0;
+//		uint64_t remote_buffers_addr = 0; // for receiving from target
+//		uint64_t remote_flags_addr = 0;
+
+
+////		// buffer to copy received messages from target to
+//		buffer_ptr<msg_buffer> recv_buffers; // local memory, recv_msg copies data to these buffers using veo_read_mem()
+
 	};
 
 	veo_peer* peers = nullptr;
@@ -676,6 +788,6 @@ private:
 } // namespace ham
 
 // definitions that need a complete type for communicator
-#include "ham/net/communicator_veo_post.hpp"
+#include "ham/net/communicator_veo_vedma_post.hpp"
 
-#endif // ham_net_communicator_veo_vh_hpp
+#endif // ham_net_communicator_veo_vedma_vh_hpp

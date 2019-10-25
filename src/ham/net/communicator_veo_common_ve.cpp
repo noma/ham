@@ -8,30 +8,34 @@
 // VEO usable interface for initialisation
 extern "C" {
 
-uint64_t ham_comm_veo_ve_shm_key(uint64_t key)
-{
-	static uint64_t current_key = 0;
-	
-	if (key != 0) {
-		current_key = key;
-		return 0;
-	} else { // key == 0
-		return current_key;
-	}
-}
+// TODO: cleanup
+//uint64_t ham_comm_veo_ve_get_node_descriptor()
+//{
+//std::cerr << "ham_comm_veo_ve_get_node_descriptor" << std::endl;
 
-uint64_t ham_comm_veo_ve_shm_size(uint64_t size)
-{
-	static uint64_t current_size = 0;
-	
-	if (size != 0) {
-		current_size = size;
-		return 0;
-	} else { // size == 0
-		return current_size;
-	}
-}
+//	static ::ham::net::node_descriptor local_node;
+////	local_node.name_[0] = 't';
+////	local_node.name_[1] = '\0';
+//	gethostname(local_node.name_, local_node.name_length_);
 
+//	return reinterpret_cast<uint64_t>(&local_node);
+//	//return reinterpret_cast<uint64_t>(::ham::net::communicator::instance().veo_ve_get_host_address_descriptor());
+//}
+
+//uint64_t ham_comm_veo_ve_set_descriptor_addr(uint64_t addr)
+//{
+//std::cerr << "ham_comm_ve_set_descriptor_addr 0: comm: " << &(::ham::net::communicator::instance()) << ", got " << addr << std::endl;
+//	static ::ham::net::node_descriptor local_node;
+//	local_node.name_[0] = 't';
+//	local_node.name_[1] = '\0';
+//
+//	//copy local_node to addr (pre-allocated from host)
+//	memcpy((void*)addr, &local_node, sizeof(::ham::net::node_descriptor));
+
+////	::ham::net::communicator::instance().veo_ve_set_node_descriptor(reinterpret_cast<void*>(addr));
+//std::cerr << "ham_comm_ve_set_descriptor_addr 1" << std::endl;
+//	return 0;
+//}
 
 void reset_flags(uint64_t flags_addr)
 {
@@ -134,8 +138,6 @@ uint64_t ham_comm_veo_ve_host_address(uint64_t host_address, uint64_t set)
 		return current_host_address;
 	}
 }
-
-
 
 } // extern "C"
 

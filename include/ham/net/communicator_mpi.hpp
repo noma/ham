@@ -14,6 +14,7 @@
 #include <cerrno> // posix_memalign returns
 
 #include "ham/misc/constants.hpp"
+#include "ham/misc/options.hpp"
 #include "ham/misc/resource_pool.hpp"
 #include "ham/misc/types.hpp"
 #include "ham/util/debug.hpp"
@@ -57,6 +58,16 @@ private:
 	char name_[MPI_MAX_PROCESSOR_NAME + 1];
 
 	friend class net::communicator;
+};
+
+class communicator_options : public ham::detail::options
+{
+public:
+	communicator_options(int* argc_ptr, char** argv_ptr[]) : options(argc_ptr, argv_ptr)
+	{
+		// NOTE: no further inheritance or adding
+		parse();
+	}
 };
 
 class communicator {
@@ -126,13 +137,13 @@ public:
 	using request_reference_type = request&;
 	using request_const_reference_type = const request&;
 
-	communicator(int* argc_ptr, char** argv_ptr[])
+	communicator(communicator_options& comm_options)
 	{
 		HAM_DEBUG( std::cout << "communicator::communicator(): initialising MPI" << std::endl; )
 
 		instance_ = this;
 		int p;
-		MPI_Init_thread(argc_ptr, argv_ptr, MPI_THREAD_MULTIPLE, &p);
+		MPI_Init_thread(comm_options.argc_ptr(), comm_options.argv_ptr(), MPI_THREAD_MULTIPLE, &p);
 		//MPI_Init_thread(argc_ptr, argv_ptr, MPI_THREAD_SERIALIZED, &p);
 		if (p != MPI_THREAD_MULTIPLE)
 		//if (p != MPI_THREAD_SERIALIZED)

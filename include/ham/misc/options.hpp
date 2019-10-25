@@ -20,13 +20,16 @@ std::vector<std::string> split(const std::string &s, char delim);
 class options {
 public:
 	options(int* argc_ptr, char** argv_ptr[])
-	 : cpu_affinity_(-1)
+	 : app_("HAM-Offload Options"), argc_ptr_(argc_ptr), argv_ptr_(argv_ptr), cpu_affinity_(-1)
 	{
-		// command line options
-		CLI::App app("HAM Options");
-		app.allow_extras(); // ignore other options
-		app.add_option("--ham-cpu-affinity", cpu_affinity_, "Per process value for the CPU affinity.");
+		// basic command line options
+		app_.allow_extras(); // ignore other options
+		app_.set_help_flag("--ham-help", "Print list of HAM-Offload command line options.");
+		app_.add_option("--ham-cpu-affinity", cpu_affinity_, "Per process value for the CPU affinity.");
+	}
 
+	void parse()
+	{
 #ifndef HAM_COMM_VE
 		// NOTE: no try-catch here to avoid exceptions, that cause offload-dependencies to boost exception in the MIC code
 		const char* options_env = std::getenv("HAM_OPTIONS");
@@ -38,24 +41,41 @@ public:
 			// parse from environment
 			// NOTE: get a vector strings from the environment options
 			auto args = split(std::string(options_env), split_character);
-			app.parse(args);
+			app_.parse(args);
 		}
 		else
 		{
 			// parse from command line
 			try {
-				app.parse(*argc_ptr, *argv_ptr);
+				app_.parse(*argc_ptr_, *argv_ptr_);
 			} catch(const CLI::ParseError &e) {
-				app.exit(e);
+				app_.exit(e);
 			}
 			//app.parse(*argc_ptr, *argv_ptr);
+
+			// TODO: fix command line for remaining application
+			// TODO: NOTE: we do not get the application command line options on the VE-end
+			// fix argc and argv, see C++ standard, see notes
 		}
 #endif
 	}
 
-	int cpu_affinity() const { return cpu_affinity_; }
+	bool parsed() { return app_.parsed(); }
+
+	// raw access
+	int* argc_ptr() { return argc_ptr_; }
+	char*** argv_ptr() { return argv_ptr_; }
+
+	// command line argument getters
+	const int& cpu_affinity() const { return cpu_affinity_; }
+
+protected:
+	CLI::App app_;
 
 private:
+	int* argc_ptr_;
+	char*** argv_ptr_;
+
 	int cpu_affinity_;
 };
 

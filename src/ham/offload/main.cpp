@@ -34,7 +34,7 @@ int ham_main(int* argc_ptr, char** argv_ptr[])
 
 	if (offload_runtime.is_host())
 	{
-		result = offload_runtime.run_main(argc_ptr, argv_ptr);
+		result = offload_runtime.run_main();
 	}
 	else
 	{

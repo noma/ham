@@ -31,20 +31,11 @@ public:
 	  //comm_options(comm_options),
 	  ham_process_count(comm_options.ham_process_count()),
 	  ham_host_address(comm_options.ham_host_address()),
-	  ham_address(0), // this process' address
+	  ham_address(ham_host_address), // this process' address
 	  veo_library_path(comm_options.veo_library_path()),
 	  veo_ve_nodes(comm_options.veo_ve_nodes())
 	{
 		HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: begin." << std::endl; )
-
-		// get everything we need from comm_options
-		ham_host_address
-		ham_process_count
-		veo_library_path = comm_options.
-		veo_ve_nodes = comm_options.veo_ve_nodes()
-
-		ham_address = ham_host_address; // we are the host
-
 		HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: using VE nodes: " << veo_ve_nodes << std::endl; )
 		
 		// TODO: convenience: generate default ve_node_list, if arg not provided
@@ -112,7 +103,7 @@ public:
 				
 				// generate a key for an shm segment
 				constexpr size_t VE_PAGE_SIZE = 64 * 1024 * 1024; // assume 64 MiB pages on the VE side
-				peer.shm_key = ftok((*argv_ptr)[0], (int)getpid()); // generate unique key from application path and pid
+				peer.shm_key = ftok((*comm_options.argv_ptr())[0], (int)getpid()); // generate unique key from application path and pid
 				
 				const size_t msg_buffers_size = constants::MSG_BUFFERS * sizeof(msg_buffer); // defaults to 4 KiB per msg 
 				const size_t msg_flags_size = constants::MSG_BUFFERS * sizeof(size_t); // 8 byte per flag
@@ -316,7 +307,7 @@ std::cerr << "got node desc" << std::endl;
 
 				// TODO: set up arguments (if needed) and do an async call
 				peer.veo_main_args = veo_args_alloc();
-				veo_args_set_stack(peer.veo_main_args, VEO_INTENT_IN, 0, (char *)argc_ptr, sizeof(*argc_ptr));
+				veo_args_set_stack(peer.veo_main_args, VEO_INTENT_IN, 0, (char *)comm_options.argc_ptr(), sizeof(*comm_options.argc_ptr()));
 				nullptr_t target_argv = nullptr;
 				// TODO: we set argv to nullptr until its needed, for deepcopying argv see: https://stackoverflow.com/questions/36804759/how-to-copy-argv-to-a-new-variable
 				veo_args_set_stack(peer.veo_main_args, VEO_INTENT_IN, 1, (char *)&target_argv, sizeof(nullptr_t)); 

@@ -20,7 +20,7 @@ namespace net {
 class communicator : public communicator_base<communicator> {
 	friend class communicator_base<communicator>; // allow request in base class to call functions from here
 public:
-	communicator(int* argc_ptr, char** argv_ptr[])
+	communicator(communicator_options& comm_options)
 	  : communicator_base<communicator>(this),
 	    ham_process_count(ham_comm_veo_ve_process_count(0, false)),
 	    ham_host_address(ham_comm_veo_ve_host_address(0, false)),

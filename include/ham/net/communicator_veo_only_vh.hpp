@@ -21,19 +21,14 @@ class communicator : public communicator_base<communicator> {
 	friend class communicator_base<communicator>; // allow request in base class to call functions from here
 public:
 	communicator(communicator_options& comm_options)
-	: communicator_base(this)
+	: communicator_base(this),
 	  ham_process_count(comm_options.ham_process_count()),
 	  ham_host_address(comm_options.ham_host_address()),
-	  ham_address(0), // this process' address
+	  ham_address(ham_host_address), // this process' address
 	  veo_library_path(comm_options.veo_library_path()),
 	  veo_ve_nodes(comm_options.veo_ve_nodes())
 	{
 		HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: begin." << std::endl; )
-
-		// TODO: parse and use options below via getter
-
-		ham_address = ham_host_address; // we are the host
-
 		HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: using VE nodes: " << veo_ve_nodes << std::endl; )
 		
 		// TODO: convenience: generate default ve_node_list, if arg not provided
@@ -239,7 +234,7 @@ std::cerr << "got node desc" << std::endl;
 
 				// TODO: set up arguments (if needed) and do an async call
 				peer.veo_main_args = veo_args_alloc();
-				veo_args_set_stack(peer.veo_main_args, VEO_INTENT_IN, 0, (char *)argc_ptr, sizeof(*argc_ptr));
+				veo_args_set_stack(peer.veo_main_args, VEO_INTENT_IN, 0, (char *)comm_options.argc_ptr(), sizeof(*comm_options.argc_ptr()));
 				nullptr_t target_argv = nullptr;
 				// TODO: we set argv to nullptr until its needed, for deepcopying argv see: https://stackoverflow.com/questions/36804759/how-to-copy-argv-to-a-new-variable
 				veo_args_set_stack(peer.veo_main_args, VEO_INTENT_IN, 1, (char *)&target_argv, sizeof(nullptr_t)); 

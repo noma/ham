@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
 
 	// specify two offload targets
 	offload::node_t target_a = 1; // we simply the first device/node
-#ifdef HAM_COMM_ONE_SIDED
+#ifndef HAM_COMM_ONE_SIDED
 	offload::node_t target_b = 2; // we simply the second device/node
 #else
 	offload::node_t target_b = 1; // we use the same device

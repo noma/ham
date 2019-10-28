@@ -19,7 +19,7 @@ runtime::runtime(int* argc_ptr, char** argv_ptr[]) : abort_flag(false), comm_opt
 	HAM_DEBUG( HAM_LOG << "runtime::runtime()" << std::endl; )
 
 	// TODO: move help screen handling here? parsing is done above in comm_options ctor. Maybe delete CLI11 help flag, and check manually, but problematic with parsing attempt and unspecified mandatory options..
-
+	// TODO: cpu_affinity has default value on NEC VE and will not be set; MAYBE: introduce separate arguments for affinity on host and target
 	if (comm_options.cpu_affinity() >= 0)
 		ham::util::set_cpu_affinity(comm_options.cpu_affinity());
 

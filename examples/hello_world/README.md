@@ -55,7 +55,7 @@ make -j
 ```terminal
 mkdir build.hello_world.ve
 cd build.hello_world.ve
-CC=`which ncc` CXX=`which nc++` cmake -DCMAKE_CXX_COMPILE_FEATURES='cxx_auto_type;cxx_range_for;cxx_variadic_templates' ../cmake ../hello_world
+CC=`which ncc` CXX=`which nc++` cmake -DCMAKE_CXX_COMPILE_FEATURES='cxx_auto_type;cxx_range_for;cxx_variadic_templates' ../hello_world
 make -j
 ```
 

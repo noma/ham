@@ -10,6 +10,18 @@ cmake_minimum_required(VERSION 3.2 FATAL_ERROR) # TODO verfify
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 message(STATUS "CMAKE_BINARY_DIR: " ${CMAKE_BINARY_DIR})
 
+# detect parent scope, i.e. this project is used via add_subdirectory()
+set(HAM_BUILD_EXECUTABLES_DESCRIPTION "Build executables, if disabled, only the libraries will be built.")
+get_directory_property(HAM_HAS_PARENT PARENT_DIRECTORY)
+if (HAM_HAS_PARENT)
+	# used as subdirectory, so export some variables, and disable executable builds by default
+	set(HAM_PARENT_SCOPE "PARENT_SCOPE")
+	option(HAM_BUILD_EXECUTABLES ${HAM_BUILD_EXECUTABLES_DESCRIPTION} OFF)
+else ()
+	# standalong build, enable exectuable builds by default
+	option(HAM_BUILD_EXECUTABLES ${HAM_BUILD_EXECUTABLES_DESCRIPTION} ON)
+endif ()
+
 # set default build type to "Release"
 set(HAM_DEFAULT_BUILD_TYPE "Release")
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -47,13 +59,13 @@ if (MPI_FOUND)
 	target_include_directories(mpi_library INTERFACE ${MPI_CXX_INCLUDE_PATH})
 	target_compile_options(mpi_library INTERFACE ${MPI_CXX_COMPILE_FLAGS})
 	target_link_libraries(mpi_library INTERFACE ${MPI_CXX_LIBRARIES})
-	set(MPI_FOUND ON PARENT_SCOPE)
+	set(MPI_FOUND ON ${HAM_PARENT_SCOPE})
 endif ()
 
 # Intel SCIF (for Xeon Phi accelerators with KNC architecture)
 find_file(SCIF_HEADER_FILE "scif.h")
 if (SCIF_HEADER_FILE)
-	set(SCIF_FOUND ON PARENT_SCOPE)
+	set(SCIF_FOUND ON ${HAM_PARENT_SCOPE})
 	get_filename_component(SCIF_INCLUDE_DIR "${SCIF_HEADER_FILE}" DIRECTORY)
 	message(STATUS "Found SCIF: ${SCIF_HEADER_FILE}")
 
@@ -65,7 +77,7 @@ endif ()
 
 find_file(VEO_HEADER_FILE "ve_offload.h" "/opt/nec/ve/veos/include/")
 if (VEO_HEADER_FILE)
-	set(VEO_FOUND ON PARENT_SCOPE)
+	set(VEO_FOUND ON ${HAM_PARENT_SCOPE})
 	get_filename_component(VEO_INCLUDE_DIR "${VEO_HEADER_FILE}" DIRECTORY)
 	message(STATUS "Found VEO: ${VEO_HEADER_FILE}")
 

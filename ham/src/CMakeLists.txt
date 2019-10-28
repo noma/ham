@@ -8,8 +8,6 @@ cmake_minimum_required(VERSION 3.2 FATAL_ERROR) # TODO verfify
 
 add_subdirectory(ham)
 
-option(HAM_BUILD_EXECUTABLES "Build executables, if disabled, only the libraries will be built." ON)
-
 if (HAM_BUILD_EXECUTABLES)
 
 ### Benchmarks

@@ -29,9 +29,9 @@ public:
 	buffer_ptr();
 	buffer_ptr(T* ptr, node_t node) : ptr_(ptr), node_(node) { }
 
-	T* get() { return ptr_; }
-	node_t node() { return node_; }
-	
+	T* get() const { return ptr_; }
+	node_t node() const { return node_; }
+
 	// element access
 	T& operator [] (size_t i);
 

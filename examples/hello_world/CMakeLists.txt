@@ -37,7 +37,7 @@ if (VEO_FOUND)
 		set_property(TARGET hello_world_veo_ve PROPERTY POSITION_INDEPENDENT_CODE ON)
 		add_custom_command(TARGET hello_world_veo_ve
 		                   POST_BUILD
-		                   COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_hello_world_veo ./libhello_world_veo_ve.a ./ham/libham_offload_veo_ve.a)
+		                   COMMAND /opt/nec/ve/libexec/mk_veorun_static veorun_hello_world_veo ./libhello_world_veo_ve.a ./ham/src/ham/libham_offload_veo_ve.a)
 	else ()
 		# Vector Host (VH) executables
 		add_executable(hello_world_veo_vh hello_world.cpp)
@@ -55,7 +55,7 @@ if (VEO_FOUND)
 		set_property(TARGET hello_world_vedma_ve PROPERTY POSITION_INDEPENDENT_CODE ON)
 		add_custom_command(TARGET hello_world_vedma_ve
 		                   POST_BUILD
-		                   COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_hello_world_vedma ./libhello_world_vedma_ve.a ./ham/libham_offload_vedma_ve.a ${MK_VEORUN_STATIC_LIBS})
+		                   COMMAND /opt/nec/ve/libexec/mk_veorun_static veorun_hello_world_vedma ./libhello_world_vedma_ve.a ./ham/src/ham/libham_offload_vedma_ve.a ${MK_VEORUN_STATIC_LIBS})
 	else ()
 		# Vector Host (VH) executables
 		add_executable(hello_world_vedma_vh hello_world.cpp)

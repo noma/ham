@@ -53,7 +53,7 @@ public:
 	//const std::string& name() const { return name_; }
 	const char* name() const { return name_; }
 private:
-	//std::string name_; // TODO(improvement): unify node description for all back-ends, NOTE: std::string is not trivally transferable
+	//std::string name_; // TODO(improvement): unify node description for all back-ends, NOTE: std::string is not trivially transferable
 	char name_[MPI_MAX_PROCESSOR_NAME + 1];
 
 	friend class net::communicator;

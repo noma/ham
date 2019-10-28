@@ -170,7 +170,7 @@ script:
   - which ${CXX}
   - mkdir -p build
   - cd build
-  - cmake -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" ..
+  - cmake -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" ../ham
   - make ${MAKE_FLAGS}
 # test  
   - mpirun -n 2 ./test_argument_transfer_mpi

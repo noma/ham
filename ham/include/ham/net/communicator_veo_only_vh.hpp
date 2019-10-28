@@ -33,7 +33,7 @@ public:
 		
 		// TODO: convenience: generate default ve_node_list, if arg not provided
 		if (veo_ve_nodes.empty())
-			std::cout << "communicator(VH)::communicator: error: please provide --ham-veo-ve-nodes with --ham-process-count minus 1 comma-separated values." << std::endl;
+			HAM_LOG << "communicator(VH)::communicator: error: please provide --ham-veo-ve-nodes with --ham-process-count minus 1 comma-separated values." << std::endl;
 
 		// seprate by comma
 		auto ve_node_list_strs = ::ham::detail::split(veo_ve_nodes, ',');
@@ -43,7 +43,7 @@ public:
 		               [](std::string str) -> node_t { return std::stoi(str); });
 
 		if (ham_process_count != (ve_node_list.size() + 1))
-			std::cout << "communicator(VH)::communicator: error: please make sure --ham-veo-ve-nodes contains --ham-process-count minus 1 comma-separated values." << std::endl;
+			HAM_LOG << "communicator(VH)::communicator: error: please make sure --ham-veo-ve-nodes contains --ham-process-count minus 1 comma-separated values." << std::endl;
 
 		// setup peer data structures
 		peers = new veo_peer[ham_process_count];

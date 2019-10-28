@@ -40,7 +40,7 @@ public:
 		
 		// TODO: convenience: generate default ve_node_list, if arg not provided
 		if (veo_ve_nodes.empty())
-			std::cout << "communicator(VH)::communicator: error: please provide --ham-veo-ve-nodes with --ham-process-count minus 1 comma-separated values." << std::endl;
+			HAM_LOG << "communicator(VH)::communicator: error: please provide --ham-veo-ve-nodes with --ham-process-count minus 1 comma-separated values." << std::endl;
 
 		// seprate by comma
 		auto ve_node_list_strs = ::ham::detail::split(veo_ve_nodes, ',');
@@ -50,7 +50,7 @@ public:
 		               [](std::string str) -> node_t { return std::stoi(str); });
 
 		if (ham_process_count != (ve_node_list.size() + 1))
-			std::cout << "communicator(VH)::communicator: error: please make sure --ham-veo-ve-nodes contains --ham-process-count minus 1 comma-separated values." << std::endl;
+			HAM_LOG << "communicator(VH)::communicator: error: please make sure --ham-veo-ve-nodes contains --ham-process-count minus 1 comma-separated values." << std::endl;
 
 		// setup peer data structures
 		peers = new veo_peer[ham_process_count];
@@ -113,7 +113,7 @@ public:
 				// rounded to full pages
 				size_t shm_size = round_to_full_pages(size_required, VE_PAGE_SIZE);
 
-				std::cout << "VH: (shm_key = " << peer.shm_key << ", shm_size = " << shm_size << ")" << std::endl;
+				HAM_DEBUG( HAM_LOG << "VH: (shm_key = " << peer.shm_key << ", shm_size = " << shm_size << ")" << std::endl; )
 				
 				// create an shm segment
 				peer.shm_id = shmget(peer.shm_key, shm_size, IPC_CREAT | SHM_HUGETLB | S_IRWXU); 
@@ -122,12 +122,12 @@ public:
 				// optional: get shm infomration
 				err = shmctl(peer.shm_id, IPC_STAT, &(peer.shm_ds));
 				assert(err != -1);
-				std::cout << "VH: (shm_ds.shm_perm.__key = " << peer.shm_ds.shm_perm.__key << ")" << std::endl;
+				HAM_DEBUG( HAM_LOG << "VH: (shm_ds.shm_perm.__key = " << peer.shm_ds.shm_perm.__key << ")" << std::endl; )
 				
 				// attach shared memory to VH address space
 				peer.shm_local_addr = nullptr;
 				peer.shm_local_addr = shmat(peer.shm_id, NULL, 0);
-				std::cout << "VH: shm_local_addr = " << (uint64_t)peer.shm_local_addr << std::endl;
+				HAM_DEBUG( HAM_LOG << "VH: shm_local_addr = " << (uint64_t)peer.shm_local_addr << std::endl; )
 				// NOTE: local_addr can now be used
 				
 				// TODO: setup buffer data structures below
@@ -350,7 +350,7 @@ std::cerr << "got node desc" << std::endl;
 				// delete SHM
 				err = shmctl(peer.shm_id, IPC_RMID, NULL);
 				if (err < 0)
-					std::cout << "Failed to remove SHM segment ID " << peer.shm_id << std::endl;	
+					HAM_LOG << "Failed to remove SHM segment ID " << peer.shm_id << std::endl;
 
 				// sync on offloaded main()
 				int ret;

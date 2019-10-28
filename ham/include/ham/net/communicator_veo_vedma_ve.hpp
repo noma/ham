@@ -90,17 +90,17 @@ public:
 		// initialise DMA
 		err = ve_dma_init();
 		if (err)
-			std::cout << "VE: Failed to initialize DMA" << std::endl;
+			HAM_LOG << "VE: Failed to initialize DMA" << std::endl;
 
 		key_t shm_key = (key_t)ham_comm_veo_ve_shm_key(0);
 		size_t shm_size = (key_t)ham_comm_veo_ve_shm_size(0);
 
-		std::cout << "VE: (shm_key = " << shm_key << ", shm_size = " << shm_size << ")" << std::endl;
+		HAM_DEBUG( HAM_LOG << "VE: (shm_key = " << shm_key << ", shm_size = " << shm_size << ")" << std::endl; )
 
 		// get SHM id from key
 		int shm_id = vh_shmget(shm_key, shm_size, SHM_HUGETLB);
 		if (shm_id == -1)
-			std::cout << "VE: vh_shmget failed, reason: " << strerror(errno) << std::endl;
+			HAM_LOG << "VE: vh_shmget failed, reason: " << strerror(errno) << std::endl;
 		
 		// attach shared memoy VH address space and resiter to to DMAATB
 		// the region is accessible for DMA unter its VEHVA remote_vehva
@@ -109,20 +109,20 @@ public:
 		host_peer.shm_remote_addr = vh_shmat(shm_id, NULL, 0, (void **)&host_peer.shm_remote_vehva);
 		
 		if (host_peer.shm_remote_addr == nullptr)
-			std::cout << "VE: (host_peer.shm_remote_addr == nullptr) " << std::endl;
+			HAM_LOG << "VE: (host_peer.shm_remote_addr == nullptr) " << std::endl;
 		if (host_peer.shm_remote_vehva == (uint64_t)-1)
-			std::cout << "VE: (host_peer.shm_remote_vehva == -1) " << std::endl;
+			HAM_LOG << "VE: (host_peer.shm_remote_vehva == -1) " << std::endl;
 
 		// get local memory of same size as SHM on VH
 		host_peer.shm_local_addr = mmap(NULL, shm_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_64MB, -1, 0);
 		
 		if (host_peer.shm_local_addr == nullptr)
-			std::cout << "VE: (host_peer.shm_local_addr == nullptr) " << std::endl;
+			HAM_LOG << "VE: (host_peer.shm_local_addr == nullptr) " << std::endl;
 
 		// register local buffer for DMA
 		host_peer.shm_local_vehva = ve_register_mem_to_dmaatb(host_peer.shm_local_addr, shm_size);
 		if (host_peer.shm_local_vehva == (uint64_t)-1)
-			std::cout << "VE: host_peer.shm_local_vehva == -1 " << std::endl;
+			HAM_LOG << "VE: host_peer.shm_local_vehva == -1 " << std::endl;
 
 		// setup addresses
 		// NOTE: assumed SHM layout
@@ -195,11 +195,11 @@ public:
 		int err = 0;
 		err = ve_unregister_mem_from_dmaatb(peers[ham_host_address].shm_local_vehva);
 		if (err)
-			std::cout << "VE: Failed to unregister local buffer from DMAATB" << std::endl;
+			HAM_LOG << "VE: Failed to unregister local buffer from DMAATB" << std::endl;
 
 		err = vh_shmdt(peers[ham_host_address].shm_remote_addr);
 		if (err)
-			std::cout << "VE: Failed to detach from VH sysV shm" << std::endl;
+			HAM_LOG << "VE: Failed to detach from VH sysV shm" << std::endl;
 
 		// delete
 		delete [] peers;
@@ -315,7 +315,7 @@ private:
 		int err = 0;
 		err = ve_dma_post_wait(remote_recv_buffer_vehva, local_send_buffer_vehva, msg_buffer_size);
 		if (err)
-			std::cout << "VE: ve_dma_post_wait has failed!, err = " << err << std::endl;
+			HAM_LOG << "VE: ve_dma_post_wait has failed!, err = " << err << std::endl;
 //*/
 		// END: VERSION A
 
@@ -407,7 +407,7 @@ private:
 		int err = 0;
 		err = ve_dma_post_wait(local_recv_buffer_vehva, remote_send_buffer_vehva + sizeof(size), size); // NOTE: copy without
 		if (err)
-			std::cout << "VE: ve_dma_post_wait has failed!, err = " << err << std::endl;
+			HAM_LOG << "VE: ve_dma_post_wait has failed!, err = " << err << std::endl;
 		//*/
 		// END: VERSION A
 

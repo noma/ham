@@ -60,11 +60,11 @@ public:
 #endif
 	}
 
-	bool parsed() { return app_.parsed(); }
+	bool parsed() const { return app_.parsed(); }
 
 	// raw access
-	int* argc_ptr() { return argc_ptr_; }
-	char*** argv_ptr() { return argv_ptr_; }
+	int* argc_ptr() const { return argc_ptr_; }
+	char*** argv_ptr() const { return argv_ptr_; }
 
 	// command line argument getters
 	const int& cpu_affinity() const { return cpu_affinity_; }

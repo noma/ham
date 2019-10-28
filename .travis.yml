@@ -64,17 +64,6 @@ jobs:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
         - CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror -Wno-error=unused-but-set-variable"
 
-    # GCC 7
-    - addons:
-        apt:
-          sources: *common_sources
-          packages:
-            - *common_packages
-            - g++-7
-      env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
-        - CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror -Wno-error=unused-but-set-variable"
-
     # GCC 8
     - addons:
         apt:
@@ -124,6 +113,7 @@ jobs:
         apt:
           sources:
             - llvm-toolchain-trusty-5.0
+            - ubuntu-toolchain-r-test
           packages:
             - *common_packages
             - clang-5.0
@@ -135,6 +125,7 @@ jobs:
         apt:
           sources:
             - llvm-toolchain-trusty-6.0
+            - ubuntu-toolchain-r-test
           packages:
             - *common_packages
             - clang-6.0
@@ -146,6 +137,7 @@ jobs:
         apt:
           sources:
             - llvm-toolchain-trusty-7.0
+            - ubuntu-toolchain-r-test
           packages:
             - *common_packages
             - clang-7.0
@@ -157,6 +149,7 @@ jobs:
         apt:
           sources:
             - llvm-toolchain-trusty-8.0
+            - ubuntu-toolchain-r-test
           packages:
             - *common_packages
             - clang-8.0

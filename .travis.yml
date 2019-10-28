@@ -7,13 +7,9 @@ addons:
   apt:
     sources: &common_sources
       - ubuntu-toolchain-r-test
-    # - boost-latest
-    #  - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
     packages: &common_packages
       - cmake-data
       - cmake
-    # - libboost-program-options1.55-dev # boost-latest
-      - libboost-program-options-dev
       - mpich
       - libmpich-dev
     # - mpi-default-dev # open-mpi, headers cause some compiler warnings
@@ -69,31 +65,32 @@ jobs:
         - CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror -Wno-error=unused-but-set-variable"
 
     # GCC 8
-#    - os: linux
-#      dist: trusty
-#      addons:
-#        apt:
-#          sources:
-#            - boost-latest
-#            - ubuntu-toolchain-r-test
-#          packages:
-#            - g++-8
-#            - cmake-data
-#            - cmake
-#            - libboost-program-options-dev
-#            - mpich
-#            - libmpich-dev
-#      env:
-#        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+    - addons:
+        apt:
+          sources: *common_sources
+          packages:
+            - *common_packages
+            - g++-8
+      env:
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+        - CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror -Wno-error=unused-but-set-variable"
+
+    # GCC 9
+    - addons:
+        apt:
+          sources: *common_sources
+          packages:
+            - *common_packages
+            - g++-9
+      env:
+        - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
+        - CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror -Wno-error=unused-but-set-variable"
 
 # Clang 3.9
     - addons:
         apt:
           sources:
-            # << : [ *common_sources, llvm-toolchain-trusty-3.9 ]
-            - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-3.9
-            - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
           packages:
             - *common_packages
             - clang-3.9
@@ -104,9 +101,7 @@ jobs:
     - addons:
         apt:
           sources:
-            - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-4.0
-            - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
           packages:
             - *common_packages
             - clang-4.0
@@ -117,9 +112,8 @@ jobs:
     - addons:
         apt:
           sources:
-            - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-5.0
-            - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
+            - ubuntu-toolchain-r-test
           packages:
             - *common_packages
             - clang-5.0
@@ -130,14 +124,38 @@ jobs:
     - addons:
         apt:
           sources:
-            - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-6.0
-            - sourceline: 'deb http://ppa.launchpad.net/samuel-bachmann/boost/ubuntu trusty main'
+            - ubuntu-toolchain-r-test
           packages:
             - *common_packages
             - clang-6.0
       env:
         - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
+
+    # Clang 7.0
+    - addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-7.0
+            - ubuntu-toolchain-r-test
+          packages:
+            - *common_packages
+            - clang-7.0
+      env:
+        - MATRIX_EVAL="CC=clang-7.0 && CXX=clang++-7.0"
+
+    # Clang 8.0
+    - addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-8.0
+            - ubuntu-toolchain-r-test
+          packages:
+            - *common_packages
+            - clang-8.0
+      env:
+        - MATRIX_EVAL="CC=clang-8.0 && CXX=clang++-8.0"
+
 
 before_install:
   - export CMAKE_OPTIONS=${CMAKE_OPTIONS}" "${ENV_CMAKE_OPTIONS}

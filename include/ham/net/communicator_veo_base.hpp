@@ -71,8 +71,6 @@ public:
 	friend class communicator;
 };
 
-
-
 class communicator_options : public ham::detail::options
 {
 public:

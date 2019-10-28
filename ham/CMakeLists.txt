@@ -39,6 +39,10 @@ message(STATUS "C++ compiler ID: ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "C++ compiler exe: ${HAM_CXX_COMPILER_EXE}")
 if (HAM_CXX_COMPILER_EXE STREQUAL "nc++")
 	set(HAM_NEC_COMPILER_DETECTED ON)
+        if (HAM_HAS_PARENT)
+                set(HAM_NEC_COMPILER_DETECTED ON PARENT_SCOPE)
+        endif ()
+
 	message(STATUS "HAM_NEC_COMPILER_DETECTED: ${HAM_NEC_COMPILER_DETECTED}")
 endif ()
 
@@ -106,6 +110,10 @@ if (VEO_HEADER_FILE)
 	target_link_libraries(veos_system_libraries INTERFACE "-lpthread -lveio")
 
 	set(MK_VEORUN_STATIC_LIBS "-lpthread -lveio")
+	if (HAM_HAS_PARENT)
+		set(MK_VEORUN_STATIC_LIBS "${MK_VEORUN_STATIC_LIBS}" PARENT_SCOPE)
+	endif ()
+
 else ()
 	message(STATUS "Could NOT find VEO (missing: ve_offload.h)")
 endif ()

@@ -47,12 +47,13 @@ if (MPI_FOUND)
 	target_include_directories(mpi_library INTERFACE ${MPI_CXX_INCLUDE_PATH})
 	target_compile_options(mpi_library INTERFACE ${MPI_CXX_COMPILE_FLAGS})
 	target_link_libraries(mpi_library INTERFACE ${MPI_CXX_LIBRARIES})
+	set(MPI_FOUND ON PARENT_SCOPE)
 endif ()
 
 # Intel SCIF (for Xeon Phi accelerators with KNC architecture)
 find_file(SCIF_HEADER_FILE "scif.h")
 if (SCIF_HEADER_FILE)
-	set(SCIF_FOUND ON)
+	set(SCIF_FOUND ON PARENT_SCOPE)
 	get_filename_component(SCIF_INCLUDE_DIR "${SCIF_HEADER_FILE}" DIRECTORY)
 	message(STATUS "Found SCIF: ${SCIF_HEADER_FILE}")
 
@@ -64,7 +65,7 @@ endif ()
 
 find_file(VEO_HEADER_FILE "ve_offload.h" "/opt/nec/ve/veos/include/")
 if (VEO_HEADER_FILE)
-	set(VEO_FOUND ON)
+	set(VEO_FOUND ON PARENT_SCOPE)
 	get_filename_component(VEO_INCLUDE_DIR "${VEO_HEADER_FILE}" DIRECTORY)
 	message(STATUS "Found VEO: ${VEO_HEADER_FILE}")
 
@@ -84,8 +85,12 @@ else ()
 	message(STATUS "Could NOT find VEO (missing: ve_offload.h)")
 endif ()
 
-# tell the compiler to be strict
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wpedantic -Wextra")
+# globally tell the compiler to be strict with warnings
+if (HAM_NEC_COMPILER_DETECTED)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+else ()
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wpedantic -Wextra")
+endif ()
 
 add_subdirectory(thirdparty/bmt ${CMAKE_CURRENT_BINARY_DIR}/build.noma_bmt)
 add_subdirectory(src)

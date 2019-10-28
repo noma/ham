@@ -14,12 +14,14 @@ namespace offload {
 
 runtime* runtime::instance_ = nullptr;
 
-runtime::runtime(int argc, char* argv[]) : abort_flag(false), comm(argc, argv)
+runtime::runtime(int* argc_ptr, char** argv_ptr[]) : abort_flag(false), comm_options(argc_ptr, argv_ptr), comm(comm_options) // NOTE: communicator ctor, might change argc, argv values, e.g. MPI_Init
 {
 	HAM_DEBUG( HAM_LOG << "runtime::runtime()" << std::endl; )
-	ham::detail::options ham_options(argc, argv);
-	if (ham_options.cpu_affinity() >= 0)
-		ham::util::set_cpu_affinity(ham_options.cpu_affinity());
+
+	// TODO: move help screen handling here? parsing is done above in comm_options ctor. Maybe delete CLI11 help flag, and check manually, but problematic with parsing attempt and unspecified mandatory options..
+
+	if (comm_options.cpu_affinity() >= 0)
+		ham::util::set_cpu_affinity(comm_options.cpu_affinity());
 
 	instance_ = this;
 }
@@ -30,12 +32,12 @@ runtime::~runtime()
 }
 
 // not needed if HAM_EXPLICIT is defined
-int runtime::run_main(int argc, char* argv[])
+int runtime::run_main()
 {
 	// execute user main
 	HAM_DEBUG( HAM_LOG << "runtime::run_main: executing user_main" << std::endl; )
 	int result;
-	result = ham_user_main(argc, argv); // result is a reference to a local variable
+	result = ham_user_main(*comm_options.argc_ptr(), *comm_options.argv_ptr()); // result is a reference to a local variable
 	HAM_DEBUG( HAM_LOG << "runtime::run_main: user_main finished" << std::endl; )
 	terminate_workers();
 	return result;

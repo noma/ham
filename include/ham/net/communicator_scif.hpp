@@ -128,7 +128,7 @@ public:
 	typedef request& request_reference_type;
 	typedef const request& request_const_reference_type;
 
-	communicator(int argc, char* argv[])
+	communicator(int* argc_ptr, char** argv_ptr[])
 	{
 		instance_ = this;
 
@@ -173,7 +173,7 @@ public:
 		else
 		{
 			// parse from command line
-			boost::program_options::store(boost::program_options::command_line_parser(argc, argv).options(desc).allow_unregistered().run(), vm);
+			boost::program_options::store(boost::program_options::command_line_parser(*argc_ptr, *argv_ptr).options(desc).allow_unregistered().run(), vm);
 		}
 
 		boost::program_options::notify(vm);

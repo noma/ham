@@ -19,7 +19,7 @@ runtime* offload_runtime = nullptr;
 
 // This must be called explicitly before you start using the HAM-Offload API, usually at the beginning of main().
 // NOTE: This call blocks in all processes except the logical host process and 
-bool ham_init(int argc, char* argv[])
+bool ham_init(int* argc_ptr, char** argv_ptr[])
 {
 	// assumption: there is one process per shared-memory-domain (or even numa-domain?)
 
@@ -30,7 +30,7 @@ bool ham_init(int argc, char* argv[])
 
 	// init runtime/comm
 	HAM_DEBUG( std::cout << "HAM: initisalising runtime" << std::endl; )
-	offload_runtime = new ham::offload::runtime(argc, argv);
+	offload_runtime = new ham::offload::runtime(argc_ptr, argv_ptr);
 	HAM_DEBUG( std::cout << "HAM: initisalising runtime done" << std::endl; )
 
 	if (!offload_runtime->is_host())

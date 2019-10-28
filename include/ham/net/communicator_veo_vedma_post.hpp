@@ -3,8 +3,8 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef ham_net_communicator_veo_post_hpp
-#define ham_net_communicator_veo_post_hpp
+#ifndef ham_net_communicator_veo_vedma_post_hpp
+#define ham_net_communicator_veo_vedma_post_hpp
 
 namespace ham {
 namespace net {
@@ -22,4 +22,4 @@ T& buffer_ptr<T>::operator[](size_t i)
 } // namespace net
 } // namespace ham
 
-#endif // ham_net_communicator_veo_post_hpp
+#endif // ham_net_communicator_veo_vedma_post_hpp

@@ -5,5 +5,8 @@
 
 #include "ham/net/communicator.hpp"
 
-//ham::net::communicator* ham::net::communicator_base::instance_ = nullptr;
+// VEO usable interface for initialisation
+extern "C" {
+
+} // extern "C"
 

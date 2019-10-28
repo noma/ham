@@ -11,7 +11,7 @@ namespace offload {
 
 // This must be called explicitly before you start using the HAM-Offload API, usually at the beginning of main().
 // NOTE: This call blocks in all processes except the logical host process and 
-bool ham_init(int argc, char* argv[]);
+bool ham_init(int* argc_ptr, char** argv_ptr[]);
 
 // This must be called explicitly when you are done using the HAM-Offload API, usually at the end of main().
 int ham_finalise();
@@ -20,6 +20,6 @@ int ham_finalise();
 } // namespace ham
 
 // just a dummy for satisfying the runtime implementation
-int ham_user_main(int argc, char* argv[]);
+int ham_user_main(int argc, char* argv_ptr[]);
 
 #endif // ham_offload_main_explicit_hpp

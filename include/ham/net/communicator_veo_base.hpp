@@ -3,8 +3,8 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef ham_net_communicator_veo_hpp
-#define ham_net_communicator_veo_hpp
+#ifndef ham_net_communicator_veo_base_hpp
+#define ham_net_communicator_veo_base_hpp
 
 #include <cassert>
 #include <errno.h>
@@ -69,6 +69,41 @@ public:
 	char name_[name_length_];
 
 	friend class communicator;
+};
+
+
+
+class communicator_options : public ham::detail::options
+{
+public:
+	communicator_options(int* argc_ptr, char** argv_ptr[]) : options(argc_ptr, argv_ptr)
+	{
+// NOTE: no command line handling on the VE side
+//       see also options in options.hpp
+// TODO: solve mystery: just adding options on the VE side actually influences the results offload call benchmark significantly (~1 µs) (VE code makes the difference)
+#ifndef HAM_COMM_VE
+		// add backend-specific options
+		app_.add_option("--ham-process-count", ham_process_count_, "Number of processes the job consists of (number of targets + 1).");
+		app_.add_option("--ham-host-address", ham_host_address_, "The address of the host process (0 by default).");
+		app_.add_option("--ham-veo-ve-lib", veo_library_path_, "Path to the VEO VE library of the application.");
+		app_.add_option("--ham-veo-ve-nodes", veo_ve_nodes_, "VE Nodes to be used as offload targets, comma separated list, no spaces.");
+#endif
+
+		// NOTE: no further inheritance or adding
+		parse();
+	}
+
+	// command line argument getters
+	const uint64_t& ham_process_count() const { return ham_process_count_; }
+	const node_t& ham_host_address() const { return ham_host_address_; }
+	const std::string& veo_library_path() const { return veo_library_path_; }
+	const std::string& veo_ve_nodes() const { return veo_ve_nodes_; }
+
+private:
+	uint64_t ham_process_count_ = 2; // number of participating processes
+	node_t ham_host_address_ = 0; // the address of the host process
+	std::string veo_library_path_ = "";
+	std::string veo_ve_nodes_ = "";
 };
 
 template<class Derived>
@@ -161,6 +196,11 @@ public:
 		free((void*)ptr.get());
 	}
 
+	size_t round_to_full_pages(size_t size, size_t page_size) 
+	{
+		return size % page_size == 0 ? size : ((size / page_size) + 1) * page_size;
+	}
+
 protected:
 	void errno_handler(int ret, const char * hint)
 	{
@@ -185,4 +225,4 @@ typename communicator_base<Derived>::communicator* communicator_base<Derived>::i
 } // namespace net
 } // namespace ham
 
-#endif // ham_net_communicator_veo_hpp
+#endif // ham_net_communicator_veo_base_hpp

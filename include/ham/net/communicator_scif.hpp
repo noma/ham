@@ -79,6 +79,59 @@ private:
 	friend class communicator;
 };
 
+class communicator_options : public ham::detail::options
+{
+public:
+	communicator_options(int* argc_ptr, char** argv_ptr[]) : options(argc_ptr, argv_ptr)
+	{
+		// add backend-specific options
+		app_.add_option("--ham-process-count", ham_process_count_, "Number of processes the job consists of (number of targets + 1).");
+		app_.add_option("--ham-address", ham_address_, "This processes address, between 0 and host-process-count minus 1.");
+		app_.add_option("--ham-host-node", ham_host_node_, "The SCIF network node on which the host process is started (0, the host machine by default).");
+		app_.add_option("--ham-host-address", ham_host_address_, "The address of the host process (0 by default). NOTE: Not implemented yet.");
+
+		// NOTE: no further inheritance or adding
+		scif_init();
+		parse();
+	}
+
+	// scif data getters
+	const uint16_t* nodes() const { return nodes_; }
+	const uint16_t& num_nodes() const { return num_nodes_; }
+	const uint16_t& self() const { return self_; }
+
+	// command line argument getters
+	const uint16_t& ham_process_count() const { return ham_process_count_; }
+	const uint16_t& ham_address() const { return ham_address_; }
+	const uint16_t& ham_host_node() const { return ham_host_node_; }
+	const uint16_t& ham_host_address() const { return ham_host_address_; }
+
+private:
+	void scif_init()
+	{
+		// basic SCIF initialisation
+		int err = 0;
+		num_nodes_ = scif_get_nodeIDs(nodes_, MAX_SCIF_NODES, &self_);
+		errno_handler(num_nodes_, "scif_get_nodeIDs");
+
+		// command line default configuration
+		ham_process_count_ = num_nodes_; // number of participating processes
+		ham_address_ = self_; // this processes' address
+		ham_host_address_ = 0; // the address of the host process
+		ham_host_node_ = 0; // SCIF network node of the host process, default is 0 (which is the host machines)
+	}
+
+	uint16_t nodes_[MAX_SCIF_NODES];
+	uint16_t num_nodes_;
+	uint16_t self_;
+
+	uint16_t ham_process_count_ = 2; // number of participating processes
+	uint16_t ham_address_ = 0; // this processes' address
+	uint16_t ham_host_node_ = 0; // SCIF network node of the host process, default is 0 (which is the host machines)
+	uint16_t ham_host_address_ = 0; // the address of the host process
+};
+
+
 class communicator {
 public:
 	enum {
@@ -128,61 +181,16 @@ public:
 	typedef request& request_reference_type;
 	typedef const request& request_const_reference_type;
 
-	communicator(int* argc_ptr, char** argv_ptr[])
+	communicator(communicator_options& comm_options)
+	: num_nodes_(comm_options.num_nodes()),
+	  ham_process_count(comm_options.ham_process_count()),
+	  ham_address(comm_options.ham_address()),
+	  ham_host_node(comm_options.ham_host_node()),
+	  ham_host_address(comm_options.ham_host_address()),
 	{
 		instance_ = this;
 
 		HAM_DEBUG( HAM_LOG << "FLAG_FALSE = " << FLAG_FALSE << ", NO_BUFFER_INDEX = " << NO_BUFFER_INDEX << std::endl; )
-
-		// basic SCIF initialisation
-		uint16_t nodes[MAX_SCIF_NODES];
-		uint16_t self;
-		int err = 0;
-		num_nodes_ = scif_get_nodeIDs(nodes, MAX_SCIF_NODES, &self);
-		errno_handler(num_nodes_, "scif_get_nodeIDs");
-
-		// command line configuration
-		ham_process_count = num_nodes_; // number of participating processes
-		ham_address = self; // this processes' address
-		ham_host_address = 0; // the address of the host process
-		ham_host_node = 0; // SCIF network node of the host process, default is 0 (which is the host machines)
-
-		// command line options
-		boost::program_options::options_description desc("HAM Options");
-		desc.add_options()
-			("ham-help", "Shows this message")
-			("ham-process-count", boost::program_options::value(&ham_process_count)->default_value(ham_process_count), "Number of processes the job consists of.")
-			("ham-address", boost::program_options::value(&ham_address)->default_value(ham_address), "This processes address, between 0 and host-process-count minus 1.")
-			("ham-host-node", boost::program_options::value(&ham_host_node)->default_value(ham_host_node), "The SCIF network node on which the host process is started (0, the host machine by default).")
-			("ham-host-address", boost::program_options::value(&ham_host_address)->default_value(ham_host_address), "The address of the host process (0 by default). NOTE: Not implemented yet.")
-		;
-
-		boost::program_options::variables_map vm;
-
-		// NOTE: no try-catch here to avoid exceptions, that cause offload-dependencies to boost exception in the MIC code
-		const char* options_env = std::getenv("HAM_OPTIONS");
-		if (options_env)
-		{
-			char split_character = ' ';
-			if (std::getenv("HAM_OPTIONS_NO_SPACES")) // value does not matter
-				split_character = '_';
-
-			// parse from environment
-			boost::program_options::store(boost::program_options::command_line_parser(detail::options::split(std::string(options_env), split_character)).options(desc).allow_unregistered().run(), vm);
-		}
-		else
-		{
-			// parse from command line
-			boost::program_options::store(boost::program_options::command_line_parser(*argc_ptr, *argv_ptr).options(desc).allow_unregistered().run(), vm);
-		}
-
-		boost::program_options::notify(vm);
-
-		if(vm.count("ham-help"))
-		{
-			std::cout << desc << std::endl;
-			exit(0);
-		}
 
 		// SCIF setup
 
@@ -195,7 +203,7 @@ public:
 		if (is_host())
 		{
 			HAM_DEBUG( HAM_LOG << "num_nodes_: " << num_nodes_ << std::endl; )
-			HAM_DEBUG( for (int i = 0; i < num_nodes_; ++i) HAM_LOG << "node_id " << i << ": " << nodes[i] << std::endl; )
+			HAM_DEBUG( for (int i = 0; i < num_nodes_; ++i) HAM_LOG << "node_id " << i << ": " << comm_options.nodes()[i] << std::endl; )
 
 			// open endpoint to list on (own peer)
 			peers[ham_address].endpoint = scif_open();
@@ -279,7 +287,7 @@ public:
 			errno_handler(err, "scif_bind");
 
 			// only open one end-point to connect with the host
-			scif_portID portID = {nodes[ham_host_node], static_cast<uint16_t>(BASE_PORT + ham_host_address)};
+			scif_portID portID = {comm_options.nodes()[ham_host_node], static_cast<uint16_t>(BASE_PORT + ham_host_address)};
 			err = scif_connect(host_peer.endpoint, &portID); // connect with host
 			errno_handler(err, "scif_accept");
 

@@ -39,11 +39,15 @@ Building requires the NEC compiler and software environment.
 
 There are two back-ends for the NEC VE, where "VEO+VEDMA" is the faster one and "VEO-only" acts as a reference. **The NEC VE backend requires two builds**, one for the Vector Engine (VE) and one for the Vector Host (VH), i.e. we need to create two build folders with CMake.
 
+```terminal
+cd ..
+```
+
 **Vector Host:** any C++ compiler should do:
 ```terminal
 mkdir build.hello_world.vh
 cd build.hello_world.vh
-cmake ../hellow_world
+cmake ../hello_world
 make -j
 ```
 
@@ -51,7 +55,7 @@ make -j
 ```terminal
 mkdir build.hello_world.ve
 cd build.hello_world.ve
-CC=`which ncc` CXX=`which nc++` cmake -DCMAKE_CXX_COMPILE_FEATURES='cxx_auto_type;cxx_range_for;cxx_variadic_templates' ../cmake ../hellow_world
+CC=`which ncc` CXX=`which nc++` cmake -DCMAKE_CXX_COMPILE_FEATURES='cxx_auto_type;cxx_range_for;cxx_variadic_templates' ../cmake ../hello_world
 make -j
 ```
 

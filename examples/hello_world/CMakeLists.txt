@@ -31,7 +31,8 @@ endif ()
 if (VEO_FOUND)
 	if (HAM_NEC_COMPILER_DETECTED)
 		# Vector Engine (VE) libraries
-		add_library(hello_world_veo_ve hello_world.cpp) # for static VEO lib
+		add_library(hello_world_veo_ve hello_world.cpp)
+		SET(HAMLIB_VE -Wl,--whole-archive ham_offload_veo_ve -Wl,--no-whole-archive)
 		target_link_libraries(hello_world_veo_ve ${HAMLIB_VE})
 		set_property(TARGET hello_world_veo_ve PROPERTY POSITION_INDEPENDENT_CODE ON)
 		add_custom_command(TARGET hello_world_veo_ve
@@ -48,7 +49,8 @@ endif ()
 if (VEO_FOUND)
 	if (HAM_NEC_COMPILER_DETECTED)
 		# Vector Engine (VE) libraries
-		add_library(hello_world_vedma_ve hello_world.cpp) # for static VEO lib
+		add_library(hello_world_vedma_ve hello_world.cpp)
+		SET(HAMLIB_VE -Wl,--whole-archive ham_offload_vedma_ve -Wl,--no-whole-archive)
 		target_link_libraries(hello_world_vedma_ve ${HAMLIB_VE})
 		set_property(TARGET hello_world_vedma_ve PROPERTY POSITION_INDEPENDENT_CODE ON)
 		add_custom_command(TARGET hello_world_vedma_ve

@@ -63,6 +63,15 @@ We start the host executable, and pass the binary generated for the Vector Engin
 
 ```terminal
 cd ..
+```
+
+**VEO-only Backend:**
+```terminal
+build.hello_world.vh/hello_world_veo_vh --ham-process-count 2 --ham-veo-ve-nodes 0 --ham-veo-ve-lib build.hello_world.ve/veorun_hello_world_veo
+```
+
+**VEO-VEDMA Backend:**
+```terminal
 build.hello_world.vh/hello_world_vedma_vh --ham-process-count 2 --ham-veo-ve-nodes 0 --ham-veo-ve-lib build.hello_world.ve/veorun_hello_world_vedma
 ```
 

@@ -71,16 +71,23 @@ public:
 	friend class communicator;
 };
 
+
+
 class communicator_options : public ham::detail::options
 {
 public:
 	communicator_options(int* argc_ptr, char** argv_ptr[]) : options(argc_ptr, argv_ptr)
 	{
+// NOTE: no command line handling on the VE side
+//       see also options in options.hpp
+// TODO: solve mystery: just adding options on the VE side actually influences the results offload call benchmark significantly (~1 µs) (VE code makes the difference)
+#ifndef HAM_COMM_VE
 		// add backend-specific options
 		app_.add_option("--ham-process-count", ham_process_count_, "Number of processes the job consists of (number of targets + 1).");
 		app_.add_option("--ham-host-address", ham_host_address_, "The address of the host process (0 by default).");
 		app_.add_option("--ham-veo-ve-lib", veo_library_path_, "Path to the VEO VE library of the application.");
 		app_.add_option("--ham-veo-ve-nodes", veo_ve_nodes_, "VE Nodes to be used as offload targets, comma separated list, no spaces.");
+#endif
 
 		// NOTE: no further inheritance or adding
 		parse();

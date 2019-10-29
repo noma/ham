@@ -168,6 +168,7 @@ jobs:
 
 before_install:
   - eval "${MATRIX_EVAL}"
+  - ${CXX} --version
   - source ./ci/build_mpich.sh ${CNAME}
   - export CMAKE_OPTIONS=${CMAKE_OPTIONS}" "${ENV_CMAKE_OPTIONS}
   - export CXX_FLAGS=${CXX_FLAGS}" "${ENV_CXX_FLAGS}

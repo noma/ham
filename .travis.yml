@@ -1,3 +1,4 @@
+sudo: false # allows containers instead of VMs
 language: cpp
 
 os: linux

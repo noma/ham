@@ -14,6 +14,7 @@ addons:
     packages: &common_packages
       - cmake-data
       - cmake
+#      - libcr-dev
 #      - mpich
 #      - libmpich-dev
     # - mpi-default-dev # open-mpi, headers cause some compiler warnings

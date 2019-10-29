@@ -34,8 +34,8 @@ else
 		--enable-fortran=no \
 		--enable-fast=all \
 		--enable-g=none \
-		--enable-timing=none \
-		--enable-checkpointing=false
+		--enable-timing=none
+#		--enable-checkpointing=false
 	make -j4
 	make install
 	cd -

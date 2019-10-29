@@ -42,8 +42,14 @@ else
 	echo "... done."
 fi
 
+ls -l ${MPICH_INSTALL_DIR}/bin
+
 export PATH=$(pwd)/${MPICH_INSTALL_DIR}/bin:${PATH}
 echo "PATH=${PATH}"
+
+which mpicxx
+
+ls -l ${MPICH_INSTALL_DIR}/lib
 
 export LD_LIBRARY_PATH=$(pwd)/${MPICH_INSTALL_DIR}/lib:${LD_LIBRARY_PATH}
 echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"

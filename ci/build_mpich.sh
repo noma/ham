@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# NOTE: 
+# Source this script for the exports to have an effect.
+# Usage: source ./build_mpich.sh <install_dir_suffix>
+
 # Travis-CI helper to build MPIĆH for testing against newer compilers
 # https://d-meiser.github.io/2016/01/10/mpi-travis.html
 
@@ -18,6 +22,7 @@ cd mpich
 if [ -f ${MPICH_INSTALL_DIR}/lib/libmpich.so ]; then
 	echo "libmpich.so found -- nothing to build."
 else
+# download and build MPICH if not cached
 	echo "Downloading MPICH source..."
 	wget ${MPICH_URL}
 	tar xf ${MPICH_FILE}
@@ -35,7 +40,6 @@ else
 		--enable-fast=all \
 		--enable-g=none \
 		--enable-timing=none
-#		--enable-checkpointing=false
 	make -j4
 	make install
 	cd -
@@ -43,17 +47,8 @@ else
 	echo "... done."
 fi
 
-ls -l ${MPICH_INSTALL_DIR}/bin
-
 export PATH=$(pwd)/${MPICH_INSTALL_DIR}/bin:${PATH}
-echo "PATH=${PATH}"
-
-which mpicxx
-
-ls -l ${MPICH_INSTALL_DIR}/lib
-
 export LD_LIBRARY_PATH=$(pwd)/${MPICH_INSTALL_DIR}/lib:${LD_LIBRARY_PATH}
-echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
 
 cd ..
 

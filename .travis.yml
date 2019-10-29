@@ -153,16 +153,17 @@ jobs:
       env:
         - MATRIX_EVAL="CC=clang-8 && CXX=clang++-8 && CNAME=clang-8"
 
-    # Clang 9
-    - addons:
-        apt:
-          sources:
-            - llvm-toolchain-xenial-9
-          packages:
-            - *common_packages
-            - clang-9
-      env:
-        - MATRIX_EVAL="CC=clang-9 && CXX=clang++-9 && CNAME=clang-9"
+# NOT YET SUPPORTED
+#    # Clang 9 
+#    - addons:
+#        apt:
+#          sources:
+#            - llvm-toolchain-xenial-9
+#          packages:
+#            - *common_packages
+#            - clang-9
+#      env:
+#        - MATRIX_EVAL="CC=clang-9 && CXX=clang++-9 && CNAME=clang-9"
 
 
 before_install:
@@ -170,7 +171,6 @@ before_install:
   - source ./ci/build_mpich.sh ${CNAME}
   - export CMAKE_OPTIONS=${CMAKE_OPTIONS}" "${ENV_CMAKE_OPTIONS}
   - export CXX_FLAGS=${CXX_FLAGS}" "${ENV_CXX_FLAGS}
-
   
 script:
 # build

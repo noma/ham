@@ -174,7 +174,7 @@ before_install:
   - export CXX_FLAGS=${CXX_FLAGS}" "${ENV_CXX_FLAGS}
   
 script:
-# build
+# info
   - echo "CXX_FLAGE=${CXX_FLAGS}"
   - echo "MAKE_FLAGS=${MAKE_FLAGS}"
   - which ${CC}
@@ -184,13 +184,22 @@ script:
   - which mpirun
   - which mpicc
   - which mpicxx
+# build HAM
   - mkdir -p build
   - cd build
   - cmake -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" ../ham
   - make ${MAKE_FLAGS}
-# test  
+# test HAM
   - mpirun -n 2 ./test_argument_transfer_mpi
   - mpirun -n 3 ./test_data_transfer_mpi
   - mpirun -n 3 ./ham_offload_test_mpi
   - mpirun -n 3 ./ham_offload_test_explicit_mpi
-  
+  cd ..
+# build example
+  - cd examples
+  - mkdir build.hello_world
+  - cd build.hello_world
+  - cmake -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" ../hello_world
+  - make ${MAKE_FLAGS}
+# test example
+  - mpirun -n 2 ./hello_world

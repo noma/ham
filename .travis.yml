@@ -1,6 +1,9 @@
 sudo: false # allows containers instead of VMs
 language: cpp
-
+cache:
+  directories:
+  - mpich
+  
 os: linux
 dist: xenial
 
@@ -31,7 +34,7 @@ jobs:
             - *common_packages
             - g++-4.9
       env:
-        - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+        - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9 && CNAME=gcc-4.9"
 
     # GCC 5
     - addons:
@@ -41,7 +44,7 @@ jobs:
             - *common_packages
             - g++-5
       env:
-        - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+        - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5 && CNAME=gcc-5"
     
     # GCC 6
     - addons:
@@ -51,7 +54,7 @@ jobs:
             - *common_packages
             - g++-6
       env:
-        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6 && CNAME=gcc-6"
         - CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror -Wno-error=unused-but-set-variable"
     
     # GCC 7
@@ -62,7 +65,7 @@ jobs:
             - *common_packages
             - g++-7
       env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7 && CNAME=gcc-7"
         - CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror -Wno-error=unused-but-set-variable"
 
     # GCC 8
@@ -73,7 +76,7 @@ jobs:
             - *common_packages
             - g++-8
       env:
-        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8 && CNAME=gcc-8"
         - CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror -Wno-error=unused-but-set-variable"
 
     # GCC 9
@@ -96,7 +99,7 @@ jobs:
             - *common_packages
             - clang-3.9
       env:
-        - MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
+        - MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9 && CNAME=clang-3.9"
 
     # Clang 4.0
     - addons:
@@ -107,7 +110,7 @@ jobs:
             - *common_packages
             - clang-4.0
       env:
-        - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
+        - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0 && CNAME=clang-4.0"
 
     # Clang 5.0
     - addons:
@@ -119,7 +122,7 @@ jobs:
             - *common_packages
             - clang-5.0
       env:
-        - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
+        - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0 && CNAME=clang-5.0"
 
     # Clang 6.0
     - addons:
@@ -131,7 +134,7 @@ jobs:
             - *common_packages
             - clang-6.0
       env:
-        - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
+        - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0 && CNAME=clang-6.0"
 
     # Clang 7.0
     - addons:
@@ -143,7 +146,7 @@ jobs:
             - *common_packages
             - clang-7.0
       env:
-        - MATRIX_EVAL="CC=clang-7.0 && CXX=clang++-7.0"
+        - MATRIX_EVAL="CC=clang-7.0 && CXX=clang++-7.0 && CNAME=clang-7.0"
 
     # Clang 8.0
     - addons:
@@ -155,13 +158,15 @@ jobs:
             - *common_packages
             - clang-8.0
       env:
-        - MATRIX_EVAL="CC=clang-8.0 && CXX=clang++-8.0"
+        - MATRIX_EVAL="CC=clang-8.0 && CXX=clang++-8.0 && CNAME=clang-8.0"
 
 
 before_install:
+  - eval "${MATRIX_EVAL}"
+  - ./ci/build_mpich.sh ${CNAME}
   - export CMAKE_OPTIONS=${CMAKE_OPTIONS}" "${ENV_CMAKE_OPTIONS}
   - export CXX_FLAGS=${CXX_FLAGS}" "${ENV_CXX_FLAGS}
-  - eval "${MATRIX_EVAL}"
+
   
 script:
 # build

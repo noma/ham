@@ -15,7 +15,7 @@ mkdir -p mpich
 cd mpich
 
 # check cache
-if [ -f ${MPICH_DIR}/lib/libmpich.so ]; then
+if [ -f ${MPICH_INSTALL_DIR}/lib/libmpich.so ]; then
 	echo "libmpich.so found -- nothing to build."
 else
 	echo "Downloading MPICH source..."
@@ -43,7 +43,10 @@ else
 fi
 
 export PATH=$(pwd)/${MPICH_INSTALL_DIR}/bin:${PATH}
+echo "PATH=${PATH}"
+
 export LD_LIBRARY_PATH=$(pwd)/${MPICH_INSTALL_DIR}/lib:${LD_LIBRARY_PATH}
+echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
 
 cd ..
 

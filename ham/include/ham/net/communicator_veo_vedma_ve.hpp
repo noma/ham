@@ -373,6 +373,7 @@ private:
 		ve_inst_fenceLF();
 		do {
 			local_flag = ve_inst_lhm((void *)remote_send_flag_vehva);
+			ve_inst_fenceLF();
 		} while (local_flag == FLAG_FALSE);
 
 		// DMA polling: TODO: debug, and benchmark

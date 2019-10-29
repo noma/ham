@@ -163,6 +163,9 @@ if (HAM_BUILD_EXECUTABLES)
 
 		add_executable(test_argument_transfer_mpi test_argument_transfer.cpp)
 		target_link_libraries(test_argument_transfer_mpi ham_offload_mpi)
+
+		add_executable(test_multiple_targets_mpi test_multiple_targets.cpp)
+		target_link_libraries(test_multiple_targets_mpi ham_offload_mpi)
 	endif ()
 
 	if (SCIF_FOUND)
@@ -180,6 +183,9 @@ if (HAM_BUILD_EXECUTABLES)
 
 		add_executable(test_argument_transfer_scif test_argument_transfer.cpp)
 		target_link_libraries(test_argument_transfer_scif ham_offload_scif)
+
+		add_executable(test_multiple_targets_scif test_multiple_targets.cpp)
+		target_link_libraries(test_multiple_targets_scif ham_offload_scif)
 	endif ()
 
 	# VEO Backend
@@ -204,6 +210,9 @@ if (HAM_BUILD_EXECUTABLES)
 
 			add_executable(test_argument_transfer_veo_vh test_argument_transfer.cpp)
 			target_link_libraries(test_argument_transfer_veo_vh ham_offload_veo_vh)
+
+			add_executable(test_multiple_targets_veo_vh test_multiple_targets.cpp)
+			target_link_libraries(test_multiple_targets_veo_vh ham_offload_veo_vh)
 		endif ()
 
 		# Vector Engine Libraries
@@ -266,6 +275,14 @@ if (HAM_BUILD_EXECUTABLES)
 			                   COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_test_argument_transfer ./libtest_argument_transfer_veo_ve.a ./ham/libham_offload_veo_ve.a)
 		endif ()
 
+		add_library(test_multiple_targets_veo_ve test_multiple_targets.cpp)
+		target_link_libraries(test_multiple_targets_veo_ve ${HAMLIB_VE})
+		set_property(TARGET test_multiple_targets_veo_ve PROPERTY POSITION_INDEPENDENT_CODE ON)
+		if (HAM_NEC_COMPILER_DETECTED)
+			add_custom_command(TARGET test_multiple_targets_veo_ve
+			                   POST_BUILD
+			                   COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_test_multiple_targets ./libtest_multiple_targets_veo_ve.a ./ham/libham_offload_veo_ve.a)
+		endif ()
 	endif ()
 
 
@@ -291,6 +308,9 @@ if (HAM_BUILD_EXECUTABLES)
 
 			add_executable(test_argument_transfer_vedma_vh test_argument_transfer.cpp)
 			target_link_libraries(test_argument_transfer_vedma_vh ham_offload_vedma_vh)
+
+			add_executable(test_multiple_targets_vedma_vh test_multiple_targets.cpp)
+			target_link_libraries(test_multiple_targets_vedma_vh ham_offload_vedma_vh)
 		endif ()
 
 		# Vector Engine Libraries
@@ -350,6 +370,15 @@ if (HAM_BUILD_EXECUTABLES)
 				add_custom_command(TARGET test_argument_transfer_vedma_ve
 				                   POST_BUILD
 				                   COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_test_argument_transfer_vedma ./libtest_argument_transfer_vedma_ve.a ./ham/libham_offload_vedma_ve.a ${MK_VEORUN_STATIC_LIBS})
+			endif ()
+
+			add_library(test_multiple_targets_vedma_ve test_multiple_targets.cpp)
+			target_link_libraries(test_multiple_targets_vedma_ve ${HAMLIB_VE})
+			set_property(TARGET test_multiple_targets_vedma_ve PROPERTY POSITION_INDEPENDENT_CODE ON)
+			if (HAM_NEC_COMPILER_DETECTED)
+				add_custom_command(TARGET test_multiple_targets_vedma_ve
+				                   POST_BUILD
+				                   COMMAND /opt/nec/ve/libexec/mk_veorun_static ../veorun_test_multiple_targets_vedma ./libtest_multiple_targets_vedma_ve.a ./ham/libham_offload_vedma_ve.a ${MK_VEORUN_STATIC_LIBS})
 			endif ()
 		endif ()
 	endif ()

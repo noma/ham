@@ -74,7 +74,7 @@ jobs:
             - g++-8
       env:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8 && CNAME=gcc-8"
-        - CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror -Wno-error=unused-but-set-variable"
+        - CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror"
 
     # GCC 9
     - addons:
@@ -85,7 +85,7 @@ jobs:
             - g++-9
       env:
         - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
-        - CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror -Wno-error=unused-but-set-variable"
+        - CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror"
 
 # Clang 3.9
     - addons:

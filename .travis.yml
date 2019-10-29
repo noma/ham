@@ -194,7 +194,7 @@ script:
   - mpirun -n 3 ./test_data_transfer_mpi
   - mpirun -n 3 ./ham_offload_test_mpi
   - mpirun -n 3 ./ham_offload_test_explicit_mpi
-  cd ..
+  - cd ..
 # build example
   - cd examples
   - mkdir build.hello_world

@@ -202,4 +202,4 @@ script:
   - cmake -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" ../hello_world
   - make ${MAKE_FLAGS}
 # test example
-  - mpirun -n 2 ./hello_world
+  - mpirun -n 2 ./hello_world_mpi

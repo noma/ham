@@ -62,7 +62,8 @@ public:
 		// (ham_process count - 1) iterations, i.e. targets
 		int ve_list_index = 0;
 		for (node_t i = 0; i < static_cast<node_t>(ham_process_count); ++i) {
-			if(i != ham_host_address) { // ommit the host address
+			if(i != ham_host_address) { // omit the host address
+				HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: setting up HAM node " << i << " with VE " << ve_node_list[ve_list_index] << std::endl; )
 				veo_peer& peer = peers[i];
 				int err = 0;
 
@@ -73,20 +74,14 @@ public:
 					HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: error: veo_proc_create_static(" << ve_node_list[ve_list_index] << ") returned 0" << std::endl; );
 					exit(1); // TODO: check how we terminate elsewhere to be consistent
 				}
-
 #else
 				peer.veo_proc = veo_proc_create(ve_node_list[ve_list_index]);
 				if (peer.veo_proc == 0) {
 					HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: error: veo_proc_create() returned 0" << std::endl; );
 					exit(1); // TODO: check how we terminate elsewhere to be consistent
 				}
-
 #endif
 				// TODO: nicify and unify error handling
-				if (peer.veo_proc == 0) {
-					HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: error: veo_proc_create() returned 0" << std::endl; );
-					exit(1); // TODO: check how we terminate elsewhere to be consistent
-				}
 
 				// load VE library image 
 #ifdef HAM_COMM_VEO_STATIC

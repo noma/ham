@@ -69,7 +69,8 @@ std::cout << "hello: HAM_COMM_VE" << std::endl;
 	std::cout << "hello: pre vh_shmdt " << std::endl;
 	// detach
 	int err = vh_shmdt(local_addr);
-	assert(err == 0);
+	if (err == 0)
+		std::cout << "hello: error: vh_shmdt() returned 0 " << std::endl;
 	
 //	return msg.size();
 #endif

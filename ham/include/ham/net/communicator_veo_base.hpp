@@ -171,6 +171,7 @@ public:
 	template<typename T>
 	buffer_ptr<T> allocate_buffer(const size_t n, node_t source_node)
 	{
+		HAM_UNUSED_VAR(source_node);
 		// TODO: figure out if page-size restriction is necessary/beneficial on the VE
 		// NOTE: no ctor calls (buffer vs. array)
 		//ptr = new(ptr) T[n];

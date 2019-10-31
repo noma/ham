@@ -331,14 +331,15 @@ std::cerr << "got node desc" << std::endl;
 				// delete SHM
 				err = shmctl(peer.shm_id, IPC_RMID, NULL);
 				if (err < 0)
-					HAM_LOG << "Failed to remove SHM segment ID " << peer.shm_id << std::endl;
+					HAM_LOG << "communicator(VH)::~communicator(): error: failed to remove SHM segment ID " << peer.shm_id << std::endl;
 
 				// sync on offloaded main()
-				int ret;
 				uint64_t retval;
-				ret = veo_call_wait_result(peer.veo_main_context, peer.veo_main_id, &retval);
-				HAM_DEBUG( HAM_LOG << "info: veo_call_wait_result() returned : " << ret << ", target main returned " << retval << std::endl; );
-			
+				err = veo_call_wait_result(peer.veo_main_context, peer.veo_main_id, &retval);
+				if (err < 0)
+					HAM_LOG << "communicator(VH)::~communicator(): error: veo_call_wait_result() for synchronising on target main() failed." std::endl;
+				HAM_DEBUG( HAM_LOG << "communicator(VH)::~communicator(): info: veo_call_wait_result() returned : " << ret << ", target main returned " << retval << std::endl; );
+
 				// free VEO resources
 				veo_args_free(peer.veo_main_args);
 
@@ -374,7 +375,7 @@ protected:
 			HAM_DEBUG(
 			request& req = peers[remote_node].next_request;
 			HAM_LOG << "communicator(VH)::allocate_next_request(): new next_request = " <<
-				"req(" << req.target_node << ", " << req.target_buffer_index << ", " << req.source_node << ", " << req.source_buffer_index << ")" << std::endl );
+				"request(" << req.target_node << ", " << req.target_buffer_index << ", " << req.source_node << ", " << req.source_buffer_index << ")" << std::endl );
 		}
 
 		return peers[remote_node].next_request;

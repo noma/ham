@@ -84,7 +84,7 @@ public:
 		for (auto& key_value_pair : handler_map)
 		{
 			out << "typeid_name: " << key_value_pair.first << ",\t"
-				      << "handler_address: " << (void*)key_value_pair.second.first << std::endl;
+				      << "handler_address: " << key_value_pair.second.first << std::endl;
 		}
 		out << "==================== END HANDLER MAP =======================" << std::endl;
 	}
@@ -96,7 +96,7 @@ public:
 		for (size_t i = 0; i < handler_vector.size(); ++i)
 		{
 			out << "index: " << i << ",\t"
-				      << "handler_address: " << (void*)handler_vector[i] << std::endl;
+				      << "handler_address: " << handler_vector[i] << std::endl;
 		}
 		out << "==================== END HANDLER VECTOR ====================" << std::endl;
 	}

@@ -430,8 +430,8 @@ public:
 		return instance().peers[node].node_description;
 	}
 
-	static node_t this_node() const { return instance().ham_address; }
-	static size_t num_nodes() const { return instance().ham_process_count; }
+	static node_t this_node() { return instance().ham_address; }
+	static size_t num_nodes() { return instance().ham_process_count; }
 	bool is_host() const { return ham_address == ham_host_address ; }
 	bool is_host(node_t node) const { return node == ham_host_address; }
 

@@ -174,6 +174,7 @@ private:
 private:
 	void* recv_msg(node_t node, size_t buffer_index = NO_BUFFER_INDEX, void* msg = nullptr, size_t size = constants::MSG_SIZE)
 	{
+		HAM_UNUSED_VAR(msg);
 		// use next_flag as index, if none is given
 		buffer_index = buffer_index == NO_BUFFER_INDEX ?  peers[node].next_flag : buffer_index;
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::recv_msg(): remote node is: " << node << std::endl; )

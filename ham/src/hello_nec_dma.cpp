@@ -138,6 +138,7 @@ std::cout << "hello: HAM_COMM_VE" << std::endl;
 #if defined(HAM_COMM_VH)
 	int err = shmdt(local_addr);
 	assert(err == 0);
+	UNUSED_VAR(err); // avoid warning in non-debug build
 #endif
 
 	return 0;

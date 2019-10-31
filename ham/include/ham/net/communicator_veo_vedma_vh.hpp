@@ -337,8 +337,8 @@ std::cerr << "got node desc" << std::endl;
 				uint64_t retval;
 				err = veo_call_wait_result(peer.veo_main_context, peer.veo_main_id, &retval);
 				if (err < 0)
-					HAM_LOG << "communicator(VH)::~communicator(): error: veo_call_wait_result() for synchronising on target main() failed." std::endl;
-				HAM_DEBUG( HAM_LOG << "communicator(VH)::~communicator(): info: veo_call_wait_result() returned : " << ret << ", target main returned " << retval << std::endl; );
+					HAM_LOG << "communicator(VH)::~communicator(): error: veo_call_wait_result() for synchronising on target main() failed." << std::endl;
+				HAM_DEBUG( HAM_LOG << "communicator(VH)::~communicator(): info: veo_call_wait_result() returned : " << err << ", target main returned " << retval << std::endl; );
 
 				// free VEO resources
 				veo_args_free(peer.veo_main_args);

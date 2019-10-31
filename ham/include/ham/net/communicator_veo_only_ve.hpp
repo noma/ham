@@ -228,6 +228,9 @@ public:
 	{
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::send_data(): writing " << size << " byte from " << local_source << " to " << remote_dest.get() << std::endl; )
 		// NOTE: not supported on target
+		HAM_UNUSED_VAR(local_source);
+		HAM_UNUSED_VAR(remote_dest);
+		HAM_UNUSED_VAR(size);
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::send_data(): Operation not supported on VE." << std::endl; )
 		exit(1);
 	}
@@ -238,6 +241,9 @@ public:
 
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::recv_data(): reading " << size << " byte from " << remote_source.get() << " to " << local_dest << std::endl; )
 		// NOTE: not supported on target
+		HAM_UNUSED_VAR(remote_source);
+		HAM_UNUSED_VAR(local_dest);
+		HAM_UNUSED_VAR(size);
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::recv_data(): Operation not supported on VE." << std::endl; )
 		exit(1);
 	}

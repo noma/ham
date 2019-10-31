@@ -12,6 +12,9 @@
 #include <string.h>
 #include <sys/mman.h>
 
+// surpress compiler warnings
+#define UNUSED_VAR(var) (void)(var)
+
 extern "C" {
 	#include <vhshm.h>
 	#include <vedma.h>
@@ -169,11 +172,13 @@ int main(int argc, char * argv[])
 					uint64_t offset = i * dma_chunk_size;
 					ve_dma_post_wait(local_buffer_vehva + offset, remote_shm_vehva + offset, dma_chunk_size); // dst (VE), src (VH), size
 					assert(err == 0);
+					UNUSED_VAR(err);
 				}
 				if (remainder > 0) {
 					uint64_t offset = chunks * dma_chunk_size;
 					ve_dma_post_wait(local_buffer_vehva + offset, remote_shm_vehva + offset, remainder); // dst (VE), src (VH), size
 					assert(err == 0);
+					UNUSED_VAR(err);
 				}
 					
 			}
@@ -215,13 +220,15 @@ int main(int argc, char * argv[])
 				int err = 0;
 				for (size_t i = 0; i < chunks; ++i) {
 					uint64_t offset = i * dma_chunk_size;
-					ve_dma_post_wait(remote_shm_vehva + offset, local_buffer_vehva + offset, dma_chunk_size); // dst (VH), src (VE), size
+					err = ve_dma_post_wait(remote_shm_vehva + offset, local_buffer_vehva + offset, dma_chunk_size); // dst (VH), src (VE), size
 					assert(err == 0);
+					UNUSED_VAR(err);
 				}
 				if (remainder > 0) {
 					uint64_t offset = chunks * dma_chunk_size;
-					ve_dma_post_wait(remote_shm_vehva + offset, local_buffer_vehva + offset, remainder); // dst (VH), src (VE), size
+					err = ve_dma_post_wait(remote_shm_vehva + offset, local_buffer_vehva + offset, remainder); // dst (VH), src (VE), size
 					assert(err == 0);
+					UNUSED_VAR(err);
 				}			
 			}
 			else if (use_instructions) 

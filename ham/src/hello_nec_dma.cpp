@@ -8,6 +8,9 @@
 #include <string>
 #include <string.h>
 
+// surpress compiler warnings
+#define UNUSED_VAR(var) (void)(var)
+
 using namespace ham;
 
 // compile on VE side only
@@ -73,6 +76,9 @@ std::cout << "hello: HAM_COMM_VE" << std::endl;
 		std::cout << "hello: error: vh_shmdt() returned 0 " << std::endl;
 	
 //	return msg.size();
+#else
+	UNUSED_VAR(size);
+	UNUSED_VAR(shm_key);
 #endif
 
 	std::cout << "hello: returning " << std::endl;

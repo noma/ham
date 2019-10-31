@@ -5,6 +5,7 @@
 
 #include <CLI/CLI11.hpp>
 #include <noma/bmt/bmt.hpp>
+#include <noma/debug/debug.hpp>
 
 #include <assert.h>
 #include <iostream>
@@ -122,10 +123,11 @@ int main(int argc, char * argv[])
 	} while (1);
 
 	// cleanup
-	int	err = 
+	ASSERT_ONLY( int err = )
 	shmdt(local_shm_addr);
 	assert(err == 0);
-	err = shmctl(shm_id, IPC_RMID, NULL);	
+	ASSERT_ONLY( err = )
+	shmctl(shm_id, IPC_RMID, NULL);
 	assert(err == 0);
 
 	return EXIT_SUCCESS;

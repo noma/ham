@@ -7,6 +7,7 @@
 
 #include <CLI/CLI11.hpp>
 #include <noma/bmt/bmt.hpp>
+#include <noma/misc/debug.hpp>
 
 #include <assert.h>
 #include <iostream>
@@ -62,7 +63,7 @@ uint64_t offload_allocate(size_t data_size)
 	uint64_t addr = 0;
 	int err =
 	veo_alloc_mem(veo_proc, &addr, data_size);
-	// TODO: check err in Debug mode
+	DEBUG_ONLY( errno_handler(err, "veo_alloc_mem()"); )
 	return addr;
 }
 
@@ -70,21 +71,21 @@ void offload_free(uint64_t addr)
 {
 	int err = 
 	veo_free_mem(veo_proc, addr);
-	// TODO: check err in Debug mode
+	DEBUG_ONLY( errno_handler(err, "veo_free_mem()"); )
 }
 
 void offload_copy_in(uint64_t dst_addr, const void* src_ptr, size_t data_size)
 {
 	int err = 
 	veo_write_mem(veo_proc, dst_addr, src_ptr, data_size);
-	// TODO: check err in Debug mode
+	DEBUG_ONLY( errno_handler(err, "veo_write_mem()"); )
 }
 
 void offload_copy_out(void* dst_ptr, uint64_t src_addr, size_t data_size)
 {
 	int err = 
 	veo_read_mem(veo_proc, dst_ptr, src_addr, data_size);
-	// TODO: check err in Debug mode
+	DEBUG_ONLY( errno_handler(err, "veo_read_mem()"); )
 }
 
 // TODO: handle return value for fun_mul
@@ -93,14 +94,14 @@ void offload_call(uint64_t sym, veo_args* args)
 	int err = 0;
 	
 	// call the function
-	uint64_t id = veo_call_async(veo_ctx, sym, args);
+	ASSERT_ONLY( uint64_t id = )
+	veo_call_async(veo_ctx, sym, args);
 	assert(id != VEO_REQUEST_ID_INVALID);
 
 	// sync on result
 	uint64_t res_addr = 0;
 	err = veo_call_wait_result(veo_ctx, id, &res_addr); // sync on call
-	// TODO: debug only
-//	errno_handler(err, "veo_call_wait_result()");
+	DEBUG_ONLY( errno_handler(err, "veo_call_wait_result()"); )
 }
 
 float offload_call_mul(uint64_t sym, veo_args* args)
@@ -114,8 +115,7 @@ float offload_call_mul(uint64_t sym, veo_args* args)
 	// sync on result
 	uint64_t res_addr = 0;
 	err = veo_call_wait_result(veo_ctx, id, &res_addr); // sync on call
-	// TODO: debug only
-//	errno_handler(err, "veo_call_wait_result()");
+	DEBUG_ONLY( errno_handler(err, "veo_call_wait_result()"); )
 
 	// return the result
 	return *(reinterpret_cast<float*>(&res_addr));
@@ -222,13 +222,7 @@ int main(int argc, char * argv[])
 		std::cerr << "error: veo_proc_create() returned 0" << std::endl;
 		exit(1);
 	}
-
 #endif
-	// TODO: nicify and unify error handling
-	if (veo_proc == 0) {
-		std::cerr << "error: veo_proc_create() returned 0" << std::endl;
-		exit(1);
-	}
 
 	// load VE library image 
 #ifdef HAM_COMM_VEO_STATIC

@@ -7,7 +7,7 @@
 
 #include <CLI/CLI11.hpp>
 #include <noma/bmt/bmt.hpp>
-#include <noma/misc/debug.hpp>
+#include <noma/debug/debug.hpp>
 
 #include <assert.h>
 #include <iostream>
@@ -61,7 +61,7 @@ uint64_t offload_allocate(size_t data_size)
 {
 	// 
 	uint64_t addr = 0;
-	int err =
+	DEBUG_ONLY( int err = )
 	veo_alloc_mem(veo_proc, &addr, data_size);
 	DEBUG_ONLY( errno_handler(err, "veo_alloc_mem()"); )
 	return addr;
@@ -69,21 +69,21 @@ uint64_t offload_allocate(size_t data_size)
 
 void offload_free(uint64_t addr)
 {
-	int err = 
+	DEBUG_ONLY( int err = )
 	veo_free_mem(veo_proc, addr);
 	DEBUG_ONLY( errno_handler(err, "veo_free_mem()"); )
 }
 
 void offload_copy_in(uint64_t dst_addr, const void* src_ptr, size_t data_size)
 {
-	int err = 
+	DEBUG_ONLY( int err = )
 	veo_write_mem(veo_proc, dst_addr, src_ptr, data_size);
 	DEBUG_ONLY( errno_handler(err, "veo_write_mem()"); )
 }
 
 void offload_copy_out(void* dst_ptr, uint64_t src_addr, size_t data_size)
 {
-	int err = 
+	DEBUG_ONLY( int err = )
 	veo_read_mem(veo_proc, dst_ptr, src_addr, data_size);
 	DEBUG_ONLY( errno_handler(err, "veo_read_mem()"); )
 }
@@ -91,34 +91,32 @@ void offload_copy_out(void* dst_ptr, uint64_t src_addr, size_t data_size)
 // TODO: handle return value for fun_mul
 void offload_call(uint64_t sym, veo_args* args)
 {
-	int err = 0;
-	
-	// call the function
-	ASSERT_ONLY( uint64_t id = )
-	veo_call_async(veo_ctx, sym, args);
-	assert(id != VEO_REQUEST_ID_INVALID);
-
-	// sync on result
-	uint64_t res_addr = 0;
-	err = veo_call_wait_result(veo_ctx, id, &res_addr); // sync on call
-	DEBUG_ONLY( errno_handler(err, "veo_call_wait_result()"); )
-}
-
-float offload_call_mul(uint64_t sym, veo_args* args)
-{
-	int err = 0;
-	
 	// call the function
 	uint64_t id = veo_call_async(veo_ctx, sym, args);
 	assert(id != VEO_REQUEST_ID_INVALID);
 
 	// sync on result
 	uint64_t res_addr = 0;
-	err = veo_call_wait_result(veo_ctx, id, &res_addr); // sync on call
+	DEBUG_ONLY( int err = )
+	veo_call_wait_result(veo_ctx, id, &res_addr); // sync on call
+	DEBUG_ONLY( errno_handler(err, "veo_call_wait_result()"); )
+}
+
+float offload_call_mul(uint64_t sym, veo_args* args)
+{
+	// call the function
+	uint64_t id = veo_call_async(veo_ctx, sym, args);
+	assert(id != VEO_REQUEST_ID_INVALID);
+
+	// sync on result
+	float result_buffer[2]; // 8 byte to fit the uint64_t result type assumed by VEO, using another type would violate the strict-aliasing rule
+	uint64_t* res_addr = reinterpret_cast<uint64_t*>(result_buffer);
+	DEBUG_ONLY( int err = )
+	veo_call_wait_result(veo_ctx, id, res_addr); // sync on call
 	DEBUG_ONLY( errno_handler(err, "veo_call_wait_result()"); )
 
 	// return the result
-	return *(reinterpret_cast<float*>(&res_addr));
+	return *(reinterpret_cast<float*>(result_buffer));
 }
 
 

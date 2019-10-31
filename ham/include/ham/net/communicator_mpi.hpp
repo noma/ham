@@ -320,8 +320,8 @@ public:
 	static communicator& instance() { return *instance_; }
 	static node_t this_node() { return instance().this_node_; }
 	static size_t num_nodes() { return instance().nodes_; }
-	bool is_host() { return this_node_ == 0; } // TODO(improvement): ham_address == ham_host_address ; }
-	bool is_host(node_t node) { return node == 0; } // TODO(improvement): node == ham_host_address; }
+	bool is_host() const { return this_node_ == 0; } // TODO(improvement): ham_address == ham_host_address ; }
+	bool is_host(node_t node) const { return node == 0; } // TODO(improvement): node == ham_host_address; }
 
 	static const node_descriptor& get_node_description(node_t node)
 	{

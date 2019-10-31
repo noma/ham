@@ -582,8 +582,8 @@ public:
 	static communicator& instance() { return *instance_; }
 	static node_t this_node() { return instance().ham_address; }
 	static size_t num_nodes() { return instance().ham_process_count; }
-	bool is_host() { return ham_address == ham_host_address ; }
-	bool is_host(node_t node) { return node == ham_host_address; }
+	bool is_host() const { return ham_address == ham_host_address ; }
+	bool is_host(node_t node) const { return node == ham_host_address; }
 
 private:
 	void errno_handler(int ret, const char * hint)

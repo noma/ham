@@ -410,6 +410,7 @@ protected:
 	// we read flag, size, and msg from the targets "remote_buffer"
 	void* recv_msg(node_t node, size_t buffer_index = NO_BUFFER_INDEX, void* msg = nullptr, size_t size = constants::MSG_SIZE)
 	{
+		HAM_UNUSED_VAR(msg);
 		// use next_flag as index, if none is given
 		buffer_index = buffer_index == NO_BUFFER_INDEX ?  peers[node].next_flag : buffer_index;
 		HAM_DEBUG( HAM_LOG << "communicator(VH)::recv_msg(): remote node is: " << node << std::endl; )

@@ -26,6 +26,7 @@ public:
 	    ham_host_address(ham_comm_veo_ve_host_address(0, false)),
    	    ham_address(ham_comm_veo_ve_address(0, false))
 	{
+		HAM_UNUSED_VAR(comm_options);
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::communicator: begin." << std::endl; )
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::communicator: ham_process_count = " << ham_process_count << std::endl; )
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::communicator: ham_host_address = " << ham_host_address << std::endl; )

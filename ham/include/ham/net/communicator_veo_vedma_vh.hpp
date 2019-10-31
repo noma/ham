@@ -134,11 +134,11 @@ public:
 
 				// assign remote buffers used to send data inside SHM
 				peer.remote_buffers = buffer_ptr<msg_buffer>(reinterpret_cast<msg_buffer*>(peer.shm_local_addr), ham_address);
-				peer.remote_flags   = buffer_ptr<size_t>(reinterpret_cast<size_t*>(peer.shm_local_addr + (2 * msg_buffers_size)), ham_address);
+				peer.remote_flags   = buffer_ptr<size_t>(reinterpret_cast<size_t*>(reinterpret_cast<char*>(peer.shm_local_addr) + (2 * msg_buffers_size)), ham_address);
 
 				// assign local buffers used to recv data inside SHM
-				peer.local_buffers = buffer_ptr<msg_buffer>(reinterpret_cast<msg_buffer*>(peer.shm_local_addr + msg_buffers_size), ham_address);
-				peer.local_flags   = buffer_ptr<size_t>(reinterpret_cast<size_t*>(peer.shm_local_addr + (2 * msg_buffers_size + msg_flags_size)), ham_address);
+				peer.local_buffers = buffer_ptr<msg_buffer>(reinterpret_cast<msg_buffer*>(reinterpret_cast<char*>(peer.shm_local_addr) + msg_buffers_size), ham_address);
+				peer.local_flags   = buffer_ptr<size_t>(reinterpret_cast<size_t*>(reinterpret_cast<char*>(peer.shm_local_addr) + (2 * msg_buffers_size + msg_flags_size)), ham_address);
 				
 				auto reset_flags = [](buffer_ptr<size_t> flags) {
 					size_t fill_value = FLAG_FALSE;
@@ -461,6 +461,7 @@ protected:
 	// we read flag, size, and msg from the targets "remote_buffer"
 	void* recv_msg(node_t node, size_t buffer_index = NO_BUFFER_INDEX, void* msg = nullptr, size_t size = constants::MSG_SIZE)
 	{
+		HAM_UNUSED_VAR(msg);
 		// use next_flag as index, if none is given
 		buffer_index = buffer_index == NO_BUFFER_INDEX ?  peers[node].next_flag : buffer_index;
 		HAM_DEBUG( HAM_LOG << "communicator(VH)::recv_msg(): remote node is: " << node << std::endl; )

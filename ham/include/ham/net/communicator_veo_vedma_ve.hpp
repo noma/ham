@@ -84,23 +84,22 @@ public:
 
 		veo_peer& host_peer = peers[ham_host_address]; // NOTE: in current VEO backend we need a struct for ourselfes only, having the data to communicate with the host
 
-// #################### BEGIN TODO ####################
 		int err = 0;
 
 		// initialise DMA
 		err = ve_dma_init();
 		if (err)
-			HAM_LOG << "VE: Failed to initialize DMA" << std::endl;
+			HAM_LOG << "communicator(VE)::communicator: error: failed to initialize DMA" << std::endl;
 
 		key_t shm_key = (key_t)ham_comm_veo_ve_shm_key(0);
 		size_t shm_size = (key_t)ham_comm_veo_ve_shm_size(0);
 
-		HAM_DEBUG( HAM_LOG << "VE: (shm_key = " << shm_key << ", shm_size = " << shm_size << ")" << std::endl; )
+		HAM_DEBUG( HAM_LOG << "communicator(VE)::communicator: (shm_key = " << shm_key << ", shm_size = " << shm_size << ")" << std::endl; )
 
 		// get SHM id from key
 		int shm_id = vh_shmget(shm_key, shm_size, SHM_HUGETLB);
 		if (shm_id == -1)
-			HAM_LOG << "VE: vh_shmget failed, reason: " << strerror(errno) << std::endl;
+			HAM_LOG << "communicator(VE)::communicator: error: vh_shmget failed, reason: " << strerror(errno) << std::endl;
 		
 		// attach shared memoy VH address space and resiter to to DMAATB
 		// the region is accessible for DMA unter its VEHVA remote_vehva
@@ -109,9 +108,9 @@ public:
 		host_peer.shm_remote_addr = vh_shmat(shm_id, NULL, 0, (void **)&host_peer.shm_remote_vehva);
 		
 		if (host_peer.shm_remote_addr == nullptr)
-			HAM_LOG << "VE: (host_peer.shm_remote_addr == nullptr) " << std::endl;
+			HAM_LOG << "communicator(VE)::communicator: error: host_peer.shm_remote_addr == nullptr" << std::endl;
 		if (host_peer.shm_remote_vehva == (uint64_t)-1)
-			HAM_LOG << "VE: (host_peer.shm_remote_vehva == -1) " << std::endl;
+			HAM_LOG << "communicator(VE)::communicator: error: host_peer.shm_remote_vehva == -1" << std::endl;
 
 		// get local memory of same size as SHM on VH
 		host_peer.shm_local_addr = mmap(NULL, shm_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_64MB, -1, 0);
@@ -160,9 +159,6 @@ public:
 		host_peer.remote_recv_flags_addr = (char*)host_peer.shm_remote_addr + (2 * msg_buffers_size + msg_flags_size);
 		host_peer.remote_recv_flags_vehva = host_peer.shm_remote_vehva + (2 * msg_buffers_size + msg_flags_size);
 		
-
-		
-// #################### END TODO ####################
 		// NOTE: Memory for communication buffers was allocated by the host
 		//       using the provided C-function for VEO offload.
 		//       We use the received addresses to setup our buffter_ptr<>
@@ -171,20 +167,6 @@ public:
 		// NOTE: These functions also reset the flags, so the host can 
 		//       actually send messages into the buffers and set the flags
 		//       before the VE-side communicator is even initialised.
-
-//		// allocate actual receive buffers
-//		host_peer.local_buffers = buffer_ptr<msg_buffer>       (reinterpret_cast<msg_buffer*>       (ham_comm_veo_ve_local_buffers_addr(0)), ham_address);
-//		host_peer.local_flags   = buffer_ptr<cache_line_buffer>(reinterpret_cast<cache_line_buffer*>(ham_comm_veo_ve_local_flags_addr(0)),   ham_address);
-
-//		// allocate "remote_buffers" used to store results
-//		host_peer.remote_buffers = buffer_ptr<msg_buffer>       (reinterpret_cast<msg_buffer*>       (ham_comm_veo_ve_remote_buffers_addr(0)), ham_address);
-//		host_peer.remote_flags   = buffer_ptr<cache_line_buffer>(reinterpret_cast<cache_line_buffer*>(ham_comm_veo_ve_remote_flags_addr(0)),   ham_address);
-
-//		HAM_DEBUG( HAM_LOG << "communicator(VE)::communicator: host_peer.local_buffers.get() = "  << (uint64_t)host_peer.local_buffers.get()  << std::endl; )
-//		HAM_DEBUG( HAM_LOG << "communicator(VE)::communicator: host_peer.local_flags.get() = "    << (uint64_t)host_peer.local_flags.get()    << std::endl; )
-//		HAM_DEBUG( HAM_LOG << "communicator(VE)::communicator: host_peer.remote_buffers.get() = " << (uint64_t)host_peer.remote_buffers.get() << std::endl; )
-//		HAM_DEBUG( HAM_LOG << "communicator(VE)::communicator: host_peer.remote_flags.get() = "   << (uint64_t)host_peer.remote_flags.get()   << std::endl; )
-
 
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::communicator: end." << std::endl; )
 	}
@@ -255,16 +237,12 @@ public:
 		veo_peer& peer = peers[req.target_node];
 
 		// set flags
+		// TODO(maybe): make flags volatile?
 		size_t* local_flag = reinterpret_cast<size_t*>((char*)peer.remote_send_flags_addr + req.source_buffer_index * sizeof(size_t));
 		size_t* remote_flag = reinterpret_cast<size_t*>((char*)peer.remote_recv_flags_addr + req.target_buffer_index * sizeof(size_t));
-// TODO: set using ve stuff
+		// TODO(maybe): set using ve stuff
 		*local_flag = FLAG_FALSE;
 		*remote_flag = FLAG_FALSE;
-
-//		volatile size_t* local_flag = reinterpret_cast<size_t*>(&peer.local_flags.get()[req.source_buffer_index]);
-//		volatile size_t* remote_flag = reinterpret_cast<size_t*>(&peer.remote_flags[req.target_buffer_index]);
-//		*local_flag = FLAG_FALSE;
-//		*remote_flag = FLAG_FALSE;
 //		_mm_sfence(); // make preceding stores globally visible
 
 		// pool indices
@@ -275,7 +253,6 @@ public:
 		req.target_buffer_index = NO_BUFFER_INDEX;
 	}
 
-	// TODO: has to write msg into remote_memory
 	void send_msg(request_reference_type req, void* msg, size_t size)
 	{
 		const request& next_req = allocate_next_request(req.target_node); // pre-allocate-request for the next send, because we set this index on the remote size
@@ -290,12 +267,10 @@ public:
 private:
 	void send_msg(node_t node, size_t buffer_index, size_t next_buffer_index, void* msg, size_t size)
 	{
-//size = 1024; // TODO: remove: for quick and dirty testing of larger message sizes
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::send_msg(): node =  " << node << std::endl; )
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::send_msg(): remote buffer index = " << buffer_index << std::endl; )
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::send_msg(): msg size is: " << size << std::endl; )
 
-		// TODO: compute
 		uint64_t remote_recv_flag_vehva = peers[node].remote_recv_flags_vehva + buffer_index * sizeof(size_t);
 		uint64_t remote_recv_buffer_vehva = peers[node].remote_recv_buffers_vehva + buffer_index * sizeof(msg_buffer);
 
@@ -334,22 +309,6 @@ private:
 		// set flag
 		ve_inst_shm((void *)remote_recv_flag_vehva, next_buffer_index);
 		ve_inst_fenceSF();
-
-/*
-		char* remote_buffer = reinterpret_cast<char*>(&peers[node].remote_buffers[buffer_index]);
-		volatile size_t* remote_flag = reinterpret_cast<size_t*>(&peers[node].remote_flags[buffer_index]);
-		HAM_DEBUG( HAM_LOG << "communicator(VE)::send_msg(): remote buffer is: " << (void*)remote_buffer << std::endl; )
-
-		HAM_DEBUG( HAM_LOG << "communicator(VE)::send_msg(): sending message of size: " << size << std::endl; )
-		// copy to remote memory
-		memcpy((char*)remote_buffer, (void*)&size, sizeof(size_t)); // size = header
-
-		memcpy((char*)remote_buffer + sizeof(size_t), msg , size);
-//		_mm_sfence(); // NOTE: intel intrinsic: store fence, make changes visible on the remote site to which we wrote
-
-		*remote_flag = next_buffer_index; // signal remote side that the message has been written, and transfer the next buffer/flag index in the process
-//		_mm_sfence(); // NOTE: intel intrinsic: store fence, make changes visible on the remote site
-*/
 	}
 
 private:
@@ -399,7 +358,6 @@ private:
 		// get size
 		ve_inst_fenceLF();
 		size = ve_inst_lhm((void *)remote_send_buffer_vehva);
-//size = 1024; // TODO: remove: for quick and dirty testing of larger message sizes
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::recv_msg(): size = " << size << std::endl; )
 		
 		// BEGIN: VERSION A
@@ -424,29 +382,6 @@ private:
 
 		//return (char*)local_recv_buffer_addr + sizeof(size_t);
 		return (char*)local_recv_buffer_addr; // NOTE: we copied without size header
-
-// ------------------------
-/*
-		char* local_buffer = reinterpret_cast<char*>(&peers[node].local_buffers.get()[buffer_index]);
-		volatile size_t* local_flag = reinterpret_cast<size_t*>(&peers[node].local_flags.get()[buffer_index]);
-		HAM_DEBUG( HAM_LOG << "communicator(VE)::recv_msg(): local buffer is: " << (uint64_t)local_buffer << std::endl; )
-
-		HAM_DEBUG( HAM_LOG << "communicator(VE)::recv_msg(): FLAG at " << (uint64_t)local_flag << " before polling: " << (int)*local_flag << std::endl; )
-		while (*local_flag == FLAG_FALSE); // poll on flag
-		HAM_DEBUG( HAM_LOG << "communicator(VE)::recv_msg(): FLAG after polling: " << (int)*local_flag << std::endl; )
-
-		if (*local_flag != NO_BUFFER_INDEX) // the flag contains the next buffer index to poll on
-			peers[node].next_flag = *local_flag;
-
-		// copy size from recv buffer
-		memcpy((void*)&size, (char*)local_buffer, sizeof(size_t));
-
-		HAM_DEBUG( HAM_LOG << "communicator(VE)::recv_msg(): received msg size: " << size << std::endl; )
-		//HAM_DEBUG( HAM_LOG << "receiving message of size: " << size << std::endl; )
-
-//		_mm_lfence(); // NOTE: intel intrinsic: all prior loads are globally visible
-		return (char*)local_buffer + sizeof(size_t); // we directly return our buffer here, which is safe, since it can only be re-used after being freed by the future which returns the result by value to the user
-*/
 	}
 
 	bool test_local_flag(node_t node, size_t buffer_index)
@@ -472,19 +407,22 @@ public:
 		return;
 	}
 
-
 	template<typename T>
 	void send_data(T* local_source, buffer_ptr<T>& remote_dest, size_t size)
 	{
-		// NOTE: not supported on target
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::send_data(): writing " << size << " byte from " << local_source << " to " << remote_dest.get() << std::endl; )
+		// NOTE: not supported on target
+		HAM_DEBUG( HAM_LOG << "communicator(VE)::send_data(): Operation not supported on VE." << std::endl; )
+		exit(1);
 	}
 
 	template<typename T>
 	void recv_data(buffer_ptr<T>& remote_source, T* local_dest, size_t size)
 	{
-		// NOTE: not supported on target
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::recv_data(): reading " << size << " byte from " << remote_source.get() << " to " << local_dest << std::endl; )
+		// NOTE: not supported on target
+		HAM_DEBUG( HAM_LOG << "communicator(VE)::recv_data(): Operation not supported on VE." << std::endl; )
+		exit(1);
 	}
 
 	static const node_descriptor& get_node_description(node_t node)
@@ -492,10 +430,10 @@ public:
 		return instance().peers[node].node_description;
 	}
 
-	static node_t this_node() { return instance().ham_address; }
-	static size_t num_nodes() { return instance().ham_process_count; }
-	bool is_host() { return ham_address == ham_host_address ; }
-	bool is_host(node_t node) { return node == ham_host_address; }
+	static node_t this_node() const { return instance().ham_address; }
+	static size_t num_nodes() const { return instance().ham_process_count; }
+	bool is_host() const { return ham_address == ham_host_address ; }
+	bool is_host(node_t node) const { return node == ham_host_address; }
 
 private:
 	// NOTE:: set before ctor via VEO C-interface
@@ -508,6 +446,7 @@ private:
 		{}
 
 		request next_request; // the next request, belonging to next flag
+		size_t next_flag; // flag
 
 		// SHM 
 		uint64_t shm_local_vehva;
@@ -516,7 +455,7 @@ private:
 		uint64_t shm_remote_vehva;
 		void* shm_remote_addr;
 		
-		// addresess 
+		// addresses
 		void* local_recv_buffers_addr = nullptr;
 		uint64_t local_recv_buffers_vehva = 0;
 
@@ -534,22 +473,9 @@ private:
 
 		void* remote_recv_flags_addr = nullptr;
 		uint64_t remote_recv_flags_vehva = 0;
-	
-		
+
 		// buffer to copy received messages from VH to
 		buffer_ptr<msg_buffer> recv_buffers; // local memory, recv_msg copies data to these buffers using veo_read_mem()
-
-		size_t next_flag; // flag
-
-		node_descriptor node_description;
-
-// TODO: remove after cleanup
-		// pointer to the peer's receive buffer
-//		buffer_ptr<msg_buffer> local_buffers; // local memory, remote peer writes to these buffers
-//		buffer_ptr<cache_line_buffer> local_flags; // local memory, remote peer signals writing is complete via these flags, I poll on this flag
-
-//		buffer_ptr<msg_buffer> remote_buffers; // remote memory, I write messages to this peer into these buffers
-//		buffer_ptr<cache_line_buffer> remote_flags; // remote memory, I write these flags to signal a message was sent
 
 		// needed by sender to manage which buffers are in use and which are free
 		// just manages indices, that can be used by
@@ -558,9 +484,10 @@ private:
 		detail::resource_pool<size_t> remote_buffer_pool;
 		detail::resource_pool<size_t> local_buffer_pool;
 
+		node_descriptor node_description;
 	};
 
-	// pointers to arrays of buffers, index is peer address
+	// pointers to arrays of veo_peers, index is peer address
 	veo_peer* peers = nullptr;
 
 public:
@@ -578,12 +505,10 @@ public:
 		memcpy(addr, &(peers[ham_address].node_description), sizeof(node_descriptor));
 	}
 
-
 };
 
 } // namespace net
 } // namespace ham
-
 
 // definitions that need a complete type for communicator
 #include "ham/net/communicator_veo_vedma_post.hpp"

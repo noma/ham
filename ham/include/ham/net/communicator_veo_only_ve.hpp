@@ -138,7 +138,6 @@ public:
 		req.target_buffer_index = NO_BUFFER_INDEX;
 	}
 
-	// TODO: has to write msg into remote_memory
 	void send_msg(request_reference_type req, void* msg, size_t size)
 	{
 		const request& next_req = allocate_next_request(req.target_node); // pre-allocate-request for the next send, because we set this index on the remote size
@@ -147,7 +146,7 @@ public:
 			"request(" << req.target_node << ", " << req.target_buffer_index << ", " << req.source_node << ", " << req.source_buffer_index << ")" << std::endl );
 
 		send_msg(req.target_node, req.target_buffer_index, next_req.target_buffer_index, msg, size);
-		//send_msg(req.target_node, req.target_buffer_index, peers[req.target_node].remote_buffer_pool.next(), msg, size);
+//		send_msg(req.target_node, req.target_buffer_index, peers[req.target_node].remote_buffer_pool.next(), msg, size);
 	}
 
 private:
@@ -217,24 +216,28 @@ public:
 	void recv_result(request_reference_type req)
 	{
 		HAM_UNUSED_VAR(req);
-		// nothing todo here, since this communicator implementation uses one-sided communication
+		// nothing to do here, since this communicator implementation uses one-sided communication
 		// the data is already where it is expected (in the buffer referenced in req)
 		return;
 	}
 
-
 	template<typename T>
 	void send_data(T* local_source, buffer_ptr<T>& remote_dest, size_t size)
 	{
-		// NOTE: not supported on target
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::send_data(): writing " << size << " byte from " << local_source << " to " << remote_dest.get() << std::endl; )
+		// NOTE: not supported on target
+		HAM_DEBUG( HAM_LOG << "communicator(VE)::send_data(): Operation not supported on VE." << std::endl; )
+		exit(1);
 	}
 
 	template<typename T>
 	void recv_data(buffer_ptr<T>& remote_source, T* local_dest, size_t size)
 	{
-		// NOTE: not supported on target
+
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::recv_data(): reading " << size << " byte from " << remote_source.get() << " to " << local_dest << std::endl; )
+		// NOTE: not supported on target
+		HAM_DEBUG( HAM_LOG << "communicator(VE)::recv_data(): Operation not supported on VE." << std::endl; )
+		exit(1);
 	}
 
 	static const node_descriptor& get_node_description(node_t node)
@@ -242,10 +245,10 @@ public:
 		return instance().peers[node].node_description;
 	}
 
-	static node_t this_node() { return instance().ham_address; }
-	static size_t num_nodes() { return instance().ham_process_count; }
-	bool is_host() { return ham_address == ham_host_address ; }
-	bool is_host(node_t node) { return node == ham_host_address; }
+	static node_t this_node() const { return instance().ham_address; }
+	static size_t num_nodes() const { return instance().ham_process_count; }
+	bool is_host() const { return ham_address == ham_host_address ; }
+	bool is_host(node_t node) const { return node == ham_host_address; }
 
 private:
 	// NOTE:: set before ctor via VEO C-interface
@@ -258,11 +261,11 @@ private:
 		{}
 
 		request next_request; // the next request, belonging to next flag
+		size_t next_flag; // flag
 
 		// pointer to the peer's receive buffer
 		buffer_ptr<msg_buffer> local_buffers; // local memory, remote peer writes to these buffers
 		buffer_ptr<cache_line_buffer> local_flags; // local memory, remote peer signals writing is complete via these flags, I poll on this flag
-		size_t next_flag; // flag
 
 		buffer_ptr<msg_buffer> remote_buffers; // remote memory, I write messages to this peer into these buffers
 		buffer_ptr<cache_line_buffer> remote_flags; // remote memory, I write these flags to signal a message was sent
@@ -277,7 +280,7 @@ private:
 		node_descriptor node_description;
 	};
 
-	// pointers to arrays of buffers, index is peer address
+	// pointers to arrays of veo_peers, index is peer address
 	veo_peer* peers = nullptr;
 
 public:
@@ -295,12 +298,10 @@ public:
 		memcpy(addr, &(peers[ham_address].node_description), sizeof(node_descriptor));
 	}
 
-
 };
 
 } // namespace net
 } // namespace ham
-
 
 // definitions that need a complete type for communicator
 #include "ham/net/communicator_veo_only_post.hpp"

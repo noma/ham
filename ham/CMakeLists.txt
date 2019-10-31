@@ -126,4 +126,5 @@ else ()
 endif ()
 
 add_subdirectory(thirdparty/bmt ${CMAKE_CURRENT_BINARY_DIR}/build.noma_bmt)
+add_subdirectory(thirdparty/misc ${CMAKE_CURRENT_BINARY_DIR}/build.noma_misc)
 add_subdirectory(src)

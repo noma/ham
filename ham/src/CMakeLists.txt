@@ -35,11 +35,11 @@ if (HAM_BUILD_EXECUTABLES)
 		if (NOT HAM_NEC_COMPILER_DETECTED)
 			# VEO benchmark
 			add_executable(benchmark_veo_vh benchmark_veo.cpp)
-			target_link_libraries(benchmark_veo_vh veo_library cli11_library noma_bmt)
+			target_link_libraries(benchmark_veo_vh veo_library cli11_library noma_bmt noma_debug)
 
 			# VEDMA benchmark
 			add_executable(benchmark_vedma_vh benchmark_vedma_vh.cpp)
-			target_link_libraries(benchmark_vedma_vh veo_library cli11_library noma_bmt)
+			target_link_libraries(benchmark_vedma_vh veo_library cli11_library noma_bmt noma_debug)
 
 			set_target_properties(benchmark_veo_vh benchmark_vedma_vh PROPERTIES
 				CXX_STANDARD 11

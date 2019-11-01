@@ -48,8 +48,7 @@ public:
 		// setup peer data structures
 		peers = new veo_peer[ham_process_count];
 
-		// TODO: same name on VE as on host, not helpful, maybe combine hostname and VE node number
-		// get own hostname
+		// get own hostname (VH)
 		errno_handler(gethostname(peers[ham_address].node_description.name_, peers[ham_address].node_description.name_length_), "gethostname");
 
 		// (ham_process count - 1) iterations, i.e. targets
@@ -167,11 +166,13 @@ public:
 				set_target_argument("ham_comm_veo_ve_process_count", ham_process_count);
 				// uint64_t ham_comm_veo_ve_host_address(uint64_t host_address, uint64_t set);
 				set_target_argument("ham_comm_veo_ve_host_address", ham_host_address);
+				// uint64_t ham_comm_veo_ve_device_number(uint64_t device_number, uint64_t set);
+				set_target_argument("ham_comm_veo_ve_device_number", ve_node_list[ve_list_index]);
 
-				// set local node name
-				std::stringstream ss; // hostname of VH
-				ss << "VE" << ve_node_list[ve_list_index] << '@' << peers[ham_address].node_description.name_; 
-				strncpy(peers[ham_address].node_description.name_, ss.str().c_str(), node_descriptor::name_length_);
+				// set node name locally as "hostname/VE<NR>"
+				std::stringstream ss;
+				ss << peers[ham_address].node_description.name_ // VH-name = hostname (set above)
+				   << '/' << "VE" << ve_node_list[ve_list_index];
 
 // TODO: exchange node descriptions
 /*

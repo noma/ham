@@ -66,7 +66,8 @@ public:
 	  : communicator_base<communicator>(this),
 	    ham_process_count(ham_comm_veo_ve_process_count(0, false)),
 	    ham_host_address(ham_comm_veo_ve_host_address(0, false)),
-   	    ham_address(ham_comm_veo_ve_address(0, false))
+	    ham_address(ham_comm_veo_ve_address(0, false)),
+	    device_number(ham_comm_veo_ve_device_number(0, false))
 	{
 		HAM_UNUSED_VAR(comm_options);
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::communicator: begin." << std::endl; )
@@ -77,10 +78,16 @@ public:
 		// allocate peer data structures
 		peers = new veo_peer[ham_process_count]; // TODO: this seems to cause crash in the dynamically linked VEO build
 
-		// get own hostname
+		// set VH name as hostname
 		errno_handler(gethostname(peers[ham_address].node_description.name_, peers[ham_address].node_description.name_length_), "gethostname");
 
-		// we are definitly not the host
+		// set own node name locally as "hostname/VE<NR>"
+		std::stringstream ss;
+		ss << peers[ham_address].node_description.name_ // VH-name = hostname (set above)
+		   << '/' << "VE" << device_number;
+		strncpy(peer.node_description.name_, ss.str().c_str(), node_descriptor::name_length_);
+
+		// we are definitely not the host
 		assert(!is_host());
 
 		veo_peer& host_peer = peers[ham_host_address]; // NOTE: in current VEO backend we need a struct for ourselfes only, having the data to communicate with the host
@@ -448,6 +455,7 @@ private:
 	const uint64_t ham_process_count; // number of participating processes
 	const node_t ham_host_address; // the address of the host process
 	const node_t ham_address; // this processes' address
+	const uint64_t device_number; // our VE device number as used by OS
 
 	struct veo_peer {
 		veo_peer() : next_flag(0) //, remote_buffer_pool(constants::MSG_BUFFERS), remote_flag_pool(constants::MSG_BUFFERS)

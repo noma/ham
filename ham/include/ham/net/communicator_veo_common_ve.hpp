@@ -24,6 +24,7 @@ uint64_t ham_comm_veo_ve_remote_flags_addr(uint64_t addr);
 uint64_t ham_comm_veo_ve_address(uint64_t address, uint64_t set);
 uint64_t ham_comm_veo_ve_process_count(uint64_t process_count, uint64_t set);
 uint64_t ham_comm_veo_ve_host_address(uint64_t host_address, uint64_t set);
+uint64_t ham_comm_veo_ve_device_number(uint64_t device_number, uint64_t set);
 
 }
 

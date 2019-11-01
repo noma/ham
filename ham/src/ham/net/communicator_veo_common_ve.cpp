@@ -126,7 +126,6 @@ uint64_t ham_comm_veo_ve_process_count(uint64_t process_count, uint64_t set)
 	}
 }
 
-
 uint64_t ham_comm_veo_ve_host_address(uint64_t host_address, uint64_t set)
 {
 	static uint64_t current_host_address = 0;
@@ -136,6 +135,18 @@ uint64_t ham_comm_veo_ve_host_address(uint64_t host_address, uint64_t set)
 		return 0;
 	} else { // get
 		return current_host_address;
+	}
+}
+
+uint64_t ham_comm_veo_ve_device_number(uint64_t device_number, uint64_t set)
+{
+	static uint64_t current_device_number = 0;
+
+	if (set) {
+		current_device_number = device_number;
+		return 0;
+	} else { // get
+		return current_device_number;
 	}
 }
 

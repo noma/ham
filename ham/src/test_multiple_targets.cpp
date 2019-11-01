@@ -9,8 +9,11 @@
 // expected: node == this_node()
 ham::node_t hello(ham::node_t node)
 {
-	std::cout << '\t' << "Hello from target " << ham::offload::this_node() << ", got: " << node << std::endl;
-	
+	std::cout << '\t' << "Hello from target " << ham::offload::this_node() << " aka '"
+	          << ham::offload::get_node_description(ham::offload::this_node()).name()
+	          << "', got: " << node << " from host '"
+	          << ham::offload::get_node_description(0).name() << '\'' << std::endl;
+
 	return ham::offload::this_node();
 }
 
@@ -29,7 +32,11 @@ int main(int argc, char* argv[])
 		// skip the host, i.e. the process running this code
 		if (target != ham::offload::this_node()) {
 
-			std::cout << "Calling hello(" << target << ") on target " << target << std::endl;
+			std::cout << "Calling hello(" << target << ") on target " << target << " aka '"
+			          << ham::offload::get_node_description(ham::offload::this_node()).name()
+			          << "' from " << ham::offload::this_node() << " aka '"
+			          << ham::offload::get_node_description(target).name() << '\'' << std::endl;
+
 			auto hello_future = ham::offload::async(target, f2f(&hello, target));
 			ham::node_t result = hello_future.get();
 

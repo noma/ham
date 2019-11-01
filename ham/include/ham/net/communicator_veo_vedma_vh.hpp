@@ -94,8 +94,6 @@ public:
 				peer.veo_main_context = veo_context_open(peer.veo_proc);
 				HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: veo_context_open() returned ctx: " << peer.veo_main_context << std::endl; );
 
-// ###################### BEGIN TODO ######################
-				
 				// generate a key for an shm segment
 				constexpr size_t VE_PAGE_SIZE = 64 * 1024 * 1024; // assume 64 MiB pages on the VE side
 				peer.shm_key = ftok((*comm_options.argv_ptr())[0], (int)getpid()); // generate unique key from application path and pid
@@ -124,8 +122,8 @@ public:
 				peer.shm_local_addr = shmat(peer.shm_id, NULL, 0);
 				HAM_DEBUG( HAM_LOG << "VH: shm_local_addr = " << (uint64_t)peer.shm_local_addr << std::endl; )
 				// NOTE: local_addr can now be used
-				
-				// TODO: setup buffer data structures below
+
+				// setup addresses
 				// NOTE: assumed SHM layout
 				// message buffers remote
 				// message buffers local
@@ -149,7 +147,6 @@ public:
 				reset_flags(peer.remote_flags);
 				reset_flags(peer.local_flags);
 
-// TODO: naming etc..
 				// lambda to set allocated addresses at target
 				auto set_target_address = [&](const char* func_name, uint64_t addr) {
 					struct veo_args *argp = veo_args_alloc();
@@ -172,32 +169,11 @@ public:
 				//uint64_t ham_comm_veo_ve_shm_size(uint64_t size);
 				set_target_address("ham_comm_veo_ve_shm_size", shm_size);
 
-//				//uint64_t ham_comm_veo_ve_local_buffers_addr(uint64_t addr);
-//				set_target_address("ham_comm_veo_ve_local_buffers_addr", peer.local_buffers_addr);
-
-//				//uint64_t ham_comm_veo_ve_local_flags_addr(uint64_t addr);
-//				set_target_address("ham_comm_veo_ve_local_flags_addr", peer.local_flags_addr);
-//			
-//				//uint64_t ham_comm_veo_ve_remote_buffers_addr(uint64_t addr);
-//				set_target_address("ham_comm_veo_ve_remote_buffers_addr", peer.remote_buffers_addr);
-//			
-//				//uint64_t ham_comm_veo_ve_remote_flags_addr(uint64_t addr);
-//				set_target_address("ham_comm_veo_ve_remote_flags_addr", peer.remote_flags_addr);
-
-
-
-// ###################### END TODO ######################
-
 				// fill resource pools
 				for (size_t j = constants::MSG_BUFFERS; j > 0; --j) {
 					peer.remote_buffer_pool.add(j-1);
 					peer.local_buffer_pool.add(j-1);
 				}
-
-//				HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator(VH): node " << i << " host_peer.local_buffers_addr = "  << peer.local_buffers_addr << std::endl; )
-//				HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator(VH): node " << i << " host_peer.local_flags_addr = "    << peer.local_flags_addr << std::endl; )
-//				HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator(VH): node " << i << " host_peer.remote_buffers_addr = " << peer.remote_buffers_addr << std::endl; )
-//				HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator(VH): node " << i << " host_peer.remote_flags_addr = "   << peer.remote_flags_addr << std::endl; )
 
 				// allocate the first request to be used for the next send
 				allocate_next_request(i);
@@ -231,7 +207,6 @@ public:
 				std::stringstream ss; // hostname of VH
 				ss << "VE" << ve_node_list[ve_list_index] << '@' << peers[ham_address].node_description.name_; 
 				strncpy(peers[ham_address].node_description.name_, ss.str().c_str(), node_descriptor::name_length_);
-				
 
 // TODO: exchange node descriptions
 /*
@@ -302,7 +277,6 @@ std::cerr << "got node desc" << std::endl;
 				++ve_list_index;
 			} // if
 		} // for i
-
 
 		HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: end." << std::endl; )
 	}

@@ -172,7 +172,6 @@ public:
 				std::stringstream ss; // hostname of VH
 				ss << "VE" << ve_node_list[ve_list_index] << '@' << peers[ham_address].node_description.name_; 
 				strncpy(peers[ham_address].node_description.name_, ss.str().c_str(), node_descriptor::name_length_);
-				
 
 // TODO: exchange node descriptions
 /*
@@ -243,7 +242,6 @@ std::cerr << "got node desc" << std::endl;
 				++ve_list_index;
 			} // if
 		} // for i
-
 
 		HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: end." << std::endl; )
 	}

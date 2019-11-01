@@ -61,10 +61,7 @@ class node_descriptor
 public:
 	const char* name() const { return name_; }
 	
-	// TODO(feature): add properties: 
-	//    - node type (HOST | MIC | ...)
-	//    - socket (to which the mic is connected)
-//private: // TODO: removed for testin, 2019-01-24, re-enable and do propper friends if needed
+private:
 	static constexpr size_t name_length_ {256};
 	char name_[name_length_];
 

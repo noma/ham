@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 
 	// get some information about the target
 	auto target_description = offload::get_node_description(target);
-	std::cout << "Using target node " << target << " with hostname " << target_description.name() << std::endl;
+	std::cout << "Using target node " << target << " with name " << target_description.name() << std::endl;
 
 	// allocate device memory (returns a buffer_ptr<T>)
 	auto a_target = offload::allocate<double>(target, n);

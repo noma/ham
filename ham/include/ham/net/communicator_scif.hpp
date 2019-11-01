@@ -198,7 +198,7 @@ public:
 		peers = new scif_peer[ham_process_count];
 
 		// get own hostname
-		errno_handler(gethostname(peers[ham_address].node_description.name_, peers[ham_address].node_description.name_length_), "gethostname");
+		errno_handler(gethostname(peers[ham_address].node_description.name_, node_descriptor::name_length_), "gethostname");
 
 		if (is_host())
 		{

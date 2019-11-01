@@ -33,9 +33,9 @@ int main(int argc, char* argv[])
 		if (target != ham::offload::this_node()) {
 
 			std::cout << "Calling hello(" << target << ") on target " << target << " aka '"
-			          << ham::offload::get_node_description(ham::offload::this_node()).name()
+			          << ham::offload::get_node_description(target).name()
 			          << "' from " << ham::offload::this_node() << " aka '"
-			          << ham::offload::get_node_description(target).name() << '\'' << std::endl;
+			          << ham::offload::get_node_description(ham::offload::this_node()).name() << '\'' << std::endl;
 
 			auto hello_future = ham::offload::async(target, f2f(&hello, target));
 			ham::node_t result = hello_future.get();

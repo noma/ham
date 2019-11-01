@@ -33,20 +33,20 @@ public:
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::communicator: ham_host_address = " << ham_host_address << std::endl; )
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::communicator: ham_address = " << ham_address << std::endl; )
 
+		// we are definitely not the host
+		assert(!is_host());
+
 		// allocate peer data structures
 		peers = new veo_peer[ham_process_count]; // TODO: this seems to cause crash in the dynamically linked VEO build
 
 		// set VH name as hostname
-		errno_handler(gethostname(peers[ham_address].node_description.name_, peers[ham_address].node_description.name_length_), "gethostname");
+		errno_handler(gethostname(peers[ham_address].node_description.name_, node_descriptor::name_length_), "gethostname");
 
 		// set own node name locally as "hostname/VE<NR>"
 		std::stringstream ss;
-		ss << peers[ham_address].node_description.name_ // VH-name = hostname (set above)
+		ss << peers[ham_host_address].node_description.name_ // VH-name = hostname (set above)
 		   << '/' << "VE" << device_number;
-		strncpy(peer.node_description.name_, ss.str().c_str(), node_descriptor::name_length_);
-
-		// we are definitely not the host
-		assert(!is_host());
+		strncpy(peers[ham_address].node_description.name_, ss.str().c_str(), node_descriptor::name_length_);
 
 		veo_peer& host_peer = peers[ham_host_address]; // NOTE: in current VEO backend we need a struct for ourselfes only, having the data to communicate with the host
 

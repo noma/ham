@@ -30,7 +30,10 @@ public:
 	{
 		HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: begin." << std::endl; )
 		HAM_DEBUG( HAM_LOG << "communicator(VH)::communicator: using VE nodes: " << veo_ve_nodes << std::endl; )
-		
+
+		// we are definitely the host
+		assert(is_host());
+
 		// TODO: convenience: generate default ve_node_list, if arg not provided
 		if (veo_ve_nodes.empty())
 			HAM_LOG << "communicator(VH)::communicator: error: please provide --ham-veo-ve-nodes with --ham-process-count minus 1 comma-separated values." << std::endl;
@@ -49,7 +52,7 @@ public:
 		peers = new veo_peer[ham_process_count];
 
 		// get own hostname (VH)
-		errno_handler(gethostname(peers[ham_address].node_description.name_, peers[ham_address].node_description.name_length_), "gethostname");
+		errno_handler(gethostname(peers[ham_address].node_description.name_, node_descriptor::name_length_), "gethostname");
 
 		// (ham_process count - 1) iterations, i.e. targets
 		int ve_list_index = 0;
@@ -171,8 +174,9 @@ public:
 
 				// set node name locally as "hostname/VE<NR>"
 				std::stringstream ss;
-				ss << peers[ham_address].node_description.name_ // VH-name = hostname (set above)
+				ss << peers[ham_host_address].node_description.name_ // VH-name = hostname (set above)
 				   << '/' << "VE" << ve_node_list[ve_list_index];
+				strncpy(peer.node_description.name_, ss.str().c_str(), node_descriptor::name_length_);
 
 // TODO: exchange node descriptions
 /*

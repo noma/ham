@@ -20,6 +20,7 @@ extern "C" {
 
 // ve_inst.h
 extern "C" {
+
 static inline void ve_inst_fenceSF(void)
 {
 	asm ("fencem 1":::"memory");
@@ -44,8 +45,17 @@ static inline uint64_t ve_inst_lhm(void *vehva)
 
 static inline void ve_inst_shm(void *vehva, uint64_t value)
 {
-    asm ("shm.l %0,0(%1)"::"r"(value),"r"(vehva));
+	asm ("shm.l %0,0(%1)"::"r"(value),"r"(vehva));
 }
+
+static void dummy()
+{
+	asm("nop");
+	asm("nop");
+	asm("nop");
+	asm("nop");
+}
+
 }
 
 // VEO C-linkage interface
@@ -74,6 +84,8 @@ public:
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::communicator: ham_process_count = " << ham_process_count << std::endl; )
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::communicator: ham_host_address = " << ham_host_address << std::endl; )
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::communicator: ham_address = " << ham_address << std::endl; )
+
+		dummy(); // TODO: experimental: changes code alignment, improves call benchmark by up to 10%
 
 		// we are definitely not the host
 		assert(!is_host());

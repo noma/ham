@@ -22,9 +22,9 @@ public:
 	options(int* argc_ptr, char** argv_ptr[])
 	:
 // NOTE: no command line handling on the VE side
-//#ifndef HAM_COMM_VE
+#ifndef HAM_COMM_VE
 	  app_("HAM-Offload Options"),
-//#endif
+#endif
 	  argc_ptr_(argc_ptr),
 	  argv_ptr_(argv_ptr),
 	  cpu_affinity_(-1)
@@ -85,9 +85,9 @@ public:
 
 protected:
 // NOTE: no command line handling on the VE side
-//#ifndef HAM_COMM_VE
+#ifndef HAM_COMM_VE
 	CLI::App app_;
-//#endif
+#endif
 
 private:
 	int* argc_ptr_;

@@ -40,7 +40,7 @@ public:
 		peers = new veo_peer[ham_process_count]; // TODO: this seems to cause crash in the dynamically linked VEO build
 
 		// set VH name as hostname
-		errno_handler(gethostname(peers[ham_address].node_description.name_, node_descriptor::name_length_), "gethostname");
+		errno_handler(gethostname(peers[ham_host_address].node_description.name_, node_descriptor::name_length_), "gethostname");
 
 		// set own node name locally as "hostname/VE<NR>"
 		std::stringstream ss;

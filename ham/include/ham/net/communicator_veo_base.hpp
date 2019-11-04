@@ -161,7 +161,7 @@ public:
 	}
 	
 	static communicator& instance() { return *instance_; }
-	
+	static bool initialised() { return instance_ != nullptr; };
 
 	static communicator* instance_;
 

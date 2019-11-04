@@ -13,6 +13,11 @@ node_t this_node()
 	return communicator::this_node();
 }	
 
+bool initialised()
+{
+	return communicator::initialised();
+}
+
 } // namespace net
 } // namespace ham
 

@@ -139,18 +139,17 @@ public:
 
 	communicator(communicator_options& comm_options)
 	{
-		HAM_DEBUG( std::cout << "communicator::communicator(): initialising MPI" << std::endl; )
+		HAM_DEBUG( HAM_LOG << "communicator::communicator(): initialising MPI" << std::endl; )
 
-		instance_ = this;
 		int p;
 		MPI_Init_thread(comm_options.argc_ptr(), comm_options.argv_ptr(), MPI_THREAD_MULTIPLE, &p);
 		//MPI_Init_thread(argc_ptr, argv_ptr, MPI_THREAD_SERIALIZED, &p);
 		if (p != MPI_THREAD_MULTIPLE)
 		//if (p != MPI_THREAD_SERIALIZED)
 		{
-			std::cerr << "Could not initialise MPI with MPI_THREAD_MULTIPLE, MPI_Init_thread() returned " << p << std::endl;
+			HAM_LOG << "Could not initialise MPI with MPI_THREAD_MULTIPLE, MPI_Init_thread() returned " << p << std::endl;
 		}
-		HAM_DEBUG( std::cout << "communicator::communicator(): initialising MPI ..." << std::endl; )
+		HAM_DEBUG( HAM_LOG << "communicator::communicator(): initialising MPI ..." << std::endl; )
 
 		int t;
 		MPI_Comm_rank(MPI_COMM_WORLD, &t);
@@ -159,6 +158,7 @@ public:
 		nodes_ = static_cast<size_t>(t);
 		host_node_ = 0; // TODO(improvement): make configureable, like for SCIF
 
+		instance_ = this; // NOTE: this also marks the communicator as initialised, e.g. important for calls to this_node()
 		HAM_DEBUG( std::cout << "communicator::communicator(): initialising MPI done" << std::endl; )
 
 		peers = new mpi_peer[nodes_];
@@ -318,6 +318,7 @@ public:
 	}
 
 	static communicator& instance() { return *instance_; }
+	static bool initialised() { return instance_ != nullptr; };
 	static node_t this_node() { return instance().this_node_; }
 	static size_t num_nodes() { return instance().nodes_; }
 	bool is_host() const { return this_node_ == 0; } // TODO(improvement): ham_address == ham_host_address ; }

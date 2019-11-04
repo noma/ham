@@ -19,6 +19,9 @@ namespace net {
 node_t this_node() {
 	return 0;
 }
+bool initialised() {
+	return true;
+}
 
 } // namespace net
 } // namespace ham

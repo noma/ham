@@ -4,3 +4,5 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "ham/net/communicator.hpp"
+
+ham::net::communicator* ham::net::communicator::instance_ = nullptr;

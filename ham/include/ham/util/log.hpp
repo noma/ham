@@ -7,6 +7,7 @@
 #define ham_util_log_h
 
 #include <iostream>
+#include <string>
 
 #include "ham/misc/types.hpp"
 
@@ -15,12 +16,13 @@ namespace net {
 
 // forward declarations
 node_t this_node();
+bool initialised();
 
 } // namespace net
 } // namespace ham
 
 #ifdef HAM_LOG_NODE_PREFIX
-#define HAM_LOG std::cout << ham::net::this_node() << ":\t"
+#define HAM_LOG std::cout << (ham::net::initialised() ? std::to_string(ham::net::this_node()) : "NA") << ":\t"
 #else
 #define HAM_LOG std::cout
 #endif

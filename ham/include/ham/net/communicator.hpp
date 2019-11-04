@@ -39,6 +39,7 @@ namespace net {
 	};
 	
 	node_t this_node();
+	bool initialised();
 } // namespace net
 } // namespace ham
 

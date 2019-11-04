@@ -580,6 +580,7 @@ public:
 	}
 
 	static communicator& instance() { return *instance_; }
+	static bool initialised() { return instance_ != nullptr; };
 	static node_t this_node() { return instance().ham_address; }
 	static size_t num_nodes() { return instance().ham_process_count; }
 	bool is_host() const { return ham_address == ham_host_address ; }

@@ -5,4 +5,3 @@
 
 #include "ham/net/communicator.hpp"
 
-ham::net::communicator* ham::net::communicator::instance_ = nullptr;

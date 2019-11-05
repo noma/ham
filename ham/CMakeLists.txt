@@ -73,7 +73,7 @@ if (MPI_FOUND)
 
 	set(MPI_FOUND ON)
 	if (HAM_HAS_PARENT)
-		set(MPI_FOUND ON PARENT_SCOPE)
+		set(MPI_FOUND ${MPI_FOUND} PARENT_SCOPE)
 	endif ()
 endif ()
 
@@ -82,7 +82,7 @@ find_file(SCIF_HEADER_FILE "scif.h")
 if (SCIF_HEADER_FILE)
 	set(SCIF_FOUND ON)
 	if (HAM_HAS_PARENT)
-		set(SCIF_FOUND ON PARENT_SCOPE)
+		set(SCIF_FOUND ${SCIF_FOUND} PARENT_SCOPE)
 	endif ()
 
 	get_filename_component(SCIF_INCLUDE_DIR "${SCIF_HEADER_FILE}" DIRECTORY)
@@ -99,7 +99,7 @@ find_file(VEO_HEADER_FILE "ve_offload.h" "/opt/nec/ve/veos/include/")
 if (VEO_HEADER_FILE)
 	set(VEO_FOUND ON)
 	if (HAM_HAS_PARENT)
-		set(VEO_FOUND ON PARENT_SCOPE)
+		set(VEO_FOUND ${VEO_FOUND} PARENT_SCOPE)
 	endif ()
 
 	get_filename_component(VEO_INCLUDE_DIR "${VEO_HEADER_FILE}" DIRECTORY)
@@ -118,9 +118,32 @@ if (VEO_HEADER_FILE)
 
 	set(MK_VEORUN_STATIC_LIBS "-lpthread -lveio")
 	if (HAM_HAS_PARENT)
-		set(MK_VEORUN_STATIC_LIBS "${MK_VEORUN_STATIC_LIBS}" PARENT_SCOPE)
+		set(MK_VEORUN_STATIC_LIBS ${MK_VEORUN_STATIC_LIBS} PARENT_SCOPE)
 	endif ()
 
+	# TODO: try again to figure out parent scope exports with less redundancy
+	#  - passing PARENT_SCOPE always generates warning if there is none
+	#  - using a variable containing PARENT_SCOPE is tough
+
+	# some convenience variables
+	SET(HAM_LIB_VEO_VE ham_offload_veo_ve)
+	if (HAM_HAS_PARENT)
+		SET(HAM_LIB_VEO_VE ${HAM_LIB_VEO_VE} PARENT_SCOPE)
+	endif ()
+	# https://stackoverflow.com/questions/5693405/specifying-link-flags-for-only-one-static-lib-while-linking-executable
+	# hams static lib contains symbols needed for VEO calls
+	SET(HAM_LIB_VEO_VE_CLI -Wl,--whole-archive ${HAM_LIB_VEO_VE} -Wl,--no-whole-archive)
+	if (HAM_HAS_PARENT)
+		SET(HAM_LIB_VEO_VE_CLI ${HAM_LIB_VEO_VE_CLI} PARENT_SCOPE)
+	endif ()
+	SET(HAM_LIB_VEDMA_VE ham_offload_vedma_ve)
+	if (HAM_HAS_PARENT)
+		SET(HAM_LIB_VEDMA_VE ${HAM_LIB_VEDMA_VE} PARENT_SCOPE)
+	endif ()
+	SET(HAM_LIB_VEDMA_VE_CLI -Wl,--whole-archive ${HAM_LIB_VEDMA_VE} -Wl,--no-whole-archive)
+	if (HAM_HAS_PARENT)
+		SET(HAM_LIB_VEDMA_VE_CLI ${HAM_LIB_VEDMA_VE_CLI} PARENT_SCOPE)
+	endif ()
 else ()
 	message(STATUS "Could NOT find VEO (missing: ve_offload.h)")
 endif ()

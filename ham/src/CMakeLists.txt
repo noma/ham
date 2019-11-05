@@ -10,18 +10,6 @@ add_subdirectory(ham)
 
 if (HAM_BUILD_EXECUTABLES)
 
-	if (VEO_FOUND)
-		SET(HAM_LIB_VEO_VE ham_offload_veo_ve)
-		# https://stackoverflow.com/questions/5693405/specifying-link-flags-for-only-one-static-lib-while-linking-executable
-		# hams static lib contains symbols needed for VEO calls
-		SET(HAM_LIB_VEO_VE_CLI -Wl,--whole-archive ${HAM_LIB_VEO_VE} -Wl,--no-whole-archive)
-
-		SET(HAM_LIB_VEDMA_VE ham_offload_vedma_ve)
-		# https://stackoverflow.com/questions/5693405/specifying-link-flags-for-only-one-static-lib-while-linking-executable
-		# hams static lib contains symbols needed for VEO calls
-		SET(HAM_LIB_VEDMA_VE_CLI -Wl,--whole-archive ${HAM_LIB_VEDMA_VE} -Wl,--no-whole-archive)
-	endif ()
-
 ### Benchmarks
 
 	## Explicit targets (not built by default)

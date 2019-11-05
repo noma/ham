@@ -6,9 +6,14 @@
 project(ham LANGUAGES CXX)
 cmake_minimum_required(VERSION 3.2 FATAL_ERROR) # TODO verfify
 
-# set output directory
+# set output directory for executable, dynamic libs (.so), and static libs/archives (.a)
+message(STATUS "Output directory: " ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-message(STATUS "CMAKE_BINARY_DIR: " ${CMAKE_BINARY_DIR})
+#set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+#set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
+# add cmake subdirector to CMake module path
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
 # detect parent scope, i.e. this project is used via add_subdirectory()
 set(HAM_BUILD_EXECUTABLES_DESCRIPTION "Build executables, if disabled, only the libraries will be built.")
@@ -45,6 +50,8 @@ if (HAM_CXX_COMPILER_EXE STREQUAL "nc++")
 
 	message(STATUS "HAM_NEC_COMPILER_DETECTED: ${HAM_NEC_COMPILER_DETECTED}")
 endif ()
+# helper function for NEC Backend
+include(CreateStaticVeorunBinary)
 
 ### thirdparty dependencies
 

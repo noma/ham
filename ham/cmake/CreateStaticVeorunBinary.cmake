@@ -28,9 +28,15 @@ endif()
 # DEPENDENCIES .. other CMake library targets LIB_TARGET depends on
 # CLI_ARGUMENTS .. passed through command line arguments for mk_veorun_static
 function(create_static_veorun_binary LIB_TARGET DEPENDENCIES CLI_ARGUMENTS)
-#	set(OUTPUT_FILE ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/veorun_${LIB_TARGET}) # the output file we generate
-	set(OUTPUT_FILE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/veorun_${LIB_TARGET})
-	set(TARGET_NAME mk_veorun_${LIB_TARGET}) # the CMake target we generate
+
+	# output file we generate
+	set(OUTPUT_FILE veorun_${LIB_TARGET})
+	if (CMAKE_RUNTIME_OUTPUT_DIRECTORY) # put into specified directy if variable is present
+		set(OUTPUT_FILE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${OUTPUT_FILE})
+	endif ()
+
+	# name of the CMake target we generate
+	set(TARGET_NAME mk_veorun_${LIB_TARGET})
 
 	if (DEPENDENCIES)
 		set(DEPENDENCIES_FILE $<TARGET_FILE:${DEPENDENCIES}>)

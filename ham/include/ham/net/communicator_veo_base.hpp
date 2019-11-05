@@ -76,7 +76,7 @@ public:
 // NOTE: no command line handling on the VE side
 //       see also options in options.hpp
 // TODO: solve mystery: just adding options on the VE side actually influences the results offload call benchmark significantly (~1 µs) (VE code makes the difference)
-#ifndef HAM_COMM_VE
+#ifndef HAM_COMM_VEO_VE
 		// add backend-specific options
 		app_.add_option("--ham-process-count", ham_process_count_, "Number of processes the job consists of (number of targets + 1).");
 		app_.add_option("--ham-host-address", ham_host_address_, "The address of the host process (0 by default).");

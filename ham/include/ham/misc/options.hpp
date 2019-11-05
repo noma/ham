@@ -22,7 +22,7 @@ public:
 	options(int* argc_ptr, char** argv_ptr[])
 	:
 // NOTE: no command line handling on the VE side
-#ifndef HAM_COMM_VE
+#ifndef HAM_COMM_VEO_VE
 	  app_("HAM-Offload Options"),
 #endif
 	  argc_ptr_(argc_ptr),
@@ -33,7 +33,7 @@ public:
 //       see also communicator_options in communicator_veo_base.hpp
 // TODO: solve mystery: just adding options on the VE side actually influences the results offload call benchmark significantly (~1 µs) (VE code makes the difference)
 
-#ifndef HAM_COMM_VE
+#ifndef HAM_COMM_VEO_VE
 		// basic command line options
 		app_.allow_extras(); // ignore other options
 		app_.set_help_flag("--ham-help", "Print list of HAM-Offload command line options.");
@@ -44,7 +44,7 @@ public:
 	void parse()
 	{
 // NOTE: no command line handling on the VE side
-#ifndef HAM_COMM_VE
+#ifndef HAM_COMM_VEO_VE
 		// NOTE: no try-catch here to avoid exceptions, that cause offload-dependencies to boost exception in the MIC code
 		const char* options_env = std::getenv("HAM_OPTIONS");
 		if(options_env)
@@ -85,7 +85,7 @@ public:
 
 protected:
 // NOTE: no command line handling on the VE side
-#ifndef HAM_COMM_VE
+#ifndef HAM_COMM_VEO_VE
 	CLI::App app_;
 #endif
 

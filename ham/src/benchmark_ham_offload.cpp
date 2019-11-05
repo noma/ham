@@ -135,23 +135,58 @@ int main(int argc, char * argv[])
 	CLI11_PARSE(app, argc, argv);
 
 	///////////////// output compile configuration and run data ////////////
-	#ifdef BOOST_NO_EXCEPTIONS
-		std::cout << "# BOOST_NO_EXCEPTIONS          enabled" << std::endl;
-	#else
-		std::cout << "# BOOST_NO_EXCEPTIONS          disabled" << std::endl;
-	#endif
+		std::cout << "# HOST_ALIGNMENT               " << HOST_ALIGNMENT << std::endl;
+
 	#ifdef HAM_DEBUG_ON
 		std::cout << "# HAM_DEBUG_ON                 enabled" << std::endl;
 	#else
 		std::cout << "# HAM_DEBUG_ON                 disabled" << std::endl;
 	#endif
-	#ifdef HAM_COMM_MPI
-		std::cout << "# COMM_MPI                     enabled" << std::endl;
+
+		std::cout << "# HAM_MESSAGE_SIZE             " << HAM_MESSAGE_SIZE << std::endl;
+
+	#ifdef HAM_COMM_ONE_SIDED
+		std::cout << "# HAM_COMM_ONE_SIDED           enabled" << std::endl;
 	#else
-		std::cout << "# COMM_MPI                     disabled" << std::endl;
+		std::cout << "# HAM_COMM_ONE_SIDED           disabled" << std::endl;
 	#endif
 
-#ifdef HAM_COMM_SCIF
+	#ifdef HAM_COMM_MPI
+		std::cout << "# HAM_COMM_MPI                 enabled" << std::endl;
+	#else
+		std::cout << "# HAM_COMM_MPI                 disabled" << std::endl;
+	#endif
+
+	#ifdef HAM_COMM_VEO
+		std::cout << "# HAM_COMM_VEO                 enabled" << std::endl;
+	#else
+		std::cout << "# HAM_COMM_VEO                 disabled" << std::endl;
+	#endif
+	#ifdef HAM_COMM_VEDMA
+		std::cout << "# HAM_COMM_VEDMA               enabled" << std::endl;
+	#else
+		std::cout << "# HAM_COMM_VEDMA               disabled" << std::endl;
+	#endif
+
+	#if defined(HAM_COMM_VEO) || defined(HAM_COMM_VEDMA)
+	#ifdef HAM_COMM_VEO_VE
+		std::cout << "# HAM_COMM_VEO_VH              enabled" << std::endl;
+	#else
+		std::cout << "# HAM_COMM_VEO_VH              disabled" << std::endl;
+	#endif
+	#ifdef HAM_COMM_VEO_VE
+		std::cout << "# HAM_COMM_VEO_VE              enabled" << std::endl;
+	#else
+		std::cout << "# HAM_COMM_VEO_VE              disabled" << std::endl;
+	#endif
+	#ifdef HAM_COMM_VEO_STATIC
+		std::cout << "# HAM_COMM_VEO_STATIC          enabled" << std::endl;
+	#else
+		std::cout << "# HAM_COMM_VEO_STATIC          disabled" << std::endl;
+	#endif
+	#endif
+
+	#ifdef HAM_COMM_SCIF
 		std::cout << "# HAM_COMM_SCIF                enabled" << std::endl;
 	#ifdef HAM_SCIF_RMA_CPU
 		std::cout << "# HAM_SCIF_RMA_CPU             enabled" << std::endl;
@@ -159,16 +194,10 @@ int main(int argc, char * argv[])
 		std::cout << "# HAM_SCIF_RMA_CPU             disabled" << std::endl;
 	#endif
 		std::cout << "# HAM_SCIF_RMA_CPU_THRESHOLD   " << HAM_SCIF_RMA_CPU_THRESHOLD << std::endl;
-#else
-		std::cout << "# HAM_COMM_SCIF                disabled" << std::endl;
-#endif
-	#ifdef HAM_COMM_ONE_SIDED
-		std::cout << "# HAM_COMM_ONE_SIDED           enabled" << std::endl;
 	#else
-		std::cout << "# HAM_COMM_ONE_SIDED           disabled" << std::endl;
+		std::cout << "# HAM_COMM_SCIF                disabled" << std::endl;
 	#endif
-		std::cout << "# HAM_MESSAGE_SIZE             " << HAM_MESSAGE_SIZE << std::endl;
-		std::cout << "# HOST_ALIGNMENT               " << HOST_ALIGNMENT << std::endl;
+
 
 	// allocate host data of given size
 	char* data = local_allocate(data_size);

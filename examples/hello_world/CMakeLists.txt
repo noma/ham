@@ -32,12 +32,9 @@ if (VEO_FOUND)
 	if (HAM_NEC_COMPILER_DETECTED)
 		# Vector Engine (VE) libraries
 		add_library(hello_world_veo_ve hello_world.cpp)
-		SET(HAMLIB_VE -Wl,--whole-archive ham_offload_veo_ve -Wl,--no-whole-archive)
-		target_link_libraries(hello_world_veo_ve ${HAMLIB_VE})
+		target_link_libraries(hello_world_veo_ve ${HAM_LIB_VEO_VE_CLI})
 		set_property(TARGET hello_world_veo_ve PROPERTY POSITION_INDEPENDENT_CODE ON)
-		add_custom_command(TARGET hello_world_veo_ve
-		                   POST_BUILD
-		                   COMMAND /opt/nec/ve/libexec/mk_veorun_static veorun_hello_world_veo ./libhello_world_veo_ve.a ./ham/src/ham/libham_offload_veo_ve.a)
+		create_static_veorun_binary(hello_world_veo_ve ${HAM_LIB_VEO_VE} "")
 	else ()
 		# Vector Host (VH) executables
 		add_executable(hello_world_veo_vh hello_world.cpp)
@@ -50,12 +47,9 @@ if (VEO_FOUND)
 	if (HAM_NEC_COMPILER_DETECTED)
 		# Vector Engine (VE) libraries
 		add_library(hello_world_vedma_ve hello_world.cpp)
-		SET(HAMLIB_VE -Wl,--whole-archive ham_offload_vedma_ve -Wl,--no-whole-archive)
-		target_link_libraries(hello_world_vedma_ve ${HAMLIB_VE})
+		target_link_libraries(hello_world_vedma_ve ${HAM_LIB_VEDMA_VE_CLI})
 		set_property(TARGET hello_world_vedma_ve PROPERTY POSITION_INDEPENDENT_CODE ON)
-		add_custom_command(TARGET hello_world_vedma_ve
-		                   POST_BUILD
-		                   COMMAND /opt/nec/ve/libexec/mk_veorun_static veorun_hello_world_vedma ./libhello_world_vedma_ve.a ./ham/src/ham/libham_offload_vedma_ve.a ${MK_VEORUN_STATIC_LIBS})
+		create_static_veorun_binary(hello_world_vedma_ve ${HAM_LIB_VEDMA_VE} "${MK_VEORUN_STATIC_LIBS}")
 	else ()
 		# Vector Host (VH) executables
 		add_executable(hello_world_vedma_vh hello_world.cpp)

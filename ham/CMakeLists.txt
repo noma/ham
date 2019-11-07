@@ -38,7 +38,7 @@ if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 			"Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif ()
 
-# special compiler detect NEC compiler for VEO backend
+# detect if NEC compiler is used (for VEO backend)
 get_filename_component(HAM_CXX_COMPILER_EXE ${CMAKE_CXX_COMPILER} NAME)
 message(STATUS "C++ compiler ID: ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "C++ compiler exe: ${HAM_CXX_COMPILER_EXE}")
@@ -109,10 +109,6 @@ if (VEO_HEADER_FILE)
 	target_include_directories(veo_library INTERFACE ${VEO_INCLUDE_DIR})
 	target_link_libraries(veo_library INTERFACE "-L/opt/nec/ve/veos/lib64 -Wl,-rpath=/opt/nec/ve/veos/lib64 -lveo")
 
-	#add_library(veos_musl_library INTERFACE)
-	#target_include_directories(veos_musl_library INTERFACE "/opt/nec/ve/musl/include")
-	#target_link_libraries(veos_musl_library INTERFACE "/opt/nec/ve/musl/lib/libsysve.a") # -L/opt/nec/ve/musl/lib -Wl,-rpath=/opt/nec/ve/musl/lib -llibc
-	#target_link_libraries(veos_musl_library INTERFACE "-L/opt/nec/ve/musl/lib -Wl,-rpath=/opt/nec/ve/musl/lib -lsysve")
 	add_library(veos_system_libraries INTERFACE)
 	target_link_libraries(veos_system_libraries INTERFACE "-lpthread -lveio")
 

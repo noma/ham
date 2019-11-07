@@ -6,7 +6,13 @@
 #ifndef ham_misc_options
 #define ham_misc_options
 
-#include <CLI/CLI11.hpp>
+#include <sstream>
+#include <string>
+#include <vector>
+
+#ifndef HAM_COMM_VEO_VE
+	#include <CLI/CLI11.hpp>
+#endif
 #include <cstdlib>
 
 #include "ham/util/log.hpp"

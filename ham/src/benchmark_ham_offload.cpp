@@ -169,7 +169,7 @@ int main(int argc, char * argv[])
 	#endif
 
 	#if defined(HAM_COMM_VEO) || defined(HAM_COMM_VEDMA)
-	#ifdef HAM_COMM_VEO_VE
+	#ifdef HAM_COMM_VEO_VH
 		std::cout << "# HAM_COMM_VEO_VH              enabled" << std::endl;
 	#else
 		std::cout << "# HAM_COMM_VEO_VH              disabled" << std::endl;

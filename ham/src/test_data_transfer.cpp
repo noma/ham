@@ -33,7 +33,18 @@ int main(int argc, char* argv[])
 	HAM_UNUSED_VAR(argv);
 
 	std::cout << "Testing data transfer: host -> target_a -> target_b -> host." << std::endl;
-	
+
+#ifndef HAM_COMM_ONE_SIDED
+	constexpr size_t required_nodes = 3;
+#else
+	constexpr size_t required_nodes = 4;
+#endif
+
+	if (offload::num_nodes() < required_nodes) {
+		std::cerr << "This program needs at least " << required_nodes << " processes." << std::endl;
+		return -1;
+	}
+
 	// buffer size
 	constexpr size_t n = 1024;
 
@@ -55,7 +66,7 @@ int main(int argc, char* argv[])
 	// allocate device memory (returns a buffer_ptr<T>)
 	auto target_buffer_a = offload::allocate<double>(target_a, n);
 	auto target_buffer_b = offload::allocate<double>(target_b, n);
-	
+
 	// host -> target_a -> target_b -> host
 	// NOTE: in case of HAM_COMM_ONE_SIDED we do: host -> target_a -> host
 	offload::put(write_buffer.data(), target_buffer_a, n);

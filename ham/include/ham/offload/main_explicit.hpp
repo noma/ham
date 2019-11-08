@@ -22,4 +22,10 @@ int ham_finalise();
 // just a dummy for satisfying the runtime implementation
 int ham_user_main(int argc, char* argv_ptr[]);
 
+#ifdef HAM_COMM_VEO_VE // vector engine
+// rename USER main for VE library build
+// TODO: see main.hpp
+	#define main lib_main
+#endif
+
 #endif // ham_offload_main_explicit_hpp

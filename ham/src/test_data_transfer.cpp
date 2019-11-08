@@ -34,10 +34,10 @@ int main(int argc, char* argv[])
 
 	std::cout << "Testing data transfer: host -> target_a -> target_b -> host." << std::endl;
 
-#ifndef HAM_COMM_ONE_SIDED
-	constexpr size_t required_nodes = 3;
+#ifdef HAM_COMM_ONE_SIDED
+	constexpr size_t required_nodes = 2;
 #else
-	constexpr size_t required_nodes = 4;
+	constexpr size_t required_nodes = 3;
 #endif
 
 	if (offload::num_nodes() < required_nodes) {

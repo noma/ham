@@ -1,16 +1,206 @@
+sudo: false # allows containers instead of VMs
+language: cpp
+cache:
+  directories:
+  - mpich
+  
+os: linux
+dist: xenial
+
 addons:
   apt:
-    sources:
-      - boost-latest
+    sources: &common_sources
       - ubuntu-toolchain-r-test
-    packages:
-      - libboost1.55-all-dev
-      - gcc-4.9
-      - g++-4.9
+    packages: &common_packages
+      - cmake-data
+      - cmake
+
+env:
+  global:
+    - LINUX_DIST=xenial
+    - CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror"
+    - MAKE_FLAGS="-j4" # VERBOSE=1
+
+jobs:
+  include:
+    # GCC 4.9
+    - addons:
+        apt:
+          sources: *common_sources
+          packages:
+            - *common_packages
+            - g++-4.9
+      env:
+        - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9 && CNAME=gcc-4.9"
+
+    # GCC 5
+    - addons:
+        apt:
+          sources: *common_sources
+          packages:
+            - *common_packages
+            - g++-5
+      env:
+        - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5 && CNAME=gcc-5"
+    
+    # GCC 6
+    - addons:
+        apt:
+          sources: *common_sources
+          packages:
+            - *common_packages
+            - g++-6
+      env:
+        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6 && CNAME=gcc-6"
+        - CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror -Wno-error=unused-but-set-variable"
+    
+    # GCC 7
+    - addons:
+        apt:
+          sources: *common_sources
+          packages:
+            - *common_packages
+            - g++-7
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7 && CNAME=gcc-7"
+        - CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror -Wno-error=unused-but-set-variable"
+
+    # GCC 8
+    - addons:
+        apt:
+          sources: *common_sources
+          packages:
+            - *common_packages
+            - g++-8
+      env:
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8 && CNAME=gcc-8"
+        - CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror"
+
+    # GCC 9
+    - addons:
+        apt:
+          sources: *common_sources
+          packages:
+            - *common_packages
+            - g++-9
+      env:
+        - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
+        - CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror"
+
+# Clang 3.9
+    - addons:
+        apt:
+          sources:
+            - llvm-toolchain-xenial-3.9
+          packages:
+            - *common_packages
+            - clang-3.9
+      env:
+        - MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9 && CNAME=clang-3.9"
+
+    # Clang 4.0
+    - addons:
+        apt:
+          sources:
+            - llvm-toolchain-xenial-4.0
+          packages:
+            - *common_packages
+            - clang-4.0
+      env:
+        - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0 && CNAME=clang-4.0"
+
+    # Clang 5.0
+    - addons:
+        apt:
+          sources:
+            - llvm-toolchain-xenial-5.0
+          packages:
+            - *common_packages
+            - clang-5.0
+      env:
+        - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0 && CNAME=clang-5.0"
+
+    # Clang 6.0
+    - addons:
+        apt:
+          sources:
+            - llvm-toolchain-xenial-6.0
+          packages:
+            - *common_packages
+            - clang-6.0
+      env:
+        - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0 && CNAME=clang-6.0"
+
+    # Clang 7
+    - addons:
+        apt:
+          sources:
+            - llvm-toolchain-xenial-7
+          packages:
+            - *common_packages
+            - clang-7
+      env:
+        - MATRIX_EVAL="CC=clang-7 && CXX=clang++-7 && CNAME=clang-7"
+
+    # Clang 8
+    - addons:
+        apt:
+          sources:
+            - llvm-toolchain-xenial-8
+          packages:
+            - *common_packages
+            - clang-8
+      env:
+        - MATRIX_EVAL="CC=clang-8 && CXX=clang++-8 && CNAME=clang-8"
+
+# NOT YET SUPPORTED
+#    # Clang 9 
+#    - addons:
+#        apt:
+#          sources:
+#            - llvm-toolchain-xenial-9
+#          packages:
+#            - *common_packages
+#            - clang-9
+#      env:
+#        - MATRIX_EVAL="CC=clang-9 && CXX=clang++-9 && CNAME=clang-9"
+
+
+before_install:
+  - eval "${MATRIX_EVAL}"
+  - ${CXX} --version
+  - source ./ci/build_mpich.sh ${CNAME}
+  - export CMAKE_OPTIONS=${CMAKE_OPTIONS}" "${ENV_CMAKE_OPTIONS}
+  - export CXX_FLAGS=${CXX_FLAGS}" "${ENV_CXX_FLAGS}
   
 script:
-  - cp ~/build/noma/ham/tools/user-config.jam_travis ~/user-config.jam
-  - export BOOST_ROOT=/usr
-  - export MIC_BOOST_ROOT=/usr
-  - bjam toolset=gcc variant=debug,release ham_offload_mpi ham_offload_mpi_explicit inner_product_mpi test_data_transfer_mpi test_argument_transfer_mpi benchmark_ham_offload_mpi
-
+# info
+  - echo "CXX_FLAGE=${CXX_FLAGS}"
+  - echo "MAKE_FLAGS=${MAKE_FLAGS}"
+  - which ${CC}
+  - which ${CXX}
+  - echo "PATH=${PATH}"
+  - echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
+  - which mpirun
+  - which mpicc
+  - which mpicxx
+# build HAM
+  - mkdir -p build
+  - cd build
+  - cmake -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" ../ham
+  - make ${MAKE_FLAGS}
+# test HAM
+  - mpirun -n 2 ./test_argument_transfer_mpi
+  - mpirun -n 3 ./test_data_transfer_mpi
+  - mpirun -n 5 ./test_multiple_targets_mpi
+  - mpirun -n 3 ./ham_offload_test_mpi
+  - mpirun -n 3 ./ham_offload_test_explicit_mpi
+  - cd ..
+# build example
+  - cd examples
+  - mkdir build.hello_world
+  - cd build.hello_world
+  - cmake -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" ../hello_world
+  - make ${MAKE_FLAGS}
+# test example
+  - mpirun -n 2 ./hello_world_mpi

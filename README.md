@@ -17,7 +17,7 @@ The design goals are:
 - minimising the overhead cost of offloading a computation to another
   compute device, and
 - to implement offloading in pure C++, i.e. not introducing yet another
-  language or compiler extension or tool dependencies
+  language/compiler extension, or tool dependencies
 
 
 The outcome of this project are the two libraries in this repository:
@@ -32,18 +32,18 @@ one process is a logical host running the program's main, and the other
 processes being offload targets (asynchronously) executing computations, i.e. 
 function calls, that were offloaded by the host process. The API also provides
 functionality to move data between the processes. The participating processes 
-communicate through one of the supported back-end libraries.
+communicate through one of the supported communication backends.
 
 These capabilites can be combined into different application patterns, like 
 local offloading, offload over fabric, offloading to another (remote) CPU
 instead of an accelerator, offloading from an x86 host to a remote ARM64 node
 or vice versa, or reverse offloading from an accelerator running the host 
-process onto one multiple CPUs running the target processes - be creative.     
+process onto one or multiple CPUs running the target processes - be creative.     
 
 **See the [Wiki](https://github.com/noma/ham/wiki) for further documentation.**
 
-Feedback like bug reports, feature requests, or performance results are very
-welcome. Please create an [Issue](https://github.com/noma/ham/issues/new) or
+Feedback like bug reports, feature requests, or performance results are always
+welcome. Please create an [issue](https://github.com/noma/ham/issues/new) or
 send an [e-mail](mailto:ma.noack.pr@gmail.com).
 
 ## Dependencies
@@ -53,9 +53,9 @@ send an [e-mail](mailto:ma.noack.pr@gmail.com).
 |**Compiler**       | Standard C++ compiler                                          | ≥ C++11 |
 |**Build System**   | [CMake](https://cmake.org)                                     | ≥ 3.2   |
 |**Libraries**      | At least one supported communication library:                  |         |
-|                   | - **MPI** (MPICH, OpenMPI, Intel MPI, NEC MPI, ...)                | ≥ MPI-2 |
-|                   | - for Intel Xeon Phi (KNC): **MPSS with SCIF** (or MPI)             | any     |
-|                   | - for NEC SX-Aurora TSUBASA, Vector Engine: **NEC VEOS+VEO**       | ≥ 2.x   |
+|                   | - **MPI** (MPICH, OpenMPI, Intel MPI, NEC MPI, ...)            | ≥ MPI-2 |
+|                   | - for Intel Xeon Phi (KNC): **MPSS with SCIF** (or MPI)        | any     |
+|                   | - for NEC SX-Aurora TSUBASA, Vector Engine: **NEC VEOS+VEO**   | ≥ 2.x   |
 |                   | Everything else is header-only and shipped in [ham/thirdparty](https://github.com/noma/ham/tree/master/ham/thirdparty) |         |
 
 ## Quickstart
@@ -65,7 +65,6 @@ NOTE: we assume some MPI implementation to be available here.
 Download:
 ```terminal
 git clone https://github.com/noma/ham.git
-
 cd ham
 ```
 
@@ -75,7 +74,6 @@ mkdir build
 cd build
 cmake ../ham
 make -j
-
 ```
 
 Run:
@@ -88,17 +86,17 @@ mpirun -n 2 ./inner_product_mpi
 A simple example that demonstrates the usage of HAM-Offload can be found in:
 [ham/src/inner\_product_cpp](https://github.com/noma/ham/blob/master/ham/src/inner_product.cpp).
 
-An example project with a `CMakeLists.txt` can be found in:
+An example CMake project using HAM-Offload can be found in:
 [examples/hello\_world](https://github.com/noma/ham/tree/master/examples/hello_world).
 
 ## Version History
 
 | version | notes                                                             |
 |---------|-------------------------------------------------------------------|
-|    v0.1 | - initial release with Xeon Phi (KNC) support via SCIF and MPI    |
-|    v0.2 | - minor fixes                                                     |
 |    v0.3 | - added support for the NEC SX-Aurora TSUBASA                     |
 |         | - replaced Boost Program.Options with CLI11 (header-only)         |
+|    v0.2 | - minor fixes                                                     |
+|    v0.1 | - initial release with Xeon Phi (KNC) support via SCIF and MPI    |
 
 ## Publications and Citing
 

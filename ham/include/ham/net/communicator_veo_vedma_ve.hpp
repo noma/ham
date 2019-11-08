@@ -52,28 +52,28 @@ static void dummy()
 {
 	asm("nop");
 	asm("nop");
-	asm("nop");
-	asm("nop");
+//	asm("nop");
+//	asm("nop");
 
-	asm("nop");
-	asm("nop");
-	asm("nop");
-	asm("nop");
+//	asm("nop");
+//	asm("nop");
+//	asm("nop");
+//	asm("nop");
 
-	asm("nop");
-	asm("nop");
-	asm("nop");
-	asm("nop");
+//	asm("nop");
+//	asm("nop");
+//	asm("nop");
+//	asm("nop");
 
-	asm("nop");
-	asm("nop");
-	asm("nop");
-	asm("nop");
+//	asm("nop");
+//	asm("nop");
+//	asm("nop");
+//	asm("nop");
 
-	asm("nop");
-	asm("nop");
-	asm("nop");
-	asm("nop");
+//	asm("nop");
+//	asm("nop");
+//	asm("nop");
+//	asm("nop");
 }
 
 }

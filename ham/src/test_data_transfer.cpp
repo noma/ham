@@ -56,25 +56,25 @@ int main(int argc, char* argv[])
 	initialise_memory(read_buffer, 2.0);
 
 	// specify two offload targets
-	offload::node_t target_a = 1; // we simply the first device/node
+	offload::node_t target_a = 1; // we simply use the first device/node
 #ifndef HAM_COMM_ONE_SIDED
-	offload::node_t target_b = 2; // we simply the second device/node
-#else
-	offload::node_t target_b = 1; // we use the same device
+	offload::node_t target_b = 2; // we simply use the second device/node
 #endif
 
 	// allocate device memory (returns a buffer_ptr<T>)
 	auto target_buffer_a = offload::allocate<double>(target_a, n);
+#ifndef HAM_COMM_ONE_SIDED
 	auto target_buffer_b = offload::allocate<double>(target_b, n);
-
+#endif
 	// host -> target_a -> target_b -> host
 	// NOTE: in case of HAM_COMM_ONE_SIDED we do: host -> target_a -> host
 	offload::put(write_buffer.data(), target_buffer_a, n);
 #ifndef HAM_COMM_ONE_SIDED
 	offload::copy_sync(target_buffer_a, target_buffer_b, n);
-#endif	
 	offload::get(target_buffer_b, read_buffer.data(), n);
-	
+#else
+	offload::get(target_buffer_a, read_buffer.data(), n);
+#endif
 	// verify
 	bool passed = compare(write_buffer, read_buffer);
 	

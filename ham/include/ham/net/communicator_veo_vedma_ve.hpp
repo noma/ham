@@ -325,7 +325,10 @@ private:
 		// construct message in local buffer: size + msg
 		memcpy((char*)local_send_buffer_addr, (void*)&size, sizeof(size_t)); // size = header
 		memcpy((char*)local_send_buffer_addr + sizeof(size_t), msg, size);
-		const size_t msg_buffer_size = sizeof(size_t) + size;
+		// NOTE: it seems that the size for ve_dma_post_wait() needs to be a multiple of 4
+		constexpr size_t multiple = 4;
+//		const size_t msg_buffer_size = sizeof(size_t) + (size < multiple ? multiple : size ); // assert that size >= 12
+		const size_t msg_buffer_size = ((sizeof(size_t) + size) + multiple - 1) / multiple * multiple; // assert size >= 12 && size % 4 == 0
 
 		int err = 0;
 		err = ve_dma_post_wait(remote_recv_buffer_vehva, local_send_buffer_vehva, msg_buffer_size);
@@ -347,6 +350,7 @@ private:
 		// END: VERSION B
 
 		// set flag
+		HAM_DEBUG( HAM_LOG << "communicator(VE)::send_msg(): setting flag to: " << next_buffer_index << std::endl; ) 
 		ve_inst_shm((void *)remote_recv_flag_vehva, next_buffer_index);
 		ve_inst_fenceSF();
 	}
@@ -359,7 +363,7 @@ private:
 		buffer_index = buffer_index == NO_BUFFER_INDEX ?  peers[node].next_flag : buffer_index;
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::recv_msg(): remote node is: " << node << std::endl; )
 		HAM_DEBUG( HAM_LOG << "communicator(VE)::recv_msg(): using buffer index: " << buffer_index << std::endl; )
-		HAM_DEBUG( HAM_LOG << "communicator(VE)::send_msg(): msg size is: " << size << std::endl; )
+		HAM_DEBUG( HAM_LOG << "communicator(VE)::recv_msg(): msg size is: " << size << std::endl; )
 
 		// compute addresses
 		uint64_t remote_send_flag_vehva = peers[node].remote_send_flags_vehva + buffer_index * sizeof(size_t);
@@ -403,6 +407,9 @@ private:
 		
 		// BEGIN: VERSION A
 
+		// NOTE: it seems that the size for ve_dma_post_wait() needs to be a multiple of 4
+		constexpr size_t multiple = 4;
+		size = (size + multiple - 1) / multiple * multiple; // assert size % 4 == 0
 		// DMA message
 		int err = 0;
 		err = ve_dma_post_wait(local_recv_buffer_vehva, remote_send_buffer_vehva + sizeof(size), size); // NOTE: copy without

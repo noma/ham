@@ -390,7 +390,7 @@ private:
 			HAM_DEBUG(
 			request& req = peers[remote_node].next_request;
 			HAM_LOG << "communicator::allocate_next_request(): new next_request = " <<
-				"req(" << req.target_node << ", " << req.target_buffer_index << ", " << req.source_node << ", " << req.source_buffer_index << ")" << std::endl );
+				"request(" << req.target_node << ", " << req.target_buffer_index << ", " << req.source_node << ", " << req.source_buffer_index << ")" << std::endl );
 		}
 
 		return peers[remote_node].next_request;

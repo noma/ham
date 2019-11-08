@@ -14,6 +14,7 @@ using namespace ham;
 template<typename T>
 T type_transfer_function(T arg)
 {
+//	std::cout << "Target: type_transfer_function() got: '" << arg << "'" << std::endl;
 	return arg;
 }
 
@@ -23,6 +24,7 @@ bool test_type_invocation(offload::node_t target, T arg)
 {
 	T result = offload::sync(target, f2f(&type_transfer_function<T>, arg));
 	bool passed = result == arg;
+//	std::cerr << "Host: Passed '" << arg << "', got '" << result << "'" << std::endl;
 	std::cout << "Result for type \"" << typeid(T).name() << "\": " << (passed ? "pass" : "fail") << std::endl;
 	return passed;
 }
@@ -53,30 +55,29 @@ int main(int argc, char* argv[])
 	// list of types and values to test, static_cast syntax is not only for types with unclear literals, but also for readability
 	passed = test_type_transfer(target, 
 		// boolean
-		static_cast<bool>(false),
+		static_cast<bool>(true),
 		// character types
-		static_cast<char>('c'),
-		static_cast<char16_t>(u'c'),
-		static_cast<char32_t>(U'c'),
-		static_cast<wchar_t>(L'c'),
+		static_cast<char>('c'), // 99
+		static_cast<char16_t>(u'd'), // 100
+		static_cast<char32_t>(U'e'), // 101
+		static_cast<wchar_t>(L'f'), // 102
 		// integer types
-		static_cast<signed char>(42),
+		static_cast<signed char>(103), // 'g'
 		static_cast<short>(1337),
-		static_cast<int>(1337),
-		static_cast<long>(1337l),
-		static_cast<long long>(1337ll),
+		static_cast<int>(1338),
+		static_cast<long>(1339l),
+		static_cast<long long>(1340ll),
 		// unsigned integer types
-		static_cast<unsigned char>(42),
-		static_cast<unsigned short>(1337),
-		static_cast<unsigned>(1337),
-		static_cast<unsigned long>(1337ul),
-		static_cast<unsigned long long>(1337ull),
+		static_cast<unsigned char>(105), // 'h'
+		static_cast<unsigned short>(1341),
+		static_cast<unsigned>(1342),
+		static_cast<unsigned long>(1343ul),
+		static_cast<unsigned long long>(1344ull),
 		// floating point types
-		static_cast<float>(13.37f),
-		static_cast<double>(13.37),
-		static_cast<long double>(13.37l),
+		static_cast<float>(13.45f),
+		static_cast<double>(13.46),
+		static_cast<long double>(13.47l),
 		// null pointer
-		//static_cast<nullptr_t>(nullptr),
 		static_cast<std::nullptr_t>(nullptr),
 		std::tuple<void*>(nullptr)
 	);
